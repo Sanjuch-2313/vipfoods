@@ -1,23 +1,18 @@
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: "http://localhost:5001/api",
-
+const api = axios.create({
+  baseURL: "https://api.vipfood.in/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-export const registerUser = (userData) => {
-  return API.post(
-    "/auth/register",
-    userData
-  );
-};
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-export const verifyOtp = (otpData) => {
-  return API.post(
-    "/auth/verify-otp",
-    otpData
-  );
-};
+export default api;
