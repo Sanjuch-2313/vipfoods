@@ -50,7 +50,7 @@ export default function Footer() {
 
       {/* Footer Note */}
       <p className="footer-note">© 2026 VIP Foods. All rights reserved.</p>
-      <p className="footer-note">© Designed and Developed by Sanju Choppara.</p>
+      <p className="footer-note">Designed and Developed by Sanju Choppara and Syam C.</p>
     </footer>
   );
 }
