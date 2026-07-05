@@ -16,13 +16,11 @@ const PORT = process.env.PORT || 5001;
 // CORS - MUST COME BEFORE ROUTES
 // ========================================
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+app.use(cors({
+  origin: ["http://localhost:5173", "https://vipfoods.netlify.app"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 
 
 // ========================================
