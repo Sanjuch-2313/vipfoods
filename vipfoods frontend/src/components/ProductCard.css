@@ -1,0 +1,246 @@
+/* ===========================
+   PRODUCT CARD
+=========================== */
+
+.product-card {
+  position: relative;
+  width: 240px;                 /* compact width */
+  min-height: 340px;            /* balanced height */
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+
+.product-image-wrap {
+  width: 100%;
+  height: 160px;                /* smaller image area */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  background: #f9fafb;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.03);
+}
+
+/* ===========================
+WISHLIST + BADGE
+=========================== */
+
+.wishlist-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #dc2626;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.wishlist-icon:hover {
+  background: #dc2626;
+  color: #fff;
+}
+
+.wishlist-icon.wishlisted {
+  background: #dc2626;
+  color: #fff;
+}
+
+.product-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(249,115,22,0.12);
+  color: #c2410c;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* ===========================
+INFO
+=========================== */
+
+.product-info {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.product-title-link h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+.product-title-link:hover h4 {
+  color: #dc2626;
+}
+
+.product-details-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.product-tag {
+  font-weight: 600;
+  color: #7c3aed;
+}
+
+.product-delivery {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.product-price {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 6px 0;
+}
+
+/* ===========================
+WEIGHT SELECTOR
+=========================== */
+
+.weight-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.weight-label select {
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.weight-label select:hover {
+  border-color: #dc2626;
+}
+
+/* ===========================
+ADD BUTTON
+=========================== */
+
+.cta-btn {
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.cta-btn.full {
+  width: 100%;
+  background: linear-gradient(90deg, #dc2626, #ea580c);
+  color: #fff;
+}
+
+.cta-btn.full:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(220,38,38,0.35);
+}
+
+/* ===========================
+QUANTITY
+=========================== */
+
+.quantity-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quantity-inline button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: #f3f4f6;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.quantity-inline button:hover {
+  background: #dc2626;
+  color: #fff;
+}
+
+.quantity-inline span {
+  font-size: 16px;
+  font-weight: 700;
+  width: 24px;
+  text-align: center;
+}
+
+/* ===========================
+RESPONSIVE
+=========================== */
+
+@media(max-width:768px) {
+  .product-card {
+    width: 200px;
+  }
+  .product-image-wrap {
+    height: 140px;
+  }
+  .product-title-link h4 {
+    font-size: 0.95rem;
+  }
+  .product-price {
+    font-size: 1.1rem;
+  }
+}
+
+@media(max-width:480px) {
+  .product-card {
+    width: 100%;
+  }
+  .product-image-wrap {
+    height: 120px;
+  }
+}

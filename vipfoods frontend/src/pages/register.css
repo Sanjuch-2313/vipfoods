@@ -1,0 +1,45 @@
+.register-bg {
+  background:
+    radial-gradient(circle at 16% 20%, rgba(212, 160, 23, 0.3), transparent 28%),
+    radial-gradient(circle at 82% 18%, rgba(193, 68, 14, 0.28), transparent 30%),
+    radial-gradient(circle at 54% 88%, rgba(107, 142, 35, 0.22), transparent 34%),
+    linear-gradient(135deg, #fff8e7, #fff1df 42%, #eef7e6);
+}
+
+.register-bg::before {
+  background: linear-gradient(120deg, rgba(193, 68, 14, 0.18), rgba(212, 160, 23, 0.18), rgba(45, 80, 22, 0.13), rgba(193, 68, 14, 0.14));
+  background-size: 300% 300%;
+}
+
+.auth-chilli {
+  top: 10%;
+  right: 8%;
+  font-size: clamp(3rem, 8vw, 6.2rem);
+  animation-delay: 0.4s;
+}
+
+.auth-spice {
+  bottom: 11%;
+  left: 9%;
+  font-size: clamp(2.8rem, 7vw, 5rem);
+  animation-delay: 1.8s;
+}
+
+.auth-leaf-register {
+  left: 18%;
+  top: 13%;
+  font-size: clamp(2.4rem, 6vw, 4.6rem);
+  animation-delay: 2.5s;
+}
+
+@media (max-width: 768px) {
+  .auth-chilli {
+    top: 4%;
+    right: 5%;
+  }
+
+  .auth-spice {
+    bottom: 5%;
+    left: 4%;
+  }
+}
