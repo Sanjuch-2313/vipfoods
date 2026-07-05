@@ -1,28 +1,24 @@
-const nodemailer = require("nodemailer");
-const dns = require("node:dns");
-
-// Prefer IPv4 because the previous connection attempted IPv6.
-dns.setDefaultResultOrder("ipv4first");
+import nodemailer from "nodemailer";
+import dns from "node:dns";
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
+  requireTLS: true,
 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_APP_PASSWORD,
   },
 
-  requireTLS: true,
+  lookup(hostname, options, callback) {
+    dns.lookup(hostname, { family: 4 }, callback);
+  },
 
   connectionTimeout: 15000,
   greetingTimeout: 15000,
   socketTimeout: 20000,
-
-  tls: {
-    minVersion: "TLSv1.2",
-  },
 });
 
 const sendOtpEmail = async (email, otp) => {
@@ -32,7 +28,6 @@ const sendOtpEmail = async (email, otp) => {
     const info = await transporter.sendMail({
       from: `"VIP Foods" <${process.env.EMAIL_USER}>`,
       to: email,
-
       subject: "VIP Foods Email Verification OTP",
 
       text: `Your VIP Foods verification OTP is ${otp}. It expires in 10 minutes.`,
@@ -76,10 +71,12 @@ const sendOtpEmail = async (email, otp) => {
       code: error.code,
       command: error.command,
       response: error.response,
+      address: error.address,
+      port: error.port,
     });
 
     throw error;
   }
 };
 
-module.exports = sendOtpEmail;
+export default sendOtpEmail;
