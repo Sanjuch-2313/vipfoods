@@ -1,59 +1,85 @@
 const nodemailer = require("nodemailer");
+const dns = require("node:dns");
+
+// Prefer IPv4 because the previous connection attempted IPv6.
+dns.setDefaultResultOrder("ipv4first");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
 
   auth: {
-  user: process.env.EMAIL_USER,
-  pass: process.env.EMAIL_PASS,
-},
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_APP_PASSWORD,
+  },
+
+  requireTLS: true,
+
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 20000,
+
+  tls: {
+    minVersion: "TLSv1.2",
+  },
 });
 
-const verifyEmailConnection = async () => {
-  try {
-    await transporter.verify();
-
-    console.log("Gmail SMTP connection successful");
-  } catch (error) {
-    console.error("Gmail SMTP connection failed:");
-    console.error(error);
-  }
-};
-
-verifyEmailConnection();
-
 const sendOtpEmail = async (email, otp) => {
-  console.log("Attempting to send OTP email to:", email);
+  try {
+    console.log("Attempting to send OTP email to:", email);
 
-  const info = await transporter.sendMail({
-    from: `"VIP Foods" <${process.env.EMAIL_USER}>`,
+    const info = await transporter.sendMail({
+      from: `"VIP Foods" <${process.env.EMAIL_USER}>`,
+      to: email,
 
-    to: email,
+      subject: "VIP Foods Email Verification OTP",
 
-    subject: "VIP Foods Email Verification OTP",
+      text: `Your VIP Foods verification OTP is ${otp}. It expires in 10 minutes.`,
 
-    text: `Your VIP Foods verification OTP is ${otp}. This OTP expires in 10 minutes.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: auto; padding: 30px;">
+          <h1>VIP Foods</h1>
 
-    html: `
-      <div style="font-family: Arial, sans-serif; padding: 20px;">
-        <h2>VIP Foods Email Verification</h2>
+          <h2>Verify Your Email</h2>
 
-        <p>Thank you for registering with VIP Foods.</p>
+          <p>Thank you for registering with VIP Foods.</p>
 
-        <p>Your verification OTP is:</p>
+          <p>Your verification OTP is:</p>
 
-        <h1>${otp}</h1>
+          <div style="
+            padding: 18px;
+            margin: 20px 0;
+            background: #f5f5f5;
+            border-radius: 10px;
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            text-align: center;
+          ">
+            ${otp}
+          </div>
 
-        <p>This OTP expires in 10 minutes.</p>
+          <p>This OTP expires in 10 minutes.</p>
 
-        <p>Do not share this OTP with anyone.</p>
-      </div>
-    `,
-  });
+          <p>Do not share this OTP with anyone.</p>
+        </div>
+      `,
+    });
 
-  console.log("OTP email sent successfully:", info.messageId);
+    console.log("OTP EMAIL SENT SUCCESSFULLY:", info.messageId);
 
-  return info;
+    return info;
+  } catch (error) {
+    console.error("NODEMAILER EMAIL ERROR:", {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      response: error.response,
+    });
+
+    throw error;
+  }
 };
 
 module.exports = sendOtpEmail;
