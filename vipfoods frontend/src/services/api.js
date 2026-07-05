@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://vipfoods-backend.onrender.com/api",
+  baseURL: "https://api.vipfood.in/api",
   headers: {
     "Content-Type": "application/json",
   },
