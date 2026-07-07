@@ -1,7 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FiArrowLeft, FiHeart, FiMinus, FiPlus } from "react-icons/fi";
-import { getDefaultWeight, getProductPrice, getWeightOptions, products } from "../services/productService";
+import {
+  getProductById,
+  getDefaultWeight,
+  getProductPrice,
+  getWeightOptions,
+} from "../services/productService";
 import { useCart } from "../context/CartContext";
 import "./home.css";
 
@@ -10,23 +15,50 @@ export default function ProductDetails() {
   const { productId } = useParams();
   const { cartItems, addToCart, updateCartQuantity, wishlistItems, toggleWishlist } = useCart();
 
-  const product = useMemo(
-    () => products.find((item) => item.id === productId),
-    [productId],
-  );
+  const [product, setProduct] = useState(null);
+  const [selectedWeight, setSelectedWeight] = useState("");
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const p = await getProductById(productId);
+
+        const formatted = {
+          id: p._id,
+          name: p.name,
+          image: p.images?.[0] || "",
+          tag: p.category?.name || "",
+          category: p.category?.name || "",
+          description: p.description,
+          price: p.variants?.[0]?.mrp || 0,
+          offerPrice: p.variants?.[0]?.sellingPrice || 0,
+          rating: p.averageRating || 4.5,
+          veg: true, // adjust if backend provides veg/non-veg flag
+          weights: Object.fromEntries(
+            (p.variants || []).map((v) => [String(v.weight), v.sellingPrice])
+          ),
+          contents: p.ingredients,
+          storage: p.storageInstructions,
+        };
+
+        setProduct(formatted);
+        setSelectedWeight(getDefaultWeight(formatted));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchProduct();
+  }, [productId]);
 
   const weightOptions = getWeightOptions(product);
-  const [selectedWeight, setSelectedWeight] = useState(getDefaultWeight(product));
 
+  // ✅ Loading state
   if (!product) {
     return (
       <main className="section-wrap product-page">
-        <button type="button" className="page-back" onClick={() => navigate(-1)}>
-          <FiArrowLeft /> Back
-        </button>
-        <section className="section-heading">
-          <p>Product not found</p>
-          <h2>We could not find this item.</h2>
+        <section className="empty-state">
+          <h2>Loading product...</h2>
         </section>
       </main>
     );

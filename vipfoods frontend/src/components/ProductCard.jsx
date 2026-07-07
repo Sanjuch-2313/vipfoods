@@ -62,91 +62,125 @@ export default function ProductCard({
   };
 
   return (
-    <div
-      ref={cardRef}
-      className={`product-card product-${product.category}`}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+  <div className="vip-card">
+
+    <button
+      className={`vip-wishlist ${wishlisted ? "active" : ""}`}
+      onClick={() => onToggleWishlist && onToggleWishlist(product)}
     >
-      {/* Wishlist */}
-      <button
-        className={`wishlist-icon ${wishlisted ? "wishlisted" : ""}`}
-        onClick={() => onToggleWishlist && onToggleWishlist(product)}
+      <FiHeart />
+    </button>
+
+    <Link
+      to={`/products/${product.id}`}
+      className="vip-image-box"
+    >
+      <img
+        src={product.image}
+        alt={product.name}
+        className="vip-image"
+      />
+
+      <div className="vip-offer">
+        BEST SELLER
+      </div>
+    </Link>
+
+    <div className="vip-info">
+
+      <Link
+        to={`/products/${product.id}`}
+        className="vip-title-link"
       >
-        <FiHeart />
-      </button>
-
-      {/* Badge */}
-      <span className="product-badge">BEST SELLER</span>
-
-      {/* Product Image */}
-      <Link to={`/products/${product.id}`} className="product-image-wrap">
-        <img src={product.image} alt={product.name} className="product-image" />
+        <h3 className="vip-title">
+          {product.name}
+        </h3>
       </Link>
 
-      {/* Content */}
-      <div className="product-info">
-        <div className="product-card-meta">
-          <span className={`product-pill ${product.veg ? "veg" : "non-veg"}`}>
-            {product.veg ? "Veg" : "Non-Veg"}
-          </span>
-          {product.trending && <span className="product-pill trending">Trending</span>}
-        </div>
+      <div className="vip-rating-row">
 
-        <Link to={`/products/${product.id}`} className="product-title-link">
-          <h4>{product.name}</h4>
-        </Link>
+        <span className="vip-rating">
+            ⭐ {product.rating || 4.5}
+        </span>
 
-        {/* Rating */}
-        <div className="product-rating">{renderStars(product.rating || 0)}</div>
+        <span className="vip-dot">•</span>
 
-        <div className="product-details-line">
-          <span className="product-tag">{product.tag}</span>
-          <span className="product-delivery">
-            <FiTruck /> Free Delivery
-          </span>
-        </div>
+        <span className="vip-delivery">
+            Free Delivery
+        </span>
 
-        <p className="product-price">₹{selectedPrice ?? product.price ?? 0}</p>
+      </div>
 
-        {/* Weight Selector */}
-        {weightOptions.length > 0 && (
-          <label className="weight-label">
-            Weight:
+      <p className="vip-category">
+        {product.tag}
+      </p>
+
+      <div className="vip-bottom">
+
+        <div>
+
+          <div className="vip-price">
+            ₹{selectedPrice ?? product.price}
+          </div>
+
+          {weightOptions.length > 0 && (
             <select
+              className="vip-weight"
               value={selectedWeight}
-              onChange={(e) => setSelectedWeight(e.target.value)}
+              onChange={(e)=>setSelectedWeight(e.target.value)}
             >
-              {weightOptions.map((option) => (
-                <option key={option.label} value={option.label}>
+              {weightOptions.map(option=>(
+                <option
+                  key={option.label}
+                  value={option.label}
+                >
                   {option.label}
                 </option>
               ))}
             </select>
-          </label>
-        )}
+          )}
 
-        {quantity > 0 ? (
-          <div className="quantity-inline">
-            <button onClick={() => updateCartQuantity(product.id, selectedWeight, quantity - 1)}>
-              <FiMinus />
+        </div>
+
+        {quantity>0 ? (
+
+          <div className="vip-qty">
+
+            <button
+             onClick={()=>updateCartQuantity(product.id,selectedWeight,quantity-1)}
+            >
+              <FiMinus/>
             </button>
+
             <span>{quantity}</span>
-            <button onClick={() => updateCartQuantity(product.id, selectedWeight, quantity + 1)}>
-              <FiPlus />
+
+            <button
+            onClick={()=>updateCartQuantity(product.id,selectedWeight,quantity+1)}
+            >
+              <FiPlus/>
             </button>
+
           </div>
-        ) : (
+
+        ):(
+
           <button
-            className="cta-btn full"
-            onClick={() =>
-              onAddToCart ? onAddToCart({ ...product, weight: selectedWeight }) : addToCart({ ...product, weight: selectedWeight })
+            className="vip-add-btn"
+            onClick={()=>
+              onAddToCart
+                ? onAddToCart({...product,weight:selectedWeight})
+                : addToCart({...product,weight:selectedWeight})
             }
           >
-            🛒 Add To Cart
+            ADD
           </button>
+
         )}
+
       </div>
+
     </div>
-  );
+
+  </div>
+);
 }

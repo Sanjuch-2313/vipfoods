@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
@@ -19,8 +19,6 @@ const userSchema = new mongoose.Schema(
     mobile: {
       type: String,
       required: true,
-      unique: true,
-      trim: true,
     },
 
     password: {
@@ -28,19 +26,19 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-
     otp: {
       type: String,
       default: null,
     },
 
-    otpExpiresAt: {
+    otpExpires: {
       type: Date,
       default: null,
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
   },
   {
@@ -48,4 +46,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+
+export default User;

@@ -1,86 +1,71 @@
-require("dotenv").config();
+import dotenv from "dotenv";
+dotenv.config();
 
-const express = require("express");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
 
-const connectDB = require("./config/db");
-const authRoutes = require("./routes/authRoutes");
-const errorMiddleware = require("./middleware/errorMiddleware");
+import connectDB from "./config/db.js";
+
+import authRoutes from "./routes/authRoutes.js";
+
+import errorMiddleware from "./middleware/errorMiddleware.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import couponRoutes from "./routes/couponRoutes.js";
+import customerRoutes from "./routes/customerRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
+import settingsRoutes from "./routes/settingsRoutes.js";
+
+
+
 
 const app = express();
 
 const PORT = process.env.PORT || 5001;
 
-
-// ========================================
-// CORS - MUST COME BEFORE ROUTES
-// ========================================
-
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://vipfoods.netlify.app",
-    "https://vipfood.in",
-    "https://www.vipfood.in"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
-
-
-// ========================================
-// BODY PARSERS
-// ========================================
-
-app.use(express.json());
-
 app.use(
-  express.urlencoded({
-    extended: true,
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://vipfoods.netlify.app",
+      "https://vipfood.in",
+      "https://www.vipfood.in",
+      "http://localhost:5174",
+    ],
+    credentials: true,
   })
 );
 
-
-// ========================================
-// TEST ROUTE
-// ========================================
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-  res.status(200).json({
-    message: "VIP Foods Backend API is running",
+  res.json({
+    success: true,
+    message: "VIP Foods API Running",
   });
 });
 
-
-// ========================================
-// AUTH ROUTES
-// ========================================
-
 app.use("/api/auth", authRoutes);
-
-
-// ========================================
-// ERROR HANDLER - MUST BE LAST
-// ========================================
+app.use("/api/categories", categoryRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);     // ✅ HERE
+app.use("/api/coupons", couponRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/settings", settingsRoutes);
 
 app.use(errorMiddleware);
 
-
-// ========================================
-// START SERVER
-// ========================================
-
 const startServer = async () => {
-  try {
-    await connectDB();
+  await connectDB();
 
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error("SERVER START ERROR:", error);
-    process.exit(1);
-  }
+  app.listen(PORT, () => {
+    console.log(
+      `🚀 Server running on port ${PORT}`
+    );
+  });
 };
 
 startServer();

@@ -1,0 +1,61 @@
+/* Edit Product Page */
+
+.edit-product-page {
+  width: 100%;
+}
+
+.edit-product-page .primary-action-button {
+  background: #2563eb;
+  color: #fff;
+}
+
+.edit-product-page .primary-action-button:hover {
+  background: #1d4ed8;
+}
+
+.edit-product-page .submit-error-banner {
+  margin-bottom: 20px;
+}
+
+.edit-product-page .add-product-page__title-row h1 {
+  color: #1e293b;
+}
+
+.edit-product-page .back-button {
+  margin-bottom: 20px;
+}
+
+.edit-product-page .status-setting-list {
+  margin-top: 15px;
+}
+
+.edit-product-page .product-summary-card {
+  position: sticky;
+  top: 20px;
+}
+
+.edit-product-page .image-preview-card {
+  border: 2px solid #e5e7eb;
+}
+
+.edit-product-page .image-preview-card:hover {
+  border-color: #2563eb;
+}
+
+.edit-product-page .badge-chip {
+  background: #2563eb;
+  color: #fff;
+}
+
+.edit-product-page .badge-chip button {
+  color: #fff;
+}
+
+.edit-product-page .variant-card {
+  transition: all 0.3s ease;
+}
+
+.edit-product-page .variant-card:hover {
+  border-color: #2563eb;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.08);
+}

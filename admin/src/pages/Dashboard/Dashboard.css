@@ -1,0 +1,51 @@
+.page-title{
+
+font-size:32px;
+
+margin-bottom:30px;
+
+}
+
+.stats-grid{
+
+display:grid;
+
+grid-template-columns:repeat(4,1fr);
+
+gap:20px;
+
+margin-bottom:30px;
+
+}
+
+.dashboard-grid{
+
+display:grid;
+
+grid-template-columns:2fr 1fr;
+
+gap:20px;
+
+}
+
+.recent-orders,
+.low-stock{
+
+background:white;
+
+padding:25px;
+
+border-radius:18px;
+
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+min-height:350px;
+
+}
+
+.recent-orders h2,
+.low-stock h2{
+
+margin-bottom:20px;
+
+}

@@ -9,9 +9,13 @@ export default function Wishlist() {
   const { wishlistItems, toggleWishlist, addToCart } = useCart();
 
   const total = useMemo(
-    () => wishlistItems.reduce((sum, item) => sum + item.price, 0),
-    [wishlistItems],
-  );
+  () =>
+    wishlistItems.reduce(
+      (sum, item) => sum + (item.offerPrice || item.price || 0),
+      0
+    ),
+  [wishlistItems]
+);
 
   return (
     <main className="section-wrap product-page">
@@ -36,7 +40,7 @@ export default function Wishlist() {
               <div className="cart-item-details">
                 <h3>{item.name}</h3>
                 <p>{item.tag}</p>
-                <p>₹{item.price}</p>
+                <p>₹{item.offerPrice || item.price}</p>
                 <div className="cart-item-controls">
                   <button type="button" className="cta-btn small" onClick={() => addToCart(item)}>
                     Add to Cart

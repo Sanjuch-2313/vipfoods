@@ -9,9 +9,15 @@ export default function Cart() {
   const { cartItems, updateCartQuantity, removeFromCart } = useCart();
 
   const total = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [cartItems],
-  );
+  () =>
+    cartItems.reduce(
+      (sum, item) =>
+        sum +
+        (item.offerPrice || item.price || 0) * item.quantity,
+      0
+    ),
+  [cartItems]
+);
 
   return (
     <main className="section-wrap product-page">
@@ -37,7 +43,7 @@ export default function Cart() {
                 <h3>{item.name}</h3>
                 <p>{item.tag}</p>
                 {item.weight && <p className="cart-item-weight"><strong>Weight:</strong> {item.weight}</p>}
-                <p>₹{item.price}</p>
+                <p>₹{item.offerPrice || item.price}</p>
                 <div className="cart-item-controls">
                   <label>
                     Qty

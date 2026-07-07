@@ -243,12 +243,21 @@ export default function Home() {
             </p>
 
             <div className="hero-actions">
-              <Link to="/products" className="cta-btn hero-cta">
-                Shop Now
-              </Link>
-              <Link to="/register" className="ghost-cta">
-                Create Account
-              </Link>
+              <Link
+  to="/products"
+  className="cta-btn hero-cta"
+  title="Shop Now"
+>
+  Shop Now
+</Link>
+
+<Link
+  to="/register"
+  className="ghost-cta"
+  title="Create Account"
+>
+  Create Account
+</Link>
             </div>
 
             <div className="hero-pills">
@@ -319,9 +328,19 @@ export default function Home() {
                   <div className="category-emoji">{category.emoji}</div>
                   <h3>{category.title}</h3>
                   <p>{category.desc}</p>
-                  <Link to={`/products?category=${category.id}`} className="category-link">
-                    Explore
-                  </Link>
+                  <Link
+  to={`/products?category=${category.id}`}
+  className="category-link"
+  onClick={() =>
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    })
+  }
+>
+  Explore
+</Link>
+                  
                 </TiltCard>
               </SwiperSlide>
             ))}
@@ -373,12 +392,21 @@ export default function Home() {
           <h2>Login or register for saved carts, faster checkout and fresh-drop alerts.</h2>
         </div>
         <div className="auth-banner-actions">
-          <Link to="/login" className="ghost-cta dark">
-            Login
-          </Link>
-          <Link to="/register" className="cta-btn">
-            Register
-          </Link>
+          <Link
+  to="/login"
+  className="ghost-cta dark"
+  title="Login"
+>
+  Login
+</Link>
+
+<Link
+  to="/register"
+  className="cta-btn"
+  title="Register"
+>
+  Register
+</Link>
         </div>
       </section>
 

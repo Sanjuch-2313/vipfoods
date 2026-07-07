@@ -1,7 +1,7 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
-import { getProducts, getCategoryLabel } from "../services/productService";
+import { getProducts } from "../services/productService";
 import { useCart } from "../context/CartContext";
 import ProductCard from "../components/ProductCard";
 import "./home.css";
@@ -24,10 +24,46 @@ export default function Products() {
 
   const navigate = useNavigate();
 
-  const filteredProducts = useMemo(
-    () => getProducts({ category, search, vegFilter, sortBy, trending }),
-    [category, search, vegFilter, sortBy, trending],
-  );
+  // ✅ Changed from useMemo to useEffect + state
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+
+        const raw = await getProducts({
+          category: category !== "all" ? category : "",
+        });
+
+        const formatted = raw.map((p) => ({
+          id: p._id,
+          name: p.name,
+          image: p.images?.[0] || "",
+          tag: p.category?.name || "",
+          category: p.category?.slug || "",
+          rating: p.averageRating || 4.5,
+
+          price: p.variants?.[0]?.mrp || 0,
+          offerPrice: p.variants?.[0]?.sellingPrice || 0,
+
+          weights: Object.fromEntries(
+            (p.variants || []).map((v) => [`${v.weight}g`, v.sellingPrice])
+          ),
+        }));
+
+        setFilteredProducts(formatted);
+      } catch (err) {
+        console.error(err);
+        setFilteredProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [category]);
 
   const handleChange = (key, value) => {
     const next = new URLSearchParams(searchParams);
@@ -44,9 +80,16 @@ export default function Products() {
       <button type="button" className="page-back" onClick={() => navigate(-1)}>
         <FiArrowLeft /> Back
       </button>
+
       <section className="section-heading">
         <p>Products</p>
-        <h2>{trending ? "Trending VIP Products" : getCategoryLabel(category)}</h2>
+        <h2>
+          {trending
+            ? "Trending VIP Products"
+            : category === "all"
+            ? "All VIP Foods"
+            : category.charAt(0).toUpperCase() + category.slice(1)}
+        </h2>
       </section>
 
       <section className="products-toolbar">
@@ -162,7 +205,13 @@ export default function Products() {
       </section>
 
       <section className="product-grid">
-        {filteredProducts.length === 0 ? (
+        {loading && (
+          <div className="empty-state">
+            <h3>Loading Products...</h3>
+          </div>
+        )}
+
+        {!loading && filteredProducts.length === 0 ? (
           <div className="empty-state">
             <h3>No products found</h3>
             <p>Try a different category, search term, or filter.</p>
