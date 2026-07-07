@@ -20,7 +20,7 @@ import Wishlist from "./pages/Wishlist";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import OtpVerify from "./pages/OtpVerify";
+
 import NotFound from "./pages/NotFound";
 
 import { CartProvider } from "./context/CartContext";
@@ -87,7 +87,6 @@ function AppRoutes() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/otp-verify" element={<OtpVerify />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
 
