@@ -24,15 +24,18 @@ const app = express();
 
 const PORT = process.env.PORT || 5001;
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://vipfood.in",
+  "https://www.vipfood.in",
+  "https://admin.vipfood.in",
+  "https://vip203.netlify.app",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://vipfoods.netlify.app",
-      "https://vipfood.in",
-      "https://www.vipfood.in",
-      "http://localhost:5174",
-    ],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
