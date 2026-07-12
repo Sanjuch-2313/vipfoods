@@ -1,80 +1,272 @@
+/* =========================================================
+   PAGE WRAPPER — forces full viewport height so footer
+   never shows through a short/empty state
+========================================================= */
+
 .my-orders-page {
-  display: grid;
-  gap: 24px;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--bg-light, #fafaf8);
+  padding-top: 110px; /* clears fixed navbar */
+  padding-bottom: 60px;
+  box-sizing: border-box;
 }
 
-.orders-list {
-  display: grid;
-  gap: 18px;
+.my-orders-inner {
+  width: min(900px, 92%);
+  margin: 0 auto;
 }
 
-.order-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 18px;
+.my-orders-page h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--text-dark, #1a1a1a);
 }
 
-.order-items {
-  display: grid;
-  gap: 12px;
-  margin: 16px 0;
-}
 
-.order-item {
-  display: grid;
-  grid-template-columns: 72px 1fr auto;
-  gap: 14px;
-  align-items: center;
-}
+/* =========================================================
+   STATUS / EMPTY STATES
+========================================================= */
 
-.order-item img {
-  width: 72px;
-  height: 72px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.shipping-info {
-  border-top: 1px solid #e5e7eb;
-  padding-top: 14px;
+.orders-status-text {
+  color: #555;
+  font-size: 0.95rem;
 }
 
 .error-text {
-  color: #b91c1c;
+  color: #c1440e;
+  background: rgba(193, 68, 14, 0.08);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
 }
 
-.table-wrap {
-  overflow-x: auto;
+.orders-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  text-align: center;
+  color: #666;
+  font-size: 1rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 20px;
 }
 
-.table-wrap table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #ffffff;
+
+/* =========================================================
+   ORDERS LIST
+========================================================= */
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.table-wrap th,
-.table-wrap td {
-  border-bottom: 1px solid #e5e7eb;
-  padding: 12px;
-  text-align: left;
+.order-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+.order-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.order-card-header h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-dark, #1a1a1a);
+}
+
+.order-status-badge {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  background: #eee;
+  color: #555;
   white-space: nowrap;
 }
 
-.delete-btn {
-  background: #b91c1c;
-  color: #ffffff;
-  border-radius: 6px;
-  padding: 8px 12px;
+.status-pending { background: rgba(212, 160, 23, 0.15); color: #a3760f; }
+.status-processing { background: rgba(59, 130, 246, 0.12); color: #1d4ed8; }
+.status-shipped { background: rgba(139, 92, 246, 0.12); color: #6d28d9; }
+.status-delivered { background: rgba(76, 175, 80, 0.15); color: #2e7d32; }
+.status-cancelled { background: rgba(193, 68, 14, 0.12); color: #c1440e; }
+
+.order-meta-row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 0.88rem;
+  color: #444;
+  margin-bottom: 4px;
 }
 
-@media (max-width: 640px) {
-  .order-item {
-    grid-template-columns: 64px 1fr;
+.order-date {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 16px;
+}
+
+
+/* =========================================================
+   ORDER ITEMS
+========================================================= */
+
+.order-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.order-item img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: #f2f2f2;
+}
+
+.order-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.order-item-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-dark, #1a1a1a);
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.order-item-qty {
+  font-size: 0.8rem;
+  color: #777;
+  margin: 0;
+}
+
+.order-item-price {
+  font-size: 0.8rem;
+  color: #999;
+  margin: 0;
+}
+
+.order-item-subtotal {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-dark, #1a1a1a);
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   SHIPPING INFO
+========================================================= */
+
+.shipping-info h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-dark, #1a1a1a);
+}
+
+.shipping-info p {
+  font-size: 0.85rem;
+  color: #555;
+  margin: 2px 0;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+========================================================= */
+
+@media (max-width: 768px) {
+  .my-orders-page {
+    padding-top: 100px;
+    padding-bottom: 50px;
   }
 
-  .order-item > p {
-    grid-column: 1 / -1;
+  .my-orders-inner {
+    width: 94%;
+  }
+
+  .order-card {
+    padding: 18px;
+    border-radius: 16px;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+  .my-orders-page {
+    padding-top: 90px;
+    padding-bottom: 40px;
+  }
+
+  .my-orders-page h2 {
+    font-size: 1.3rem;
+    margin-bottom: 18px;
+  }
+
+  .order-card {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .order-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .order-meta-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .order-item img {
+    width: 46px;
+    height: 46px;
+  }
+
+  .order-item-name {
+    font-size: 0.85rem;
+  }
+
+  .shipping-info p {
+    font-size: 0.8rem;
   }
 }
