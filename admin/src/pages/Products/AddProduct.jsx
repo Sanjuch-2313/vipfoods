@@ -24,6 +24,10 @@ const initialFormData = {
   description: "",
   brand: "",
   category: "",
+  foodType: "",
+snackType: "",
+freshType: "",
+spiceType: "",
 
   featured: false,
   published: true,
@@ -306,6 +310,13 @@ const AddProduct = () => {
     appendTextField(payload, "brand", formData.brand.trim());
 
     appendTextField(payload, "category", formData.category);
+    appendTextField(payload, "foodType", formData.foodType);
+
+appendTextField(payload, "snackType", formData.snackType);
+
+appendTextField(payload, "freshType", formData.freshType);
+
+appendTextField(payload, "spiceType", formData.spiceType);
 
     appendTextField(payload, "featured", String(formData.featured));
 
@@ -654,40 +665,108 @@ const AddProduct = () => {
                 </div>
 
                 <div className="form-field">
-                  <label htmlFor="category">
-                    Category <span>*</span>
-                  </label>
+  <label htmlFor="category">
+    Category <span>*</span>
+  </label>
 
-                  <select
-                    id="category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    disabled={isLoadingCategories}
-                    className={errors.category ? "input-error" : ""}
-                  >
-                    <option value="">
-                      {isLoadingCategories
-                        ? "Loading categories..."
-                        : "Select a category"}
-                    </option>
+  <select
+    id="category"
+    name="category"
+    value={formData.category}
+    onChange={handleChange}
+    disabled={isLoadingCategories}
+    className={errors.category ? "input-error" : ""}
+  >
+    <option value="">
+      {isLoadingCategories
+        ? "Loading categories..."
+        : "Select a category"}
+    </option>
 
-                    {categories.map((category) => (
-                      <option
-                        key={category._id}
-                        value={category._id}
-                      >
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
+    {categories.map((category) => (
+      <option
+        key={category._id}
+        value={category._id}
+      >
+        {category.name}
+      </option>
+    ))}
+  </select>
 
-                  {errors.category && (
-                    <p className="field-error">
-                      {errors.category}
-                    </p>
-                  )}
-                </div>
+  {errors.category && (
+    <p className="field-error">
+      {errors.category}
+    </p>
+  )}
+</div>
+
+{/* PICKLES */}
+{selectedCategory?.slug === "pickles" && (
+  <div className="form-field">
+    <label>Food Type</label>
+
+    <select
+      name="foodType"
+      value={formData.foodType}
+      onChange={handleChange}
+    >
+      <option value="">Select Food Type</option>
+      <option value="veg">Veg</option>
+      <option value="non-veg">Non-Veg</option>
+    </select>
+  </div>
+)}
+
+{/* SNACKS */}
+{selectedCategory?.slug === "snacks" && (
+  <div className="form-field">
+    <label>Snack Type</label>
+
+    <select
+      name="snackType"
+      value={formData.snackType}
+      onChange={handleChange}
+    >
+      <option value="">Select Snack Type</option>
+      <option value="sweet">Sweet</option>
+      <option value="hot">Hot</option>
+    </select>
+  </div>
+)}
+
+{/* FRESH */}
+{selectedCategory?.slug === "fresh" && (
+  <div className="form-field">
+    <label>Fresh Type</label>
+
+    <select
+      name="freshType"
+      value={formData.freshType}
+      onChange={handleChange}
+    >
+      <option value="">Select Fresh Type</option>
+      <option value="fruits">Fruits</option>
+      <option value="vegetables">Vegetables</option>
+    </select>
+  </div>
+)}
+
+{/* SPICES */}
+{selectedCategory?.slug === "spices" && (
+  <div className="form-field">
+    <label>Spice Type</label>
+
+    <select
+      name="spiceType"
+      value={formData.spiceType}
+      onChange={handleChange}
+    >
+      <option value="">Select Spice Type</option>
+      <option value="grinded">Grinded</option>
+      <option value="normal">Normal</option>
+    </select>
+  </div>
+)}
               </div>
             </section>
 

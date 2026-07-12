@@ -7,6 +7,8 @@ export default function Orders() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // New filters
   const [month, setMonth] = useState("");
@@ -18,20 +20,36 @@ export default function Orders() {
   }, [search, statusFilter, page, month, year, date]);
 
   const fetchOrders = async () => {
-    const data = await getOrders({ search, status: statusFilter, page, month, year, date });
-    setOrders(data.orders);
+    try {
+      setLoading(true);
+      setError("");
+      const data = await getOrders({ search, status: statusFilter, page, month, year, date });
+      setOrders(data.orders || []);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || "Failed to load orders");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (id) => {
     if (window.confirm("Delete this order?")) {
-      await deleteOrder(id);
-      fetchOrders();
+      try {
+        await deleteOrder(id);
+        fetchOrders();
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || "Failed to delete order");
+      }
     }
   };
 
   const handleStatusUpdate = async (id, status) => {
-    await updateOrderStatus(id, status);
-    fetchOrders();
+    try {
+      await updateOrderStatus(id, status);
+      fetchOrders();
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || "Failed to update order");
+    }
   };
 
   return (
@@ -48,7 +66,8 @@ export default function Orders() {
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
           <option value="">All Statuses</option>
           <option value="Pending">Pending</option>
-          <option value="Processing">Processing</option>
+          <option value="Accepted">Accepted</option>
+          <option value="Packing">Packing</option>
           <option value="Shipped">Shipped</option>
           <option value="Delivered">Delivered</option>
           <option value="Cancelled">Cancelled</option>
@@ -75,6 +94,9 @@ export default function Orders() {
         />
       </div>
 
+      {loading && <p>Loading orders...</p>}
+      {error && <p className="orders-error">{error}</p>}
+
       <table className="orders-table">
         <thead>
           <tr>
@@ -89,15 +111,18 @@ export default function Orders() {
         <tbody>
           {orders.map((o) => (
             <tr key={o._id}>
-              <td>{o._id}</td>
-              <td>{o.customer?.name}</td>
-              <td>₹{o.totalAmount}</td>
+              <td>{o.orderNumber || o._id}</td>
+              <td>{o.customer?.name || "Customer"}</td>
+              <td>₹{o.grandTotal ?? 0}</td>
               <td>
-                <span className={`status-badge ${o.status.toLowerCase()}`}>{o.status}</span>
+                <span className={`status-badge ${(o.orderStatus || "Pending").toLowerCase()}`}>
+                  {o.orderStatus || "Pending"}
+                </span>
               </td>
               <td>{new Date(o.createdAt).toLocaleDateString()}</td>
               <td>
-                <button onClick={() => handleStatusUpdate(o._id, "Processing")}>Process</button>
+                <button onClick={() => handleStatusUpdate(o._id, "Accepted")}>Accept</button>
+                <button onClick={() => handleStatusUpdate(o._id, "Packing")}>Pack</button>
                 <button onClick={() => handleStatusUpdate(o._id, "Shipped")}>Ship</button>
                 <button onClick={() => handleStatusUpdate(o._id, "Delivered")}>Deliver</button>
                 <button className="delete-btn" onClick={() => handleDelete(o._id)}>Delete</button>
