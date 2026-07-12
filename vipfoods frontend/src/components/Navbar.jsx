@@ -8,7 +8,7 @@ import {
   FiTrendingUp,
   FiUser,
   FiLogOut,
-  FiClock,
+  FiPackage,
   FiSettings,
   FiBookmark,
 } from "react-icons/fi";
@@ -29,6 +29,7 @@ export default function Navbar() {
   const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownCloseTimer, setDropdownCloseTimer] = useState(null);
 
   // ✅ new state for trending count
   const [trendingCount, setTrendingCount] = useState(0);
@@ -68,6 +69,14 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (dropdownCloseTimer) {
+        clearTimeout(dropdownCloseTimer);
+      }
+    };
+  }, [dropdownCloseTimer]);
+
   /*
   ============================================
   CLOSE MOBILE MENU
@@ -76,6 +85,27 @@ export default function Navbar() {
   const closeMenu = () => {
     setMenuOpen(false);
     setDropdownOpen(false);
+  };
+
+  const openCategoryDropdown = () => {
+    if (dropdownCloseTimer) {
+      clearTimeout(dropdownCloseTimer);
+      setDropdownCloseTimer(null);
+    }
+    setDropdownOpen(true);
+  };
+
+  const closeCategoryDropdown = () => {
+    if (window.innerWidth <= 768) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setDropdownOpen(false);
+      setDropdownCloseTimer(null);
+    }, 180);
+
+    setDropdownCloseTimer(timer);
   };
 
   /*
@@ -138,8 +168,9 @@ export default function Navbar() {
           {/* Categories dropdown */}
           <div
             className="nav-dropdown"
-            onMouseEnter={() => { if (window.innerWidth > 768) setDropdownOpen(true); }}
-            onMouseLeave={() => { if (window.innerWidth > 768) setDropdownOpen(false); }}
+            onMouseEnter={() => { if (window.innerWidth > 768) openCategoryDropdown(); }}
+            onMouseLeave={closeCategoryDropdown}
+            onFocus={openCategoryDropdown}
           >
             <button
               type="button"
@@ -173,12 +204,10 @@ export default function Navbar() {
               {wishlistCount > 0 && <span className="mobile-menu-count">{wishlistCount}</span>}
             </Link>
 
-            {isLoggedIn && (
-              <Link to="/order-history" onClick={closeMenu} aria-label="Order History" title="Order History">
-                <FiClock />
-                <span>Order History</span>
-              </Link>
-            )}
+            <Link to={isLoggedIn ? "/my-orders" : "/login"} onClick={closeMenu} aria-label="My Orders" title="My Orders">
+              <FiPackage />
+              <span>My Orders</span>
+            </Link>
 
             {!isLoggedIn && (
               <Link to="/login" className="mobile-login-button" onClick={closeMenu} aria-label="Login" title="Login">
@@ -212,12 +241,11 @@ export default function Navbar() {
             {cartCount > 0 && <span className="icon-badge">{cartCount}</span>}
           </Link>
 
-          {/* Order History */}
-          {isLoggedIn && (
-            <Link to="/order-history" className="navbar-icon-btn history-icon-btn" aria-label="Order History" title="Order History">
-              <FiClock />
-            </Link>
-          )}
+          {/* My Orders */}
+          <Link to={isLoggedIn ? "/my-orders" : "/login"} className="navbar-icon-btn navbar-orders-btn" aria-label="My Orders" title="My Orders">
+            <FiPackage />
+            <span className="navbar-tooltip">My Orders</span>
+          </Link>
 
           {/* Profile / Login */}
           {isLoggedIn ? (

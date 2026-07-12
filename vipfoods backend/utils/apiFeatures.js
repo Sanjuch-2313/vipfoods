@@ -20,18 +20,12 @@ class APIFeatures {
   filter() {
     const filter = {};
 
-    if (this.queryString.category) {
-      filter.category = this.queryString.category;
-    }
-
     if (this.queryString.featured) {
-      filter.featured =
-        this.queryString.featured === "true";
+      filter.featured = this.queryString.featured === "true";
     }
 
     if (this.queryString.active) {
-      filter.active =
-        this.queryString.active === "true";
+      filter.active = this.queryString.active === "true";
     }
 
     if (this.queryString.badge) {
@@ -54,11 +48,8 @@ class APIFeatures {
   }
 
   paginate(resultPerPage = 12) {
-    const currentPage =
-      Number(this.queryString.page) || 1;
-
-    const skip =
-      resultPerPage * (currentPage - 1);
+    const currentPage = Number(this.queryString.page) || 1;
+    const skip = resultPerPage * (currentPage - 1);
 
     this.query = this.query.limit(resultPerPage).skip(skip);
 

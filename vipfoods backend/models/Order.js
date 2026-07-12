@@ -7,31 +7,24 @@ const orderItemSchema = new mongoose.Schema(
       ref: "Product",
       required: true,
     },
-
     productName: {
       type: String,
       required: true,
     },
-
     image: {
       type: String,
       default: "",
     },
-
     variant: {
       weight: String,
-
       sku: String,
-
       price: Number,
     },
-
     quantity: {
       type: Number,
       required: true,
       min: 1,
     },
-
     total: {
       type: Number,
       required: true,
@@ -42,24 +35,14 @@ const orderItemSchema = new mongoose.Schema(
 
 const shippingAddressSchema = new mongoose.Schema(
   {
-    fullName: String,
-
-    phone: String,
-
-    addressLine1: String,
-
-    addressLine2: String,
-
-    city: String,
-
-    state: String,
-
-    postalCode: String,
-
-    country: {
-      type: String,
-      default: "India",
-    },
+    fullName: { type: String, required: true },
+    phone: { type: String, required: true },
+    addressLine1: { type: String, required: true },
+    addressLine2: { type: String },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    postalCode: { type: String, required: true },
+    country: { type: String, default: "India" },
   },
   { _id: false }
 );
@@ -71,56 +54,36 @@ const orderSchema = new mongoose.Schema(
       unique: true,
       required: true,
     },
-
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
-    items: [orderItemSchema],
-
+    items: {
+      type: [orderItemSchema],
+      validate: v => Array.isArray(v) && v.length > 0,
+    },
     shippingAddress: shippingAddressSchema,
-
     paymentMethod: {
       type: String,
       enum: ["COD", "ONLINE"],
       default: "COD",
     },
-
     paymentStatus: {
       type: String,
-      enum: [
-        "Pending",
-        "Paid",
-        "Failed",
-        "Refunded",
-      ],
+      enum: ["Pending", "Paid", "Failed", "Refunded"],
       default: "Pending",
     },
-
     orderStatus: {
       type: String,
-      enum: [
-        "Pending",
-        "Accepted",
-        "Packing",
-        "Shipped",
-        "Delivered",
-        "Cancelled",
-      ],
+      enum: ["Pending", "Accepted", "Packing", "Shipped", "Delivered", "Cancelled"],
       default: "Pending",
     },
-
-    subtotal: Number,
-
-    deliveryCharge: Number,
-
-    discount: Number,
-
-    grandTotal: Number,
-
-    notes: String,
+    subtotal: { type: Number, required: true },
+    deliveryCharge: { type: Number, default: 0 },
+    discount: { type: Number, default: 0 },
+    grandTotal: { type: Number, required: true },
+    notes: { type: String },
   },
   {
     timestamps: true,
@@ -128,7 +91,4 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model(
-  "Order",
-  orderSchema
-);
+export default mongoose.model("Order", orderSchema);

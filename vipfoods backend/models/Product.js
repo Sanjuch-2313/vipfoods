@@ -103,6 +103,29 @@ const productSchema = new mongoose.Schema(
       ref: "Category",
       required: true,
     },
+    foodType: {
+  type: String,
+  enum: ["veg", "non-veg"],
+  default: null,
+},
+
+snackType: {
+  type: String,
+  enum: ["sweet", "hot"],
+  default: null,
+},
+
+freshType: {
+  type: String,
+  enum: ["fruits", "vegetables"],
+  default: null,
+},
+
+spiceType: {
+  type: String,
+  enum: ["grinded", "normal"],
+  default: null,
+},
 
     brand: {
       type: String,

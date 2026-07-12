@@ -20,6 +20,9 @@ import Wishlist from "./pages/Wishlist";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import OrderSuccess from "./pages/orderSuccess";
+import MyOrders from "./pages/MyOrders";
+import AdminOrders from "./pages/Orders";
 
 import NotFound from "./pages/NotFound";
 
@@ -83,6 +86,9 @@ function AppRoutes() {
         <Route path="/products/:productId" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-success/:orderNumber" element={<OrderSuccess />} />
+        <Route path="/my-orders" element={<MyOrders />} />
+        <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />

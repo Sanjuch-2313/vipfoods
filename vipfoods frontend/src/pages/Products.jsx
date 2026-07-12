@@ -28,42 +28,77 @@ export default function Products() {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
+ useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
 
-        const raw = await getProducts({
-          category: category !== "all" ? category : "",
-        });
+      // Fetch ALL products
+      const raw = await getProducts();
 
-        const formatted = raw.map((p) => ({
-          id: p._id,
-          name: p.name,
-          image: p.images?.[0] || "",
-          tag: p.category?.name || "",
-          category: p.category?.slug || "",
-          rating: p.averageRating || 4.5,
+      let products = raw;
 
-          price: p.variants?.[0]?.mrp || 0,
-          offerPrice: p.variants?.[0]?.sellingPrice || 0,
-
-          weights: Object.fromEntries(
-            (p.variants || []).map((v) => [`${v.weight}g`, v.sellingPrice])
-          ),
-        }));
-
-        setFilteredProducts(formatted);
-      } catch (err) {
-        console.error(err);
-        setFilteredProducts([]);
-      } finally {
-        setLoading(false);
+      // Category filter
+      if (category !== "all") {
+        products = products.filter(
+          (p) => p.category?.slug === category
+        );
       }
-    };
 
-    fetchProducts();
-  }, [category]);
+      // Search filter
+      if (search) {
+        products = products.filter((p) =>
+          p.name.toLowerCase().includes(search.toLowerCase())
+        );
+      }
+
+      // Sort
+      if (sortBy === "price-asc") {
+        products.sort(
+          (a, b) =>
+            (a.variants?.[0]?.sellingPrice || 0) -
+            (b.variants?.[0]?.sellingPrice || 0)
+        );
+      }
+
+      if (sortBy === "price-desc") {
+        products.sort(
+          (a, b) =>
+            (b.variants?.[0]?.sellingPrice || 0) -
+            (a.variants?.[0]?.sellingPrice || 0)
+        );
+      }
+
+      const formatted = products.map((p) => ({
+        id: p._id,
+        name: p.name,
+        image: p.images?.[0] || "",
+        tag: p.category?.name || "",
+        category: p.category?.slug || "",
+        rating: p.averageRating || 4.5,
+        price: p.variants?.[0]?.mrp || 0,
+        offerPrice: p.variants?.[0]?.sellingPrice || 0,
+        weights: Object.fromEntries(
+          (p.variants || []).map((v) => [
+            `${v.weight}g`,
+            v.sellingPrice,
+          ])
+        ),
+      }));
+
+      setFilteredProducts(formatted);
+    } catch (err) {
+      console.error(err);
+      setFilteredProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProducts();
+}, [category, search, sortBy]);
+
+
 
   const handleChange = (key, value) => {
     const next = new URLSearchParams(searchParams);

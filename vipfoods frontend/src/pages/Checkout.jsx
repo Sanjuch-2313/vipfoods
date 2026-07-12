@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { createOrder } from "../services/orderService";
 import api from "../services/api";
 import "./checkout.css";
 
@@ -10,7 +11,7 @@ export default function Checkout() {
   const { cartItems, clearCart } = useCart();
   const { user } = useAuth();
 
-  // Phase 1 – Customer Details (shipping address form)
+  // Phase 1 – Customer Details
   const [customer, setCustomer] = useState({
     name: "",
     phone: "",
@@ -29,19 +30,20 @@ export default function Checkout() {
     0
   );
 
-  // Phase 3 – Coupon System (disabled until backend endpoint exists)
+  // Phase 3 – Coupon System (structure only)
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
 
-  // Phase 4 – Delivery Charges
+  // Phase 4 – Delivery Charges & Tax
   const [deliveryCharge, setDeliveryCharge] = useState(0);
   const [taxRate, setTaxRate] = useState(0);
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await api.get("/settings");
-        const settings = res.data.settings || {};
+        const { data } = await api.get("/settings");
+        const settings = data.settings || data;
+
         setDeliveryCharge(
           subtotal >= (settings.freeShippingThreshold || 0)
             ? 0
@@ -58,22 +60,23 @@ export default function Checkout() {
   // Phase 5 – Payment
   const [paymentMethod, setPaymentMethod] = useState("COD");
 
+  // Loading & Error states
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   // Phase 6 – Place Order
   const placeOrder = async () => {
-    // ✅ 5. Check login
     if (!user) {
       alert("Please login before placing an order.");
       navigate("/login");
       return;
     }
 
-    // ✅ 7. Empty cart protection
     if (cartItems.length === 0) {
       navigate("/cart");
       return;
     }
 
-    // ✅ 6. Validate form
     if (
       !customer.name ||
       !customer.phone ||
@@ -87,11 +90,13 @@ export default function Checkout() {
     }
 
     try {
+      setLoading(true);
+      setError("");
+
       const grandTotal =
         subtotal - discount + deliveryCharge + (subtotal * taxRate) / 100;
 
-      // ✅ Items mapping
-      const items = cartItems.map(item => ({
+      const items = cartItems.map((item) => ({
         product: item.id,
         productName: item.name,
         image: item.image,
@@ -104,7 +109,6 @@ export default function Checkout() {
         total: (item.offerPrice || item.price) * item.quantity,
       }));
 
-      // ✅ Shipping address mapping
       const shippingAddress = {
         fullName: customer.name,
         phone: customer.phone,
@@ -116,25 +120,25 @@ export default function Checkout() {
         country: customer.country,
       };
 
-      // ✅ Order payload
       const orderPayload = {
-        customer: user._id, // ObjectId only
+        customer: user.id || user._id,
         items,
         shippingAddress,
-        paymentMethod, // "COD" or "ONLINE"
+        paymentMethod,
         subtotal,
         discount,
         deliveryCharge,
         grandTotal,
       };
 
-      const res = await api.post("/orders", orderPayload);
+      const res = await createOrder(orderPayload);
       clearCart();
-      // ✅ 3. Success page navigation
-      navigate(`/order-success/${res.data.order.orderNumber}`);
+      navigate(`/order-success/${res.order.orderNumber}`);
     } catch (err) {
       console.error(err);
-      alert("Failed to place order");
+      setError(err.message || "Failed to place order");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -164,12 +168,16 @@ export default function Checkout() {
           <input
             placeholder="Address Line 1"
             value={customer.address1}
-            onChange={(e) => setCustomer({ ...customer, address1: e.target.value })}
+            onChange={(e) =>
+              setCustomer({ ...customer, address1: e.target.value })
+            }
           />
           <input
             placeholder="Address Line 2"
             value={customer.address2}
-            onChange={(e) => setCustomer({ ...customer, address2: e.target.value })}
+            onChange={(e) =>
+              setCustomer({ ...customer, address2: e.target.value })
+            }
           />
           <input
             placeholder="City"
@@ -184,12 +192,16 @@ export default function Checkout() {
           <input
             placeholder="Postal Code"
             value={customer.pincode}
-            onChange={(e) => setCustomer({ ...customer, pincode: e.target.value })}
+            onChange={(e) =>
+              setCustomer({ ...customer, pincode: e.target.value })
+            }
           />
           <input
             placeholder="Country"
             value={customer.country}
-            onChange={(e) => setCustomer({ ...customer, country: e.target.value })}
+            onChange={(e) =>
+              setCustomer({ ...customer, country: e.target.value })
+            }
           />
         </form>
       </section>
@@ -214,7 +226,7 @@ export default function Checkout() {
         <p>Total: ₹{subtotal}</p>
       </section>
 
-      {/* Phase 3 – Coupon System (disabled for now) */}
+      {/* Phase 3 – Coupon System */}
       <section className="checkout-section">
         <h3>Coupon</h3>
         <input
@@ -222,11 +234,15 @@ export default function Checkout() {
           value={couponCode}
           onChange={(e) => setCouponCode(e.target.value)}
         />
-        <button type="button" disabled>Apply (coming soon)</button>
+        <button type="button" disabled>
+          Apply (coming soon)
+        </button>
         {discount > 0 && (
           <div>
             <p>Discount: -₹{discount}</p>
-            <button type="button" onClick={() => setDiscount(0)}>Remove Coupon</button>
+            <button type="button" onClick={() => setDiscount(0)}>
+              Remove Coupon
+            </button>
           </div>
         )}
       </section>
@@ -257,16 +273,22 @@ export default function Checkout() {
             checked={paymentMethod === "ONLINE"}
             onChange={(e) => setPaymentMethod(e.target.value)}
           />
-          Online Payment (Razorpay)
+          Online Payment (Razorpay-ready)
         </label>
       </section>
 
       {/* Phase 6 – Place Order */}
       <section className="checkout-section">
         <h3>Place Order</h3>
-        <button type="button" className="cta-btn full" onClick={placeOrder}>
-          Place Order
+        <button
+          type="button"
+          className="cta-btn full"
+          onClick={placeOrder}
+          disabled={loading}
+        >
+          {loading ? "Placing Order..." : "Place Order"}
         </button>
+        {error && <p className="error-text">{error}</p>}
       </section>
     </main>
   );

@@ -1,0 +1,80 @@
+.my-orders-page {
+  display: grid;
+  gap: 24px;
+}
+
+.orders-list {
+  display: grid;
+  gap: 18px;
+}
+
+.order-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.order-items {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.order-item {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.order-item img {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.shipping-info {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 14px;
+}
+
+.error-text {
+  color: #b91c1c;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+.table-wrap th,
+.table-wrap td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.delete-btn {
+  background: #b91c1c;
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+@media (max-width: 640px) {
+  .order-item {
+    grid-template-columns: 64px 1fr;
+  }
+
+  .order-item > p {
+    grid-column: 1 / -1;
+  }
+}

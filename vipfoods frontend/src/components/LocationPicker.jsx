@@ -13,7 +13,7 @@ async function fetchAddressFromCoords(lat, lon) {
   return data.display_name || `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
 }
 
-export default function LocationPicker() {
+export default function LocationPicker({ onLocationChange }) {
   const {
     location,
     setLocation,
@@ -26,18 +26,60 @@ export default function LocationPicker() {
   const [manualValue, setManualValue] = useState("");
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const wrapperRef = useRef(null);
   const panelRef = useRef(null);
+  const [panelPosition, setPanelPosition] = useState({
+    top: 88,
+    left: 16,
+  });
+
+  const updatePanelPosition = () => {
+    const rect = wrapperRef.current?.getBoundingClientRect();
+
+    if (!rect) {
+      return;
+    }
+
+    const panelWidth = Math.min(340, window.innerWidth - 24);
+    const left = Math.min(
+      Math.max(12, rect.left),
+      window.innerWidth - panelWidth - 12
+    );
+
+    setPanelPosition({
+      top: rect.bottom + 12,
+      left,
+    });
+  };
 
   useEffect(() => {
     if (required) return;
     function handleClickOutside(e) {
-      if (panelRef.current && !panelRef.current.contains(e.target)) {
+      const clickedTrigger = wrapperRef.current?.contains(e.target);
+      const clickedPanel = panelRef.current?.contains(e.target);
+
+      if (!clickedTrigger && !clickedPanel) {
         closePicker();
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [required, closePicker]);
+
+  useEffect(() => {
+    if (!isPickerOpen || required) {
+      return undefined;
+    }
+
+    updatePanelPosition();
+    window.addEventListener("resize", updatePanelPosition);
+    window.addEventListener("scroll", updatePanelPosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updatePanelPosition);
+      window.removeEventListener("scroll", updatePanelPosition, true);
+    };
+  }, [isPickerOpen, required]);
 
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -53,12 +95,21 @@ export default function LocationPicker() {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const address = await fetchAddressFromCoords(latitude, longitude);
-          setLocation(address, { lat: latitude, lon: longitude });
+          let address = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+
+          try {
+            address = await fetchAddressFromCoords(latitude, longitude);
+          } catch {
+            setErrorMsg("");
+          }
+
+          const coords = { lat: latitude, lon: longitude };
+          setLocation(address, coords);
+          onLocationChange?.(address, coords);
           setStatus("idle");
         } catch {
           setStatus("error");
-          setErrorMsg("Found your position but couldn't fetch the address.");
+          setErrorMsg("Couldn't save your location. Please try again.");
         }
       },
       () => {
@@ -85,8 +136,17 @@ export default function LocationPicker() {
       className={
         required
           ? "w-[92%] max-w-[380px] rounded-3xl p-6 sm:p-7 backdrop-blur-2xl bg-white/90 border border-white/70 shadow-[0_30px_80px_rgba(154,52,18,0.35)]"
-          : "absolute z-30 mt-3 w-[300px] sm:w-[340px] rounded-3xl p-5 sm:p-6 backdrop-blur-2xl bg-white/80 border border-white/70 shadow-[0_20px_60px_rgba(154,52,18,0.25)]"
+          : "fixed z-[5000] w-[min(340px,calc(100vw-24px))] rounded-3xl p-5 sm:p-6 backdrop-blur-2xl bg-white/95 border border-white/70 shadow-[0_20px_60px_rgba(154,52,18,0.25)]"
       }
+      style={
+        required
+          ? undefined
+          : {
+              top: `${panelPosition.top}px`,
+              left: `${panelPosition.left}px`,
+            }
+      }
+      ref={required ? undefined : panelRef}
     >
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-stone-900 font-bold text-base">
@@ -154,11 +214,15 @@ export default function LocationPicker() {
   );
 
   return (
-    <div className="relative" ref={required ? undefined : panelRef}>
+    <div className="relative" ref={wrapperRef}>
       <motion.button
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
-        onClick={() => openPicker()}
+        type="button"
+        onClick={() => {
+          updatePanelPosition();
+          openPicker();
+        }}
         className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/60 backdrop-blur-xl border border-white/70 shadow text-stone-800 font-medium text-sm sm:text-base max-w-[220px] sm:max-w-xs"
       >
         <FiMapPin className="text-red-600 shrink-0" size={18} />
@@ -166,7 +230,7 @@ export default function LocationPicker() {
       </motion.button>
 
       <AnimatePresence>
-        {isPickerOpen && !required && <div ref={panelRef}>{panelContent}</div>}
+        {isPickerOpen && !required && panelContent}
       </AnimatePresence>
 
       <AnimatePresence>
