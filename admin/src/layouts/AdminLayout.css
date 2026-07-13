@@ -1,0 +1,251 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  background: #14213d;
+  color: #fff;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 1000;
+  overflow-y: auto;
+  transition: transform .3s ease, width .3s ease;
+  box-shadow: 2px 0 12px rgba(0,0,0,.25);
+}
+
+/* Scrollbar */
+.sidebar::-webkit-scrollbar{
+  width:6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+  background:#42557c;
+  border-radius:20px;
+}
+
+/* Top */
+
+.sidebar-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:8px 12px 24px;
+}
+
+.logo{
+  color:#fff;
+  font-size:1.5rem;
+  font-weight:800;
+  margin:0;
+  letter-spacing:.5px;
+  white-space:nowrap;
+}
+
+.sidebar-close-btn{
+  display:none;
+  background:none;
+  border:none;
+  color:#fff;
+  cursor:pointer;
+  padding:6px;
+  font-size:1.4rem;
+  transition:.25s;
+}
+
+.sidebar-close-btn:hover{
+  color:#4ade80;
+}
+
+/* Menu */
+
+.menu{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 16px;
+  border-radius:10px;
+  color:rgba(255,255,255,.75);
+  text-decoration:none;
+  font-size:.95rem;
+  font-weight:500;
+  transition:.25s;
+}
+
+.menu svg{
+  flex-shrink:0;
+  font-size:20px;
+}
+
+.menu:hover{
+  background:rgba(255,255,255,.08);
+  color:#fff;
+}
+
+.menu.active{
+  background:rgba(74,222,128,.15);
+  color:#4ade80;
+  font-weight:600;
+}
+
+/* ==========================
+   Tablet
+========================== */
+
+@media (max-width:1024px){
+
+  .sidebar{
+    width:220px;
+    padding:18px 12px;
+  }
+
+  .logo{
+    font-size:1.3rem;
+  }
+
+  .menu{
+    padding:11px 14px;
+    font-size:.9rem;
+  }
+
+  .menu svg{
+    font-size:18px;
+  }
+}
+
+/* ==========================
+   Mobile Drawer
+========================== */
+
+@media (max-width:900px){
+
+  .sidebar{
+    width:260px;
+    max-width:80%;
+    transform:translateX(-100%);
+    box-shadow:8px 0 30px rgba(0,0,0,.3);
+  }
+
+  .sidebar.sidebar-open{
+    transform:translateX(0);
+  }
+
+  .sidebar-close-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+}
+
+/* ==========================
+   Small Phones
+========================== */
+
+@media (max-width:600px){
+
+  .sidebar{
+    width:235px;
+    padding:16px 10px;
+  }
+
+  .sidebar-top{
+    padding:6px 10px 18px;
+  }
+
+  .logo{
+    font-size:1.15rem;
+  }
+
+  .menu{
+    padding:10px 12px;
+    font-size:.88rem;
+    gap:10px;
+  }
+
+  .menu svg{
+    font-size:17px;
+  }
+}
+
+/* ==========================
+   Very Small Phones
+========================== */
+
+@media (max-width:400px){
+
+  .sidebar{
+    width:220px;
+  }
+
+  .logo{
+    font-size:1rem;
+  }
+
+  .menu{
+    padding:9px 10px;
+    font-size:.82rem;
+  }
+
+  .menu svg{
+    font-size:16px;
+  }
+}
+
+/* ==========================
+   Overlay
+========================== */
+
+.sidebar-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  z-index:999;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s ease;
+}
+
+.sidebar-overlay.active{
+  opacity:1;
+  pointer-events:auto;
+}
+.mobile-menu-btn{
+    display:none;
+}
+
+@media (max-width:900px){
+
+    .mobile-menu-btn{
+        position:fixed;
+        top:15px;
+        left:15px;
+        width:45px;
+        height:45px;
+
+        display:flex;
+        align-items:center;
+        justify-content:center;
+
+        border:none;
+        border-radius:10px;
+
+        background:#14213d;
+        color:#fff;
+
+        z-index:1200;
+        cursor:pointer;
+
+        box-shadow:0 6px 18px rgba(0,0,0,.2);
+    }
+
+    .admin-main{
+        width:100%;
+        margin-left:0;
+    }
+
+    .admin-content{
+        padding-top:70px;
+    }
+}

@@ -1,73 +1,148 @@
-.category-page{
-display:grid;
-grid-template-columns:350px 1fr;
-gap:30px;
+.category-page {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 30px;
 }
 
-.category-form{
-background:white;
-padding:25px;
-border-radius:18px;
-box-shadow:0 5px 15px rgba(0,0,0,.08);
+/* Form card */
+.category-form {
+  background: #fff;
+  padding: 25px;
+  border-radius: 18px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.08);
 }
-
-.category-form form{
-display:flex;
-flex-direction:column;
-gap:15px;
-margin-top:20px;
+.category-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
 }
-
 .category-form input,
-.category-form textarea{
-padding:12px;
-border:1px solid #ddd;
-border-radius:10px;
+.category-form textarea {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 0.95rem;
 }
 
-.save-btn{
-background:#1d3557;
-color:white;
-border:none;
-padding:14px;
-border-radius:10px;
-cursor:pointer;
-display:flex;
-align-items:center;
-justify-content:center;
-gap:10px;
+/* Save button */
+.save-btn {
+  background: #1d3557;
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+.save-btn:hover {
+  background: #0f223d;
 }
 
-.category-table{
-background:white;
-padding:20px;
-border-radius:18px;
-box-shadow:0 5px 15px rgba(0,0,0,.08);
-overflow:auto;
+/* Table card */
+.category-table {
+  background: #fff;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.08);
+  overflow-x: auto; /* allow horizontal scroll on small screens */
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; /* ensures columns don’t squish too much */
+}
+th, td {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+img {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  object-fit: cover;
 }
 
-table{
-width:100%;
-border-collapse:collapse;
+/* Delete button */
+.delete-btn {
+  background: #ffe5e5;
+  color: red;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+.delete-btn:hover {
+  background: #ffcccc;
 }
 
-th,td{
-padding:15px;
-border-bottom:1px solid #eee;
+/* =========================================================
+   MOBILE RESPONSIVE
+========================================================= */
+@media (max-width: 768px) {
+  .category-page {
+    grid-template-columns: 1fr; /* stack form and table */
+    gap: 20px;
+  }
+
+  .category-form,
+  .category-table {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .category-form input,
+  .category-form textarea {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+
+  .save-btn {
+    width: 100%; /* full width button */
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  table {
+    min-width: 500px; /* still scrollable but less cramped */
+  }
+
+  th, td {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+
+  img {
+    width: 48px;
+    height: 48px;
+  }
 }
 
-img{
-width:60px;
-height:60px;
-border-radius:10px;
-object-fit:cover;
-}
+@media (max-width: 480px) {
+  .category-form,
+  .category-table {
+    padding: 12px;
+  }
 
-.delete-btn{
-background:#ffe5e5;
-color:red;
-border:none;
-padding:10px;
-border-radius:8px;
-cursor:pointer;
+  .save-btn {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+
+  table {
+    min-width: 420px;
+  }
+
+  th, td {
+    padding: 10px;
+    font-size: 0.8rem;
+  }
 }

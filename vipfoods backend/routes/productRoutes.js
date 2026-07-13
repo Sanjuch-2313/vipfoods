@@ -1,5 +1,6 @@
 import express from "express";
 import upload from "../middleware/uploadMiddleware.js";
+import { adminAuth } from "../middleware/adminAuth.js";
 
 
 import {
@@ -12,6 +13,7 @@ import {
   updateVariantStock,
   getLowStockProducts,
 } from "../controllers/productController.js";
+
 
 const router = express.Router();
 

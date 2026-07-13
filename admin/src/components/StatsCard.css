@@ -1,30 +1,83 @@
 .stats-card{
-background:white;
-padding:22px;
-border-radius:18px;
-display:flex;
-align-items:center;
-gap:20px;
-box-shadow:0 5px 15px rgba(0,0,0,.08);
+  background: white;
+  padding: 22px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.08);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .stats-icon{
-width:60px;
-height:60px;
-border-radius:15px;
-display:flex;
-align-items:center;
-justify-content:center;
-color:white;
-font-size:28px;
+  width: 60px;
+  height: 60px;
+  min-width: 60px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 28px;
 }
 
 .stats-card h4{
-font-size:14px;
-color:#666;
-margin-bottom:8px;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
 }
 
 .stats-card h2{
-font-size:28px;
+  font-size: 28px;
+  margin: 0;
+}
+
+/* Tablet */
+@media (max-width: 768px){
+  .stats-card{
+    padding: 18px;
+    gap: 15px;
+  }
+
+  .stats-icon{
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    font-size: 22px;
+  }
+
+  .stats-card h4{
+    font-size: 13px;
+  }
+
+  .stats-card h2{
+    font-size: 22px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px){
+  .stats-card{
+    padding: 15px;
+    gap: 12px;
+    border-radius: 14px;
+  }
+
+  .stats-icon{
+    width: 45px;
+    height: 45px;
+    min-width: 45px;
+    font-size: 20px;
+    border-radius: 12px;
+  }
+
+  .stats-card h4{
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .stats-card h2{
+    font-size: 18px;
+  }
 }

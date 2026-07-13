@@ -10,10 +10,11 @@ export default function Orders() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // New filters
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
   const [date, setDate] = useState("");
+
+  const [expandedOrderId, setExpandedOrderId] = useState(null);
 
   useEffect(() => {
     fetchOrders();
@@ -52,6 +53,23 @@ export default function Orders() {
     }
   };
 
+  const toggleExpand = (id) => {
+    setExpandedOrderId((current) => (current === id ? null : id));
+  };
+
+  const paymentBadgeClass = (status) => {
+    switch (status) {
+      case "Paid":
+        return "payment-badge paid";
+      case "Failed":
+        return "payment-badge failed";
+      case "Refunded":
+        return "payment-badge refunded";
+      default:
+        return "payment-badge pending";
+    }
+  };
+
   return (
     <div className="orders-page">
       <h2>Orders</h2>
@@ -73,7 +91,6 @@ export default function Orders() {
           <option value="Cancelled">Cancelled</option>
         </select>
 
-        {/* New Date Filters */}
         <select value={month} onChange={(e) => setMonth(e.target.value)}>
           <option value="">All Months</option>
           {["January","February","March","April","May","June","July","August","September","October","November","December"]
@@ -103,31 +120,96 @@ export default function Orders() {
             <th>ID</th>
             <th>Customer</th>
             <th>Total</th>
-            <th>Status</th>
+            <th>Order Status</th>
+            <th>Payment</th>
             <th>Date</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {orders.map((o) => (
-            <tr key={o._id}>
-              <td>{o.orderNumber || o._id}</td>
-              <td>{o.customer?.name || "Customer"}</td>
-              <td>₹{o.grandTotal ?? 0}</td>
-              <td>
-                <span className={`status-badge ${(o.orderStatus || "Pending").toLowerCase()}`}>
-                  {o.orderStatus || "Pending"}
-                </span>
-              </td>
-              <td>{new Date(o.createdAt).toLocaleDateString()}</td>
-              <td>
-                <button onClick={() => handleStatusUpdate(o._id, "Accepted")}>Accept</button>
-                <button onClick={() => handleStatusUpdate(o._id, "Packing")}>Pack</button>
-                <button onClick={() => handleStatusUpdate(o._id, "Shipped")}>Ship</button>
-                <button onClick={() => handleStatusUpdate(o._id, "Delivered")}>Deliver</button>
-                <button className="delete-btn" onClick={() => handleDelete(o._id)}>Delete</button>
-              </td>
-            </tr>
+            <>
+              <tr
+                key={o._id}
+                className="order-row"
+                onClick={() => toggleExpand(o._id)}
+              >
+                <td>{o.orderNumber || o._id}</td>
+                <td>
+                  <div className="customer-cell">
+                    <strong>{o.customer?.name || "Customer"}</strong>
+                    {o.customer?.email && <span>{o.customer.email}</span>}
+                  </div>
+                </td>
+                <td>₹{o.grandTotal ?? 0}</td>
+                <td>
+                  <span className={`status-badge ${(o.orderStatus || "Pending").toLowerCase()}`}>
+                    {o.orderStatus || "Pending"}
+                  </span>
+                </td>
+                <td>
+                  <span className={paymentBadgeClass(o.paymentStatus)}>
+                    {o.paymentStatus || "Pending"}
+                  </span>
+                  <span className="payment-method-tag">{o.paymentMethod}</span>
+                </td>
+                <td>{new Date(o.createdAt).toLocaleDateString()}</td>
+                <td onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => handleStatusUpdate(o._id, "Accepted")}>Accept</button>
+                  <button onClick={() => handleStatusUpdate(o._id, "Packing")}>Pack</button>
+                  <button onClick={() => handleStatusUpdate(o._id, "Shipped")}>Ship</button>
+                  <button onClick={() => handleStatusUpdate(o._id, "Delivered")}>Deliver</button>
+                  <button className="delete-btn" onClick={() => handleDelete(o._id)}>Delete</button>
+                </td>
+              </tr>
+
+              {expandedOrderId === o._id && (
+                <tr className="order-expand-row" key={`${o._id}-expand`}>
+                  <td colSpan={7}>
+                    <div className="order-expand-content">
+                      <div className="order-expand-items">
+                        <h4>Items Ordered</h4>
+                        {(o.items || []).map((item, idx) => (
+                          <div className="order-expand-item" key={idx}>
+                            {item.image && (
+                              <img src={item.image} alt={item.productName} />
+                            )}
+                            <div className="order-expand-item-info">
+                              <strong>{item.productName}</strong>
+                              <span>
+                                {item.variant?.weight && `${item.variant.weight} · `}
+                                Qty: {item.quantity}
+                              </span>
+                            </div>
+                            <span className="order-expand-item-total">
+                              ₹{item.total}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="order-expand-shipping">
+                        <h4>Shipping Address</h4>
+                        {o.shippingAddress ? (
+                          <>
+                            <p>{o.shippingAddress.fullName} · {o.shippingAddress.phone}</p>
+                            <p>
+                              {o.shippingAddress.addressLine1}
+                              {o.shippingAddress.addressLine2 ? `, ${o.shippingAddress.addressLine2}` : ""}
+                            </p>
+                            <p>
+                              {o.shippingAddress.city}, {o.shippingAddress.state} {o.shippingAddress.postalCode}
+                            </p>
+                          </>
+                        ) : (
+                          <p>No address on file</p>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </>
           ))}
         </tbody>
       </table>

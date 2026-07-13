@@ -16,7 +16,8 @@ import couponRoutes from "./routes/couponRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
-
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import adminAuthRoutes from "./routes/adminAuthRoutes.js";
 
 
 
@@ -58,6 +59,8 @@ app.use("/api/coupons", couponRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/admin/auth", adminAuthRoutes);
 
 app.use(errorMiddleware);
 

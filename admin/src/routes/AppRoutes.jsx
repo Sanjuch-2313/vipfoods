@@ -24,18 +24,20 @@ import NotFound from "../pages/NotFound";
 
 import AdminLayout from "../layouts/AdminLayout";
 import CouponForm from "../pages/Coupons/CouponForm.jsx";
-
-
-
-
-
+import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
 
-      <Route element={<AdminLayout />}>
+      <Route
+        element={
+          <ProtectedRoute>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/" element={<Dashboard />} />
 
         {/* Products */}
@@ -54,6 +56,7 @@ export default function AppRoutes() {
 
         {/* Coupons */}
         <Route path="/coupons" element={<Coupons />} />
+        <Route path="/coupons/new" element={<CouponForm />} />
 
         {/* Reviews */}
         <Route path="/reviews" element={<Reviews />} />
@@ -63,8 +66,6 @@ export default function AppRoutes() {
       </Route>
 
       <Route path="*" element={<NotFound />} />
-      <Route path="/coupons/new" element={<CouponForm />} />
-      <Route path="/settings" element={<Settings />} />
     </Routes>
   );
 }

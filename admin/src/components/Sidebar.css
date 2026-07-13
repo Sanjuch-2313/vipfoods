@@ -1,0 +1,182 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  background: #14213d;
+  color: #fff;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 1000;
+  overflow-y: auto;
+  transition: transform 0.3s ease, width 0.3s ease;
+}
+
+/* Top */
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px 22px;
+}
+
+.logo {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.sidebar-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 6px;
+  font-size: 22px;
+}
+
+/* Menu */
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  color: rgba(255,255,255,.75);
+  text-decoration: none;
+  font-size: .95rem;
+  font-weight: 500;
+  transition: .25s;
+}
+
+.menu:hover {
+  background: rgba(255,255,255,.08);
+  color: #fff;
+}
+
+.menu.active {
+  background: rgba(74,222,128,.15);
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.menu svg{
+  flex-shrink: 0;
+  font-size: 20px;
+}
+
+/* Scrollbar */
+.sidebar::-webkit-scrollbar{
+  width:6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+  background:#3b4b6b;
+  border-radius:20px;
+}
+
+/* ==========================
+   Tablet
+========================== */
+
+@media (max-width:1024px){
+
+  .sidebar{
+    width:220px;
+    padding:18px 12px;
+  }
+
+  .logo{
+    font-size:1.25rem;
+  }
+
+  .menu{
+    padding:11px 12px;
+    font-size:.9rem;
+    gap:10px;
+  }
+
+  .menu svg{
+    font-size:18px;
+  }
+}
+
+/* ==========================
+   Mobile
+========================== */
+
+@media (max-width:900px){
+
+  .sidebar{
+    width:260px;
+    max-width:80%;
+    transform:translateX(-100%);
+    box-shadow:8px 0 25px rgba(0,0,0,.35);
+  }
+
+  .sidebar.sidebar-open{
+    transform:translateX(0);
+  }
+
+  .sidebar-close-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+}
+
+/* Small Phones */
+
+@media (max-width:600px){
+
+  .sidebar{
+    width:240px;
+    padding:16px 10px;
+  }
+
+  .sidebar-top{
+    padding-bottom:18px;
+  }
+
+  .logo{
+    font-size:1.15rem;
+  }
+
+  .menu{
+    padding:10px 12px;
+    font-size:.88rem;
+    gap:10px;
+  }
+
+  .menu svg{
+    font-size:17px;
+  }
+}
+
+/* Very Small Phones */
+
+@media (max-width:400px){
+
+  .sidebar{
+    width:220px;
+  }
+
+  .logo{
+    font-size:1rem;
+  }
+
+  .menu{
+    font-size:.84rem;
+    padding:9px 10px;
+  }
+
+  .menu svg{
+    font-size:16px;
+  }
+}

@@ -1,15 +1,12 @@
-import "./Loader.css";
-
-export default function Loader({ message = "Loading..." }) {
+export default function Loader({ label = "Loading..." }) {
   return (
-    <div className="loader-shell" aria-live="polite">
-      <div className="loader-ring">
-        <span />
-        <span />
-        <span />
-        <span />
+    <div className="vip-loader">
+      <div className="vip-loader-jar">
+        <span className="vip-loader-jar-body">🫙</span>
+        <span className="vip-loader-leaf">🌿</span>
+        <span className="vip-loader-spice">🌶️</span>
       </div>
-      <p>{message}</p>
+      <p className="vip-loader-text">{label}</p>
     </div>
   );
 }

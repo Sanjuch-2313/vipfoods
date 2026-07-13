@@ -1,0 +1,316 @@
+/* ==========================
+   TOPBAR
+========================== */
+
+.topbar{
+    position:sticky;
+    top:0;
+    z-index:900;
+
+    height:72px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 28px;
+
+    background:#ffffff;
+
+    border-bottom:1px solid #ececec;
+
+    box-shadow:0 2px 10px rgba(0,0,0,.04);
+}
+
+/* ==========================
+   MENU BUTTON
+========================== */
+
+.topbar-menu-btn{
+
+    display:none;
+
+    width:44px;
+    height:44px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#14213d;
+
+    color:white;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    align-items:center;
+    justify-content:center;
+
+}
+
+.topbar-menu-btn:hover{
+
+    background:#1d3557;
+
+}
+
+/* ==========================
+   SEARCH
+========================== */
+
+.search-box{
+
+    flex:1;
+
+    max-width:500px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:12px 18px;
+
+    margin:0 25px;
+
+    border-radius:50px;
+
+    background:#f5f6f8;
+
+    border:1px solid transparent;
+
+    transition:.25s;
+
+}
+
+.search-box:hover{
+
+    background:#f0f2f5;
+
+}
+
+.search-box:focus-within{
+
+    border-color:#14213d;
+
+    background:white;
+
+}
+
+.search-box svg{
+
+    color:#7a7a7a;
+
+    flex-shrink:0;
+
+}
+
+.search-box input{
+
+    flex:1;
+
+    border:none;
+
+    background:none;
+
+    outline:none;
+
+    font-size:15px;
+
+    color:#222;
+
+}
+
+.search-box input::placeholder{
+
+    color:#999;
+
+}
+
+/* ==========================
+   RIGHT SIDE
+========================== */
+
+.top-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+}
+
+.top-right svg{
+
+    width:22px;
+    height:22px;
+
+    color:#666;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.top-right svg:hover{
+
+    color:#14213d;
+
+    transform:scale(1.08);
+
+}
+
+.top-right img{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+    border:2px solid #f2f2f2;
+
+}
+
+/* ==========================
+   TABLET
+========================== */
+
+@media(max-width:992px){
+
+.topbar{
+
+    padding:0 18px;
+
+}
+
+.search-box{
+
+    max-width:320px;
+
+}
+
+}
+
+/* ==========================
+   MOBILE
+========================== */
+
+@media(max-width:768px){
+
+.topbar{
+
+    height:65px;
+
+    padding:0 14px;
+
+    gap:10px;
+
+}
+
+.topbar-menu-btn{
+
+    display:flex;
+
+}
+
+.search-box{
+
+    flex:1;
+
+    margin:0;
+
+    max-width:none;
+
+    padding:10px 14px;
+
+}
+
+.search-box input{
+
+    font-size:14px;
+
+}
+
+.top-right{
+
+    gap:12px;
+
+}
+
+.top-right svg{
+
+    width:20px;
+    height:20px;
+
+}
+
+.top-right img{
+
+    width:36px;
+
+    height:36px;
+
+}
+
+}
+
+/* ==========================
+   SMALL MOBILE
+========================== */
+
+@media(max-width:480px){
+
+.topbar{
+
+    padding:0 10px;
+
+}
+
+.search-box{
+
+    padding:8px 12px;
+
+}
+
+.search-box input{
+
+    font-size:13px;
+
+}
+
+.search-box input::placeholder{
+
+    font-size:13px;
+
+}
+
+.top-right{
+
+    gap:8px;
+
+}
+
+.top-right svg{
+
+    width:18px;
+    height:18px;
+
+}
+
+.top-right img{
+
+    width:32px;
+
+    height:32px;
+
+}
+
+}

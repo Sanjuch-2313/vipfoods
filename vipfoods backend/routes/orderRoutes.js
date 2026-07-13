@@ -8,6 +8,7 @@ import {
   deleteOrder,
 } from "../controllers/orderController.js";
 import { protect } from "../middleware/authMiddleware.js";
+import { adminAuth } from "../middleware/adminAuth.js";
 
 const router = express.Router();
 
@@ -29,5 +30,8 @@ router.put("/:id/status", updateOrderStatus);
 
 // ✅ Admin: Delete order
 router.delete("/:id", deleteOrder);
+router.get("/", adminAuth, getAllOrders);
+router.put("/:id/status", adminAuth, updateOrderStatus);
+router.delete("/:id", adminAuth, deleteOrder);
 
 export default router;
