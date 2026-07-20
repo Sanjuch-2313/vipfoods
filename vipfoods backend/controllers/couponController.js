@@ -28,9 +28,7 @@ export const getCoupons = async (req, res) => {
 // ✅ Get active coupons (For Home Banner Dropdown)
 export const getActiveCoupons = async (req, res) => {
   try {
-    const coupons = await Coupon.find({
-      active: true,
-    }).sort({
+    const coupons = await Coupon.find().sort({
       createdAt: -1,
     });
 
