@@ -173,7 +173,7 @@ export default function Home() {
     if (!banner?.couponCode) return;
 
     try {
-      await navigator.clipboard.writeText(banner.couponCode);
+      await navigator.clipboard.writeText(banner.coupon.code);
       setCouponCopied(true);
       window.setTimeout(() => setCouponCopied(false), 2200);
     } catch (err) {
@@ -280,34 +280,34 @@ export default function Home() {
 
             {banner.subtitle && <p className="offer-subtitle">{banner.subtitle}</p>}
 
-            {banner.couponCode && (
+            {banner.coupon &&  (
               <div
                 className="coupon-box"
                 role="button"
                 tabIndex={0}
                 onClick={handleCopyCoupon}
                 onKeyDown={handleCouponKeyDown}
-                aria-label={`Copy coupon code ${banner.couponCode}`}
+                aria-label={`Copy coupon code ${banner.coupon.code}`}
               >
                 <div className="coupon-box__icon" aria-hidden="true">
                   <FiPercent size={20} />
                 </div>
 
                 <div className="coupon-box__details">
-                  <strong className="coupon-box__code">{banner.couponCode}</strong>
+                  <strong className="coupon-box__code">{banner.coupon.code}</strong>
 
                   <div className="coupon-box__meta">
                     {banner.discountText && (
-                      <span className="coupon-box__discount">{banner.discountText}</span>
+                     <span className="coupon-box__discount">
+  {banner.coupon.discount}% OFF
+</span>
                     )}
 
-                    {Number(banner.minimumOrder) > 0 && (
+                   {Number(banner.coupon.minOrder) > 0 && (
                       <>
-                        {banner.discountText && (
-                          <span className="coupon-box__divider" aria-hidden="true"></span>
-                        )}
+                        <span className="coupon-box__divider"></span>
                         <span className="coupon-box__min">
-                          Min ₹{banner.minimumOrder}
+                          Min ₹{banner.coupon.minOrder}
                         </span>
                       </>
                     )}
