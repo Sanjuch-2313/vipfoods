@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { FiPercent, FiCopy, FiArrowRight } from "react-icons/fi";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -145,6 +146,7 @@ function TiltCard({ children, className = "" }) {
 
 export default function Home() {
   const [banner, setBanner] = useState(null);
+  const [couponCopied, setCouponCopied] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -166,6 +168,25 @@ export default function Home() {
       isMounted = false;
     };
   }, []);
+
+  const handleCopyCoupon = async () => {
+    if (!banner?.couponCode) return;
+
+    try {
+      await navigator.clipboard.writeText(banner.couponCode);
+      setCouponCopied(true);
+      window.setTimeout(() => setCouponCopied(false), 2200);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCouponKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleCopyCoupon();
+    }
+  };
 
   return (
     <main className="home-page">
@@ -240,39 +261,84 @@ export default function Home() {
 
       {banner && (
         <section className="home-offer-banner">
-          <div className="home-offer-left">
-            {banner?.discountText && (
+          {banner.image && (
+            <img
+              src={banner.image}
+              alt={banner.title || "Offer banner"}
+              className="home-offer-bg"
+            />
+          )}
+
+          <div className="home-offer-overlay"></div>
+
+          <div className="home-offer-content">
+            {banner.discountText && (
               <span className="offer-tag">{banner.discountText}</span>
             )}
 
-            <h2>{banner?.title}</h2>
+            <h2>{banner.title}</h2>
 
-            {banner?.subtitle && <p>{banner.subtitle}</p>}
+            {banner.subtitle && <p className="offer-subtitle">{banner.subtitle}</p>}
 
-            {banner?.couponCode && (
-              <div className="coupon-box">
-                <span>Use Code</span>
-                <strong>{banner.couponCode}</strong>
+            {banner.couponCode && (
+              <div
+                className="coupon-box"
+                role="button"
+                tabIndex={0}
+                onClick={handleCopyCoupon}
+                onKeyDown={handleCouponKeyDown}
+                aria-label={`Copy coupon code ${banner.couponCode}`}
+              >
+                <div className="coupon-box__icon" aria-hidden="true">
+                  <FiPercent size={20} />
+                </div>
+
+                <div className="coupon-box__details">
+                  <strong className="coupon-box__code">{banner.couponCode}</strong>
+
+                  <div className="coupon-box__meta">
+                    {banner.discountText && (
+                      <span className="coupon-box__discount">{banner.discountText}</span>
+                    )}
+
+                    {Number(banner.minimumOrder) > 0 && (
+                      <>
+                        {banner.discountText && (
+                          <span className="coupon-box__divider" aria-hidden="true"></span>
+                        )}
+                        <span className="coupon-box__min">
+                          Min ₹{banner.minimumOrder}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="coupon-box__copy"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyCoupon();
+                  }}
+                >
+                  <FiCopy size={16} />
+                  Copy
+                </button>
               </div>
             )}
 
-            {Number(banner?.minimumOrder) > 0 && (
-              <p className="minimum-order">Minimum Order ₹{banner.minimumOrder}</p>
-            )}
-
-            <Link to={banner?.buttonLink || "/products"} className="offer-btn">
-              {banner?.buttonText || "Shop Now"}
+            <Link to={banner.buttonLink || "/products"} className="offer-btn">
+              {banner.buttonText || "Shop Now"}
+              <FiArrowRight size={18} aria-hidden="true" />
             </Link>
           </div>
 
-          <div className="home-offer-right">
-            {banner?.image && (
-  <img
-    src={banner.image}
-    alt={banner.title || "Offer banner"}
-  />
-)}
-          </div>
+          {couponCopied && (
+            <div className="offer-toast" role="status">
+              Coupon Copied ✓
+            </div>
+          )}
         </section>
       )}
 
