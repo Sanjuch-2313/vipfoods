@@ -14,27 +14,9 @@ const homeBannerSchema = new mongoose.Schema(
       trim: true,
     },
 
-    couponCode: {
-      type: String,
-      default: "",
-      trim: true,
-      uppercase: true,
-    },
-
-    discountText: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    minimumOrder: {
-      type: Number,
-      default: 0,
-    },
-
-    validTill: {
-      type: String,
-      default: "",
+    coupon: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Coupon",
     },
 
     buttonText: {

@@ -5,10 +5,7 @@ export const createBanner = async (req, res) => {
     const {
       title,
       subtitle,
-      couponCode,
-      discountText,
-      minimumOrder,
-      validTill,
+      coupon,
       buttonText,
       buttonLink,
       active,
@@ -26,10 +23,7 @@ export const createBanner = async (req, res) => {
     const banner = await HomeBanner.create({
       title,
       subtitle,
-      couponCode,
-      discountText,
-      minimumOrder,
-      validTill,
+      coupon,
       buttonText,
       buttonLink,
       active,
@@ -55,7 +49,9 @@ export const getBanner = async (req, res) => {
   try {
     const banner = await HomeBanner.findOne({
       active: true,
-    }).sort({ createdAt: -1 });
+    })
+      .populate("coupon")
+      .sort({ createdAt: -1 });
 
     res.json({
       success: true,
@@ -71,9 +67,11 @@ export const getBanner = async (req, res) => {
 
 export const getAllBanners = async (req, res) => {
   try {
-    const banners = await HomeBanner.find().sort({
-      createdAt: -1,
-    });
+    const banners = await HomeBanner.find()
+      .populate("coupon")
+      .sort({
+        createdAt: -1,
+      });
 
     res.json({
       success: true,
@@ -102,7 +100,7 @@ export const updateBanner = async (req, res) => {
         new: true,
         runValidators: true,
       }
-    );
+    ).populate("coupon");
 
     res.json({
       success: true,

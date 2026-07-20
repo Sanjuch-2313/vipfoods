@@ -1,18 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Save, ArrowLeft } from "lucide-react";
 
 import ImageUploader from "../../components/ImageUploader";
-import { createHomeBanner } from "../../services/homeBannerService";
+import {
+  createHomeBanner,
+  getActiveCoupons,
+} from "../../services/homeBannerService";
 import "../../styles/HomeBanner.css";
 
 const initialState = {
   title: "",
   subtitle: "",
-  couponCode: "",
-  discountText: "",
-  minimumOrder: "",
-  validTill: "",
+  coupon: "",
   buttonText: "Shop Now",
   buttonLink: "/products",
   active: true,
@@ -48,10 +48,7 @@ export default function HomeBanner() {
 
       payload.append("title", formData.title);
       payload.append("subtitle", formData.subtitle);
-      payload.append("couponCode", formData.couponCode);
-      payload.append("discountText", formData.discountText);
-      payload.append("minimumOrder", formData.minimumOrder);
-      payload.append("validTill", formData.validTill);
+      payload.append("coupon", formData.coupon);
       payload.append("buttonText", formData.buttonText);
       payload.append("buttonLink", formData.buttonLink);
       payload.append("active", formData.active);
@@ -72,6 +69,20 @@ export default function HomeBanner() {
       setLoading(false);
     }
   };
+  const [coupons, setCoupons] = useState([]);
+
+  useEffect(() => {
+  const loadCoupons = async () => {
+    try {
+      const res = await getActiveCoupons();
+      setCoupons(res.coupons || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadCoupons();
+}, []);
 
   return (
     <div className="add-product-page">
@@ -124,14 +135,23 @@ export default function HomeBanner() {
           </div>
 
           <div className="form-field">
-            <label>Coupon</label>
+  <label>Select Coupon</label>
 
-            <input
-              name="couponCode"
-              value={formData.couponCode}
-              onChange={handleChange}
-            />
-          </div>
+  <select
+    name="coupon"
+    value={formData.coupon}
+    onChange={handleChange}
+    required
+  >
+    <option value="">Choose Coupon</option>
+
+    {coupons.map((coupon) => (
+      <option key={coupon._id} value={coupon._id}>
+        {coupon.code}
+      </option>
+    ))}
+  </select>
+</div>
 
           <div className="form-field">
             <label>Discount Text</label>

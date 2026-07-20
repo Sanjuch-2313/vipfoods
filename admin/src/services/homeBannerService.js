@@ -12,6 +12,12 @@ export const getAllHomeBanners = async () => {
   return data;
 };
 
+/* Get active coupons (Dropdown) */
+export const getActiveCoupons = async () => {
+  const { data } = await api.get("/coupons/active");
+  return data;
+};
+
 /* Create banner */
 export const createHomeBanner = async (formData) => {
   const { data } = await api.post("/home-banner", formData, {
