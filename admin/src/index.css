@@ -1,203 +1,392 @@
+/* ========================================
+   GLOBAL VARIABLES
+======================================== */
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px,
-    rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --bg: #ffffff;
+  --surface: #f8fafc;
 
-  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
-  --heading: system-ui, "Segoe UI", Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --text: #475569;
+  --heading: #0f172a;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --border: #e2e8f0;
+
+  --primary: #7c3aed;
+  --primary-light: rgba(124, 58, 237, 0.12);
+
+  --radius: 18px;
+
+  --shadow-sm: 0 4px 10px rgba(0,0,0,.06);
+  --shadow-md: 0 12px 30px rgba(0,0,0,.08);
+
+  --container: 1200px;
+
+  --transition: .3s ease;
+
+  --sans:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  --mono:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
 }
 
-/* ==========================
-   Responsive Root Font
-========================== */
+/* ========================================
+   DARK MODE
+======================================== */
 
-@media (max-width:1024px){
-  :root{
-    font-size:16px;
-  }
+@media (prefers-color-scheme: dark){
+
+:root{
+
+--bg:#0f172a;
+--surface:#1e293b;
+
+--text:#cbd5e1;
+--heading:#ffffff;
+
+--border:#334155;
+
+--primary:#a855f7;
+--primary-light:rgba(168,85,247,.15);
+
+--shadow-sm:0 4px 12px rgba(0,0,0,.35);
+--shadow-md:0 18px 35px rgba(0,0,0,.45);
+
 }
 
-/* ==========================
-   Dark Mode
-========================== */
-
-@media (prefers-color-scheme:dark){
-
-  :root{
-    --text:#9ca3af;
-    --text-h:#f3f4f6;
-    --bg:#16171d;
-    --border:#2e303a;
-    --code-bg:#1f2028;
-    --accent:#c084fc;
-    --accent-bg:rgba(192,132,252,.15);
-    --accent-border:rgba(192,132,252,.5);
-    --social-bg:rgba(47,48,58,.5);
-
-    --shadow:
-      rgba(0,0,0,.4) 0 10px 15px -3px,
-      rgba(0,0,0,.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon{
-    filter:invert(1) brightness(2);
-  }
 }
 
-/* ==========================
-   Global
-========================== */
+/* ========================================
+   RESET
+======================================== */
 
-*{
-  box-sizing:border-box;
+*,
+*::before,
+*::after{
+box-sizing:border-box;
+margin:0;
+padding:0;
 }
 
-html,
-body{
-  margin:0;
-  padding:0;
-  width:100%;
-  overflow-x:hidden;
+html{
+scroll-behavior:smooth;
+font-size:16px;
 }
 
 body{
-  background:var(--bg);
-  color:var(--text);
+
+font-family:var(--sans);
+
+background:var(--bg);
+
+color:var(--text);
+
+line-height:1.7;
+
+text-rendering:optimizeLegibility;
+
+-webkit-font-smoothing:antialiased;
+
+overflow-x:hidden;
+
 }
 
-/* ==========================
-   Root
-========================== */
+/* ========================================
+   ROOT CONTAINER
+======================================== */
 
 #root{
-  width:1126px;
-  max-width:100%;
-  margin:0 auto;
-  min-height:100svh;
 
-  display:flex;
-  flex-direction:column;
+width:min(100%, var(--container));
 
-  border-inline:1px solid var(--border);
+margin-inline:auto;
 
-  text-align:center;
-}
+min-height:100vh;
 
-/* ==========================
-   Responsive Root
-========================== */
+padding-inline:clamp(16px,4vw,40px);
 
-@media (max-width:1200px){
+display:flex;
 
-  #root{
-    width:100%;
-    border-inline:none;
-  }
+flex-direction:column;
 
 }
 
-/* ==========================
-   Headings
-========================== */
+/* ========================================
+   TYPOGRAPHY
+======================================== */
 
-h1,
-h2{
-  font-family:var(--heading);
-  font-weight:500;
-  color:var(--text-h);
+h1,h2,h3,h4{
+
+color:var(--heading);
+
+font-weight:700;
+
+line-height:1.15;
+
 }
 
 h1{
-  font-size:56px;
-  letter-spacing:-1.68px;
-  margin:32px 0;
+
+font-size:clamp(2.3rem,5vw,4.3rem);
+
+margin-bottom:1rem;
+
 }
 
 h2{
-  font-size:24px;
-  line-height:118%;
-  letter-spacing:-0.24px;
-  margin:0 0 8px;
-}
 
-@media (max-width:1024px){
+font-size:clamp(1.6rem,3vw,2.4rem);
 
-  h1{
-    font-size:36px;
-    margin:20px 0;
-  }
-
-  h2{
-    font-size:20px;
-  }
+margin-bottom:.75rem;
 
 }
 
-@media (max-width:600px){
+h3{
 
-  h1{
-    font-size:30px;
-    line-height:1.2;
-  }
-
-  h2{
-    font-size:18px;
-  }
+font-size:clamp(1.2rem,2vw,1.5rem);
 
 }
-
-/* ==========================
-   Paragraph
-========================== */
 
 p{
-  margin:0;
+
+font-size:clamp(.95rem,1.2vw,1.1rem);
+
+margin-bottom:1rem;
+
 }
 
-/* ==========================
-   Code
-========================== */
+/* ========================================
+   LINKS
+======================================== */
 
-code,
-.counter{
-  display:inline-flex;
-  font-family:var(--mono);
-  color:var(--text-h);
-  border-radius:4px;
+a{
+
+color:inherit;
+
+text-decoration:none;
+
+transition:.25s;
+
 }
+
+a:hover{
+
+color:var(--primary);
+
+}
+
+/* ========================================
+   IMAGES
+======================================== */
+
+img{
+
+display:block;
+
+max-width:100%;
+
+height:auto;
+
+}
+
+/* ========================================
+   BUTTONS
+======================================== */
+
+button{
+
+font:inherit;
+
+border:none;
+
+cursor:pointer;
+
+transition:var(--transition);
+
+}
+
+button:active{
+
+transform:scale(.97);
+
+}
+
+/* ========================================
+   INPUTS
+======================================== */
+
+input,
+textarea,
+select{
+
+font:inherit;
+
+width:100%;
+
+border:1px solid var(--border);
+
+border-radius:12px;
+
+padding:.9rem 1rem;
+
+background:var(--surface);
+
+color:var(--heading);
+
+outline:none;
+
+transition:.25s;
+
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+
+border-color:var(--primary);
+
+box-shadow:0 0 0 4px var(--primary-light);
+
+}
+
+/* ========================================
+   CODE
+======================================== */
 
 code{
-  padding:4px 8px;
-  background:var(--code-bg);
-  font-size:15px;
-  line-height:135%;
+
+font-family:var(--mono);
+
+background:var(--surface);
+
+padding:4px 8px;
+
+border-radius:8px;
+
+font-size:.9rem;
+
 }
 
-@media (max-width:600px){
+/* ========================================
+   CARDS
+======================================== */
 
-  code{
-    font-size:13px;
-    word-break:break-word;
-  }
+.card{
+
+background:var(--surface);
+
+border:1px solid var(--border);
+
+border-radius:var(--radius);
+
+box-shadow:var(--shadow-sm);
+
+padding:1.5rem;
+
+transition:.3s;
+
+}
+
+.card:hover{
+
+transform:translateY(-4px);
+
+box-shadow:var(--shadow-md);
+
+}
+
+/* ========================================
+   UTILITIES
+======================================== */
+
+.container{
+
+width:min(100%,1200px);
+
+margin:auto;
+
+padding-inline:clamp(16px,3vw,32px);
+
+}
+
+.section{
+
+padding-block:clamp(50px,8vw,100px);
+
+}
+
+/* ========================================
+   TABLET
+======================================== */
+
+@media (max-width:992px){
+
+#root{
+
+padding-inline:24px;
+
+}
+
+}
+
+/* ========================================
+   MOBILE
+======================================== */
+
+@media (max-width:768px){
+
+#root{
+
+padding-inline:18px;
+
+}
+
+.section{
+
+padding-block:60px;
+
+}
+
+}
+
+/* ========================================
+   SMALL PHONES
+======================================== */
+
+@media (max-width:480px){
+
+html{
+
+font-size:15px;
+
+}
+
+#root{
+
+padding-inline:14px;
+
+}
+
+}
+
+/* ========================================
+   LARGE DESKTOP
+======================================== */
+
+@media (min-width:1600px){
+
+:root{
+
+--container:1400px;
+
+}
 
 }
