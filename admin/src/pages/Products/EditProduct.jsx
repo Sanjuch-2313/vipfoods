@@ -414,7 +414,11 @@ const EditProduct = () => {
 
     payload.append("badges", JSON.stringify(badges));
 
-    images.forEach((image) => {
+    const uploadableImages = images.filter(
+      (image) => typeof image !== "string"
+    );
+
+    uploadableImages.forEach((image) => {
       payload.append("images", image);
     });
 
@@ -505,6 +509,7 @@ useEffect(() => {
       );
 
       setBadges(product.badges || []);
+      setImages(product.images || []);
     } catch (err) {
       console.error(err);
     }
@@ -531,7 +536,7 @@ useEffect(() => {
             <h1>Edit Product</h1>
 
             <p>
-              Create a new product with images, variants, inventory,
+              Update the product details, images, variants, inventory,
               delivery, nutrition, and SEO information.
             </p>
           </div>
@@ -554,7 +559,7 @@ useEffect(() => {
             >
               <Save size={18} />
 
-              {isSubmitting ? "Creating Product..." : "Create Product"}
+              {isSubmitting ? "Updating Product..." : "Update Product"}
             </button>
           </div>
         </div>

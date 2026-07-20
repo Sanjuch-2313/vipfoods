@@ -23,12 +23,22 @@ const ImageUploader = ({
   const [previews, setPreviews] = useState([]);
 
   useEffect(() => {
-    const urls = images.map((image) => URL.createObjectURL(image));
+    const objectUrls = [];
 
-    setPreviews(urls);
+    const previewUrls = images.map((image) => {
+      if (typeof image === "string") {
+        return image;
+      }
+
+      const previewUrl = URL.createObjectURL(image);
+      objectUrls.push(previewUrl);
+      return previewUrl;
+    });
+
+    setPreviews(previewUrls);
 
     return () => {
-      urls.forEach((url) => URL.revokeObjectURL(url));
+      objectUrls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [images]);
 
@@ -185,15 +195,10 @@ const ImageUploader = ({
         <div className="image-preview-grid">
           {previews.map((preview, index) => (
             <div className="image-preview-card" key={`${preview}-${index}`}>
-              <img
-                src={preview}
-                alt={`Product preview ${index + 1}`}
-              />
+              <img src={preview} alt={`Product preview ${index + 1}`} />
 
               {index === 0 && (
-                <span className="image-preview-card__primary">
-                  Primary
-                </span>
+                <span className="image-preview-card__primary">Primary</span>
               )}
 
               <button
