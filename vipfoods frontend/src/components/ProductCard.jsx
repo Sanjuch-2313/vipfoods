@@ -116,6 +116,7 @@ export default function ProductCard({
       </p>
 
       <div className="vip-bottom">
+        <div className="vip-left">  </div>
 
         <div>
 

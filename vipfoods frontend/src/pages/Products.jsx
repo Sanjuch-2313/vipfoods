@@ -4,7 +4,7 @@ import { FiArrowLeft } from "react-icons/fi";
 import { getProducts } from "../services/productService";
 import { useCart } from "../context/CartContext";
 import ProductCard from "../components/ProductCard";
-import "./home.css";
+import "./Products.css";
 
 const sortOptions = [
   { value: "", label: "Sort by" },

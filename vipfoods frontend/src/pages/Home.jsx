@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
@@ -16,6 +16,7 @@ import bussiness3 from "../assets/bussiness3.jpg";
 import bussiness4 from "../assets/bussiness4.jpg";
 import bussiness5 from "../assets/bussiness5.jpg";
 import "./home.css";
+import { getHomeBanner } from "../services/homeBannerService";
 
 const categories = [
   {
@@ -85,77 +86,6 @@ const whyCards = [
   },
 ];
 
-const _productSections = [
-  {
-    id: "pickles-products",
-    title: "VIP Pickles",
-    desc: "Traditional jars separated into veg and non-veg favorites.",
-    groups: [
-      {
-        title: "Veg Pickles",
-        items: [
-          { name: "Mango Avakaya", price: "₹249", emoji: "🥭", tag: "Classic" },
-          { name: "Gongura Pickle", price: "₹229", emoji: "🌿", tag: "Tangy" },
-          { name: "Lemon Pickle", price: "₹199", emoji: "🍋", tag: "Sun cured" },
-        ],
-      },
-      {
-        title: "Non-Veg Pickles",
-        items: [
-          { name: "Chicken Pickle", price: "₹349", emoji: "🍗", tag: "Spicy" },
-          { name: "Prawn Pickle", price: "₹399", emoji: "🍤", tag: "Coastal" },
-          { name: "Mutton Pickle", price: "₹449", emoji: "🍖", tag: "Rich" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "snacks-products",
-    title: "Home Snacks",
-    desc: "Tea-time crunch made in fresh batches.",
-    groups: [
-      {
-        title: "Traditional Snacks",
-        items: [
-          { name: "Karam Boondi", price: "₹149", emoji: "🥨", tag: "Crunchy" },
-          { name: "Murukulu", price: "₹169", emoji: "🥨", tag: "Homestyle" },
-          { name: "Mixture Pack", price: "₹189", emoji: "🍘", tag: "Fresh" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "fresh-products",
-    title: "VIP Fresh",
-    desc: "Vegetables and greens selected for daily cooking.",
-    groups: [
-      {
-        title: "Vegetables",
-        items: [
-          { name: "Leafy Greens Box", price: "₹129", emoji: "🥬", tag: "Morning cut" },
-          { name: "Tomato Basket", price: "₹99", emoji: "🍅", tag: "Farm fresh" },
-          { name: "Mixed Veg Kit", price: "₹249", emoji: "🥕", tag: "Weekly" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "spices-products",
-    title: "VIP Spices",
-    desc: "Turmeric, chilli powder and masalas with strong aroma.",
-    groups: [
-      {
-        title: "Spice Powders",
-        items: [
-          { name: "Turmeric Powder", price: "₹179", emoji: "✨", tag: "Pure" },
-          { name: "Chilli Powder", price: "₹199", emoji: "🌶️", tag: "Hot" },
-          { name: "Garam Masala", price: "₹229", emoji: "🧂", tag: "Aromatic" },
-        ],
-      },
-    ],
-  },
-];
-
 const testimonials = [
   {
     name: "Anusha R.",
@@ -214,6 +144,29 @@ function TiltCard({ children, className = "" }) {
 }
 
 export default function Home() {
+  const [banner, setBanner] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadBanner = async () => {
+      try {
+        const response = await getHomeBanner();
+        if (isMounted) {
+          setBanner(response?.banner ?? null);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadBanner();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <main className="home-page">
       <div className="page-accent accent-red-a"></div>
@@ -221,7 +174,6 @@ export default function Home() {
       <div className="page-accent accent-lime"></div>
       <div className="page-accent accent-orange"></div>
       <div className="page-accent accent-red-b"></div>
-
 
       <section id="home" className="vip-hero">
         <div className="hero-noise"></div>
@@ -243,21 +195,13 @@ export default function Home() {
             </p>
 
             <div className="hero-actions">
-              <Link
-  to="/products"
-  className="cta-btn hero-cta"
-  title="Shop Now"
->
-  Shop Now
-</Link>
+              <Link to="/products" className="cta-btn hero-cta" title="Shop Now">
+                Shop Now
+              </Link>
 
-<Link
-  to="/register"
-  className="ghost-cta"
-  title="Create Account"
->
-  Create Account
-</Link>
+              <Link to="/register" className="ghost-cta" title="Create Account">
+                Create Account
+              </Link>
             </div>
 
             <div className="hero-pills">
@@ -268,32 +212,69 @@ export default function Home() {
           </div>
 
           <div className="hero-visual" aria-label="VIP Foods featured images">
-  <div className="jar-stage">
-    <div className="jar-glow"></div>
+            <div className="jar-stage">
+              <div className="jar-glow"></div>
 
-    {/* Slideshow Circle */}
-    <div className="slideshow-circle">
-      <img src={bussiness1} className="slide" alt="Bussiness 1" />
-      <img src={bussiness2} className="slide" alt="Bussiness 2" />
-      <img src={bussiness3} className="slide" alt="Bussiness 3" />
-      <img src={bussiness4} className="slide" alt="Bussiness 4" />
-      <img src={bussiness5} className="slide" alt="Bussiness 5" />
-    </div>
+              {/* Slideshow Circle */}
+              <div className="slideshow-circle">
+                <img src={bussiness1} className="slide" alt="Bussiness 1" />
+                <img src={bussiness2} className="slide" alt="Bussiness 2" />
+                <img src={bussiness3} className="slide" alt="Bussiness 3" />
+                <img src={bussiness4} className="slide" alt="Bussiness 4" />
+                <img src={bussiness5} className="slide" alt="Bussiness 5" />
+              </div>
 
-    {/* Orbit cards still float around */}
-    <div className="mini-card mini-card-top glass-card">
-      <span>🌶️</span>
-      Fresh chilli aroma
-    </div>
-    <div className="mini-card mini-card-bottom glass-card">
-      <span>🥬</span>
-      Farm direct greens
-    </div>
-  </div>
-</div>
-
+              {/* Orbit cards still float around */}
+              <div className="mini-card mini-card-top glass-card">
+                <span>🌶️</span>
+                Fresh chilli aroma
+              </div>
+              <div className="mini-card mini-card-bottom glass-card">
+                <span>🥬</span>
+                Farm direct greens
+              </div>
+            </div>
+          </div>
         </div>
       </section>
+
+      {banner && (
+        <section className="home-offer-banner">
+          <div className="home-offer-left">
+            {banner?.discountText && (
+              <span className="offer-tag">{banner.discountText}</span>
+            )}
+
+            <h2>{banner?.title}</h2>
+
+            {banner?.subtitle && <p>{banner.subtitle}</p>}
+
+            {banner?.couponCode && (
+              <div className="coupon-box">
+                <span>Use Code</span>
+                <strong>{banner.couponCode}</strong>
+              </div>
+            )}
+
+            {Number(banner?.minimumOrder) > 0 && (
+              <p className="minimum-order">Minimum Order ₹{banner.minimumOrder}</p>
+            )}
+
+            <Link to={banner?.buttonLink || "/products"} className="offer-btn">
+              {banner?.buttonText || "Shop Now"}
+            </Link>
+          </div>
+
+          <div className="home-offer-right">
+            {banner?.image && (
+  <img
+    src={banner.image}
+    alt={banner.title || "Offer banner"}
+  />
+)}
+          </div>
+        </section>
+      )}
 
       <section id="categories" className="section-wrap">
         <div className="section-heading">
@@ -329,18 +310,17 @@ export default function Home() {
                   <h3>{category.title}</h3>
                   <p>{category.desc}</p>
                   <Link
-  to={`/products?category=${category.id}`}
-  className="category-link"
-  onClick={() =>
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    })
-  }
->
-  Explore
-</Link>
-                  
+                    to={`/products?category=${category.id}`}
+                    className="category-link"
+                    onClick={() =>
+                      window.scrollTo({
+                        top: 0,
+                        behavior: "smooth",
+                      })
+                    }
+                  >
+                    Explore
+                  </Link>
                 </TiltCard>
               </SwiperSlide>
             ))}
@@ -364,7 +344,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
 
       <section className="section-wrap testimonial-section">
         <div className="section-heading">
@@ -392,25 +371,15 @@ export default function Home() {
           <h2>Login or register for saved carts, faster checkout and fresh-drop alerts.</h2>
         </div>
         <div className="auth-banner-actions">
-          <Link
-  to="/login"
-  className="ghost-cta dark"
-  title="Login"
->
-  Login
-</Link>
+          <Link to="/login" className="ghost-cta dark" title="Login">
+            Login
+          </Link>
 
-<Link
-  to="/register"
-  className="cta-btn"
-  title="Register"
->
-  Register
-</Link>
+          <Link to="/register" className="cta-btn" title="Register">
+            Register
+          </Link>
         </div>
       </section>
-
-    
     </main>
   );
 }
