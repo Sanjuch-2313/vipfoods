@@ -6,18 +6,25 @@ import Category from "../models/Category.js";
 // ==============================
 export const createCategory = async (req, res) => {
   try {
-    const {
-      name,
-      description,
-      featured,
-      active,
-      displayOrder,
-    } = req.body;
+    const { name, description, featured, active, displayOrder } = req.body;
 
-    const exists = await Category.findOne({
-      name: name.trim(),
-    });
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Category name is required",
+      });
+    }
 
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Category image is required",
+      });
+    }
+
+    const slug = slugify(name, { lower: true, strict: true });
+
+    const exists = await Category.findOne({ slug });
     if (exists) {
       return res.status(409).json({
         success: false,
@@ -27,20 +34,11 @@ export const createCategory = async (req, res) => {
 
     const category = await Category.create({
       name: name.trim(),
-
-      slug: slugify(name, {
-        lower: true,
-        strict: true,
-      }),
-
+      slug,
       description,
-
-      image: req.file?.path || "",
-
+      image: req.file.path, // Cloudinary/Multer should provide this
       featured: featured ?? false,
-
       active: active ?? true,
-
       displayOrder: Number(displayOrder) || 0,
     });
 
@@ -51,7 +49,6 @@ export const createCategory = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-
     return res.status(500).json({
       success: false,
       message: "Server Error",
@@ -65,20 +62,16 @@ export const createCategory = async (req, res) => {
 export const getCategories = async (req, res) => {
   try {
     const { active, featured } = req.query;
-
     const filter = {};
 
     if (active !== undefined) {
       filter.active = active === "true";
     }
-
     if (featured !== undefined) {
       filter.featured = featured === "true";
     }
 
-    const categories = await Category.find(filter).sort({
-      displayOrder: 1,
-    });
+    const categories = await Category.find(filter).sort({ displayOrder: 1 });
 
     return res.json({
       success: true,
@@ -87,7 +80,6 @@ export const getCategories = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-
     return res.status(500).json({
       success: false,
       message: "Failed to fetch categories",
@@ -100,9 +92,7 @@ export const getCategories = async (req, res) => {
 // ==============================
 export const deleteCategory = async (req, res) => {
   try {
-    const category = await Category.findByIdAndDelete(
-      req.params.id
-    );
+    const category = await Category.findByIdAndDelete(req.params.id);
 
     if (!category) {
       return res.status(404).json({
@@ -117,7 +107,6 @@ export const deleteCategory = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-
     return res.status(500).json({
       success: false,
       message: "Server Error",
