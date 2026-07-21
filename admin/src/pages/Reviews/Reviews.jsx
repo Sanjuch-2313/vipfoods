@@ -11,32 +11,49 @@ import "../../styles/Reviews.css";
 
 export default function Reviews() {
   const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const loadReviews = async () => {
-  try {
-    const response = await getReviews();
+    try {
+      setLoading(true);
 
-    console.log("Reviews API Response:", response);
+      const response = await getReviews();
 
-    setReviews(response.reviews || []);
-  } catch (error) {
-    console.error("Reviews Error:", error);
+      console.log("Reviews API Response:", response);
 
-    if (error.response) {
-      console.log("Status:", error.response.status);
-      console.log("Data:", error.response.data);
+      if (Array.isArray(response)) {
+        setReviews(response);
+      } else if (response.reviews) {
+        setReviews(response.reviews);
+      } else if (response.data) {
+        setReviews(response.data);
+      } else {
+        setReviews([]);
+      }
+    } catch (error) {
+      console.error("Reviews Error:", error);
+
+      if (error.response) {
+        console.log("Status:", error.response.status);
+        console.log("Data:", error.response.data);
+      }
+
+      setReviews([]);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setReviews([]);
-  }
-};
+  useEffect(() => {
+    loadReviews();
+  }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this review?")) return;
 
     try {
       await deleteReview(id);
-      loadReviews();
+      await loadReviews();
     } catch (error) {
       console.error(error);
       alert("Failed to delete review");
@@ -46,7 +63,7 @@ export default function Reviews() {
   const handleApprove = async (id) => {
     try {
       await approveReview(id);
-      loadReviews();
+      await loadReviews();
     } catch (error) {
       console.error(error);
       alert("Failed to approve review");
@@ -75,7 +92,13 @@ export default function Reviews() {
           </thead>
 
           <tbody>
-            {reviews.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="8" style={{ textAlign: "center" }}>
+                  Loading reviews...
+                </td>
+              </tr>
+            ) : reviews.length === 0 ? (
               <tr>
                 <td colSpan="8" style={{ textAlign: "center" }}>
                   No Reviews Found
@@ -84,11 +107,11 @@ export default function Reviews() {
             ) : (
               reviews.map((review) => (
                 <tr key={review._id}>
-                  <td>{review.customerName}</td>
+                  <td>{review.customerName || "-"}</td>
 
-                  <td>{review.orderNumber}</td>
+                  <td>{review.orderNumber || "-"}</td>
 
-                  <td>⭐ {review.rating}</td>
+                  <td>{"⭐".repeat(review.rating || 0)}</td>
 
                   <td>{review.title || "-"}</td>
 
@@ -107,7 +130,9 @@ export default function Reviews() {
                   </td>
 
                   <td>
-                    {new Date(review.createdAt).toLocaleDateString()}
+                    {review.createdAt
+                      ? new Date(review.createdAt).toLocaleDateString()
+                      : "-"}
                   </td>
 
                   <td className="action-buttons">
