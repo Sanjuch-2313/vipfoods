@@ -1,5 +1,38 @@
 import mongoose from "mongoose";
 
+const filterOptionSchema = new mongoose.Schema(
+  {
+    label: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    value: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+  },
+  { _id: false }
+);
+
+const filterSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    param: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    options: [filterOptionSchema],
+  },
+  { _id: false }
+);
+
 const categorySchema = new mongoose.Schema(
   {
     name: {
@@ -44,6 +77,11 @@ const categorySchema = new mongoose.Schema(
     active: {
       type: Boolean,
       default: true,
+    },
+
+    filters: {
+      type: [filterSchema],
+      default: [],
     },
   },
   {

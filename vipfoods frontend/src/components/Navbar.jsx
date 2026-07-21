@@ -16,6 +16,7 @@ import {
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { getProducts } from "../services/productService";
+import { getCategories } from "../services/categoryService";
 
 import SearchBar from "./SearchBar";
 import LocationPicker from "./LocationPicker";
@@ -31,8 +32,8 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownCloseTimer, setDropdownCloseTimer] = useState(null);
 
-  // ✅ new state for trending count
   const [trendingCount, setTrendingCount] = useState(0);
+  const [categories, setCategories] = useState([]);
 
   const { cartItems, wishlistItems } = useCart();
   const { user, isLoggedIn, logout } = useAuth();
@@ -138,6 +139,24 @@ export default function Navbar() {
     loadTrendingProducts();
   }, []);
 
+  /*
+  ============================================
+  LOAD CATEGORIES FROM BACKEND
+  ============================================
+  */
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await getCategories();
+        setCategories(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadCategories();
+  }, []);
+
   return (
     <nav className={`navbar ${scrolled ? "navbar-scrolled" : ""} ${hidden ? "navbar-hidden" : ""}`}>
       <div className="navbar-inner">
@@ -183,10 +202,16 @@ export default function Navbar() {
             </button>
 
             <div className={`nav-dropdown-menu ${dropdownOpen ? "open" : ""}`}>
-              <Link to="/products?category=pickles" onClick={closeMenu} title="VIP Pickles">VIP Pickles</Link>
-              <Link to="/products?category=snacks" onClick={closeMenu} title="Home Snacks">Home Snacks</Link>
-              <Link to="/products?category=fresh" onClick={closeMenu} title="VIP Fresh">VIP Fresh</Link>
-              <Link to="/products?category=spices" onClick={closeMenu} title="VIP Spices">VIP Spices</Link>
+              {categories.map((category) => (
+                <Link
+                  key={category._id}
+                  to={`/products?category=${category.slug}`}
+                  onClick={closeMenu}
+                  title={category.name}
+                >
+                  {category.name}
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -289,7 +314,7 @@ export default function Navbar() {
             <span></span>
           </button>
         </div>
-</div>
+      </div>
     </nav>
   );
 }

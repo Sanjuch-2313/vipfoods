@@ -6,11 +6,6 @@ import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import picklesCard from "../assets/pickles.png";
-import snacksCard from "../assets/homefoods.png";
-import freshCard from "../assets/vegetable.png";
-import spicesCard from "../assets/spices.png";
-import dairyCard from "../assets/dairy.png";
 import bussiness1 from "../assets/bussiness1.jpg";
 import bussiness2 from "../assets/bussiness2.jpg";
 import bussiness3 from "../assets/bussiness3.jpg";
@@ -18,62 +13,10 @@ import bussiness4 from "../assets/bussiness4.jpg";
 import bussiness5 from "../assets/bussiness5.jpg";
 import "./home.css";
 import { getHomeBanner } from "../services/homeBannerService";
-
-const categories = [
-  {
-    id: "pickles",
-    title: "VIP Pickles",
-    eyebrow: "Sun-cured jars",
-    desc: "Mango, gongura, lemon and seasonal pickles made in small home-style batches.",
-    emoji: "🫙",
-    className: "pickle-card",
-    image: picklesCard,
-  },
-  {
-    id: "snacks",
-    title: "Home Snacks",
-    eyebrow: "Fresh crunch",
-    desc: "Roasted mixtures, traditional bites and tea-time snacks packed fresh.",
-    emoji: "🥨",
-    className: "snack-card",
-    image: snacksCard,
-  },
-  {
-    id: "fresh",
-    title: "VIP Fresh",
-    eyebrow: "Vegetables",
-    desc: "Leafy greens and daily vegetables are sourced from trusted local farms.",
-    emoji: "🥬",
-    className: "fresh-card",
-    image: freshCard,
-  },
-  {
-    id: "spices",
-    title: "VIP Spices",
-    eyebrow: "Pure powders",
-    desc: "Turmeric, chilli powder and masalas stone-ground for bold aroma.",
-    emoji: "🌶️",
-    className: "spice-card",
-    image: spicesCard,
-  },
-  {
-    id: "dairy",
-    title: "VIP Dairy",
-    eyebrow: "Creamy dairy",
-    desc: "Curd, milk, ghee and paneer made with farm-fresh milk for every kitchen.",
-    emoji: "🥛",
-    className: "dairy-card",
-    image: dairyCard,
-  },
-];
-
-const categoryStories = [
-  { name: "VIP Pickles", image: picklesCard, category: "pickles" },
-  { name: "Fresh Vegetables", image: freshCard, category: "fresh" },
-  { name: "Home Snacks", image: snacksCard, category: "snacks" },
-  { name: "Spices", image: spicesCard, category: "spices" },
-  { name: "Dairy", image: dairyCard, category: "dairy" },
-];
+import {
+  getCategories,
+  getFeaturedCategories,
+} from "../services/categoryService";
 
 const highlights = [
   "No preservatives",
@@ -118,6 +61,12 @@ const testimonials = [
   },
 ];
 
+// Fallback presentation values for fields the Category model doesn't store
+// yet (emoji / eyebrow / cardTheme). Once those fields exist on the backend,
+// this map can be deleted and the admin-provided values used directly.
+const DEFAULT_CARD_EMOJI = "🛒";
+const DEFAULT_CARD_EYEBROW = "Fresh picks";
+
 function TiltCard({ children, className = "" }) {
   const cardRef = useRef(null);
 
@@ -152,23 +101,25 @@ function TiltCard({ children, className = "" }) {
   );
 }
 
-function CategoryStories() {
+function CategoryStories({ categoryStories }) {
   const [searchParams] = useSearchParams();
   const activeCategory = searchParams.get("category");
+
+  if (!categoryStories.length) return null;
 
   return (
     <section className="category-stories-section">
       <div className="category-stories-track">
         {categoryStories.map((cat) => (
           <Link
-            key={cat.category}
-            to={`/products?category=${cat.category}`}
+            key={cat.slug}
+            to={`/products?category=${cat.slug}`}
             className="category-story-item"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
             <div
               className={`category-story-circle ${
-                activeCategory === cat.category ? "active" : ""
+                activeCategory === cat.slug ? "active" : ""
               }`}
             >
               <img src={cat.image} alt={cat.name} />
@@ -184,6 +135,8 @@ function CategoryStories() {
 export default function Home() {
   const [banner, setBanner] = useState(null);
   const [couponCopied, setCouponCopied] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [categoryStories, setCategoryStories] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -199,7 +152,24 @@ export default function Home() {
       }
     };
 
+    const loadCategories = async () => {
+      try {
+        const [allCategories, featured] = await Promise.all([
+          getCategories(),
+          getFeaturedCategories(),
+        ]);
+
+        if (isMounted) {
+          setCategories(featured);
+          setCategoryStories(allCategories);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
     loadBanner();
+    loadCategories();
 
     return () => {
       isMounted = false;
@@ -207,7 +177,7 @@ export default function Home() {
   }, []);
 
   const handleCopyCoupon = async () => {
-if (!banner?.coupon?.code) return;
+    if (!banner?.coupon?.code) return;
     try {
       await navigator.clipboard.writeText(banner.coupon.code);
       setCouponCopied(true);
@@ -232,7 +202,7 @@ if (!banner?.coupon?.code) return;
       <div className="page-accent accent-orange"></div>
       <div className="page-accent accent-red-b"></div>
 
-      <CategoryStories />
+      <CategoryStories categoryStories={categoryStories} />
 
       <section id="home" className="vip-hero">
         <div className="hero-noise"></div>
@@ -318,7 +288,7 @@ if (!banner?.coupon?.code) return;
 
             {banner.subtitle && <p className="offer-subtitle">{banner.subtitle}</p>}
 
-            {banner.coupon &&  (
+            {banner.coupon && (
               <div
                 className="coupon-box"
                 role="button"
@@ -335,13 +305,11 @@ if (!banner?.coupon?.code) return;
                   <strong className="coupon-box__code">{banner.coupon.code}</strong>
 
                   <div className="coupon-box__meta">
-                    {banner.coupon && (
-  <span className="offer-tag">
-    {banner.coupon.discount}% OFF
-  </span>
-)}
+                    {banner.coupon.discount != null && (
+                      <span className="offer-tag">{banner.coupon.discount}% OFF</span>
+                    )}
 
-                   {Number(banner.coupon.minOrder) > 0 && (
+                    {Number(banner.coupon.minOrder) > 0 && (
                       <>
                         <span className="coupon-box__divider"></span>
                         <span className="coupon-box__min">
@@ -406,15 +374,25 @@ if (!banner?.coupon?.code) return;
             }}
           >
             {categories.map((category) => (
-              <SwiperSlide key={category.id}>
-                <TiltCard className={`glass-card category-card ${category.className}`}>
-                  <img src={category.image} alt={category.title} className="category-art" />
-                  <span className="category-eyebrow">{category.eyebrow}</span>
-                  <div className="category-emoji">{category.emoji}</div>
-                  <h3>{category.title}</h3>
-                  <p>{category.desc}</p>
+              <SwiperSlide key={category.slug}>
+                <TiltCard
+                  className={`glass-card category-card ${category.cardTheme || ""}`}
+                >
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="category-art"
+                  />
+                  <span className="category-eyebrow">
+                    {category.eyebrow || DEFAULT_CARD_EYEBROW}
+                  </span>
+                  <div className="category-emoji">
+                    {category.emoji || DEFAULT_CARD_EMOJI}
+                  </div>
+                  <h3>{category.name}</h3>
+                  <p>{category.description}</p>
                   <Link
-                    to={`/products?category=${category.id}`}
+                    to={`/products?category=${category.slug}`}
                     className="category-link"
                     onClick={() =>
                       window.scrollTo({

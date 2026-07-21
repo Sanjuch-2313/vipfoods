@@ -1,10 +1,11 @@
 import slugify from "slugify";
-
 import Category from "../models/Category.js";
 
+// ==============================
+// Create Category
+// ==============================
 export const createCategory = async (req, res) => {
   try {
-
     const {
       name,
       description,
@@ -14,7 +15,7 @@ export const createCategory = async (req, res) => {
     } = req.body;
 
     const exists = await Category.findOne({
-      name,
+      name: name.trim(),
     });
 
     if (exists) {
@@ -25,7 +26,7 @@ export const createCategory = async (req, res) => {
     }
 
     const category = await Category.create({
-      name,
+      name: name.trim(),
 
       slug: slugify(name, {
         lower: true,
@@ -34,69 +35,92 @@ export const createCategory = async (req, res) => {
 
       description,
 
-      image:
-        req.file?.path || "",
+      image: req.file?.path || "",
 
-      featured,
+      featured: featured ?? false,
 
-      active,
+      active: active ?? true,
 
-      displayOrder,
+      displayOrder: Number(displayOrder) || 0,
     });
 
     return res.status(201).json({
       success: true,
-
-      message:
-        "Category created successfully",
-
+      message: "Category created successfully",
       category,
     });
-
   } catch (error) {
-
-    console.log(error);
+    console.error(error);
 
     return res.status(500).json({
       success: false,
-
-      message:
-        "Server Error",
+      message: "Server Error",
     });
-
   }
 };
 
-export const getCategories = async (
-  req,
-  res
-) => {
+// ==============================
+// Get Categories
+// ==============================
+export const getCategories = async (req, res) => {
+  try {
+    const { active, featured } = req.query;
 
-  const categories =
-    await Category.find().sort({
+    const filter = {};
+
+    if (active !== undefined) {
+      filter.active = active === "true";
+    }
+
+    if (featured !== undefined) {
+      filter.featured = featured === "true";
+    }
+
+    const categories = await Category.find(filter).sort({
       displayOrder: 1,
     });
 
-  return res.json({
-    success: true,
+    return res.json({
+      success: true,
+      count: categories.length,
+      categories,
+    });
+  } catch (error) {
+    console.error(error);
 
-    categories,
-  });
-
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch categories",
+    });
+  }
 };
 
-export const deleteCategory =
-async (req, res) => {
+// ==============================
+// Delete Category
+// ==============================
+export const deleteCategory = async (req, res) => {
+  try {
+    const category = await Category.findByIdAndDelete(
+      req.params.id
+    );
 
-  await Category.findByIdAndDelete(
-    req.params.id
-  );
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
 
-  return res.json({
-    success: true,
+    return res.json({
+      success: true,
+      message: "Category deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
 
-    message:
-      "Category deleted",
-  });
-
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
 };
