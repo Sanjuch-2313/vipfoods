@@ -5,17 +5,22 @@ import "../../styles/Coupons.css";
 
 export default function CouponForm() {
   const navigate = useNavigate();
+
   const [form, setForm] = useState({
     code: "",
     discount: "",
     expiry: "",
     minOrder: "",
-    usageLimit: ""
+    usageLimit: "",
+    categoryScope: "all",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -27,6 +32,7 @@ export default function CouponForm() {
   return (
     <form className="coupon-form" onSubmit={handleSubmit}>
       <h2>Create Coupon</h2>
+
       <input
         name="code"
         placeholder="Coupon Code"
@@ -34,6 +40,7 @@ export default function CouponForm() {
         onChange={handleChange}
         required
       />
+
       <input
         name="discount"
         type="number"
@@ -42,6 +49,7 @@ export default function CouponForm() {
         onChange={handleChange}
         required
       />
+
       <input
         name="expiry"
         type="date"
@@ -49,6 +57,7 @@ export default function CouponForm() {
         onChange={handleChange}
         required
       />
+
       <input
         name="minOrder"
         type="number"
@@ -56,6 +65,7 @@ export default function CouponForm() {
         value={form.minOrder}
         onChange={handleChange}
       />
+
       <input
         name="usageLimit"
         type="number"
@@ -63,7 +73,21 @@ export default function CouponForm() {
         value={form.usageLimit}
         onChange={handleChange}
       />
-      <button type="submit" className="submit-btn">Create</button>
+
+      <select
+        name="categoryScope"
+        value={form.categoryScope}
+        onChange={handleChange}
+      >
+        <option value="all">All Products</option>
+        <option value="pickles">Pickles</option>
+        <option value="dairy">Dairy</option>
+        <option value="fresh">Fresh</option>
+      </select>
+
+      <button type="submit" className="submit-btn">
+        Create
+      </button>
     </form>
   );
 }

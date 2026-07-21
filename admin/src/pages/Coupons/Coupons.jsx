@@ -26,7 +26,10 @@ export default function Coupons() {
   return (
     <div className="coupons-page">
       <h2>Coupons</h2>
-      <Link to="/coupons/new" className="add-btn">+ Add Coupon</Link>
+
+      <Link to="/coupons/new" className="add-btn">
+        + Add Coupon
+      </Link>
 
       <div className="coupons-filters">
         <input
@@ -45,9 +48,11 @@ export default function Coupons() {
             <th>Expiry</th>
             <th>Min Order</th>
             <th>Usage Limit</th>
+            <th>Valid For</th>
             <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
           {coupons.map((c) => (
             <tr key={c._id}>
@@ -56,9 +61,20 @@ export default function Coupons() {
               <td>{new Date(c.expiry).toLocaleDateString()}</td>
               <td>₹{c.minOrder}</td>
               <td>{c.usageLimit}</td>
+              <td style={{ textTransform: "capitalize" }}>
+                {c.categoryScope}
+              </td>
               <td>
-                <Link to={`/coupons/${c._id}`} className="edit-btn">Edit</Link>
-                <button className="delete-btn" onClick={() => handleDelete(c._id)}>Delete</button>
+                <Link to={`/coupons/${c._id}`} className="edit-btn">
+                  Edit
+                </Link>
+
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDelete(c._id)}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}

@@ -207,8 +207,7 @@ export default function Home() {
   }, []);
 
   const handleCopyCoupon = async () => {
-    if (!banner?.couponCode) return;
-
+if (!banner?.coupon?.code) return;
     try {
       await navigator.clipboard.writeText(banner.coupon.code);
       setCouponCopied(true);
@@ -336,11 +335,11 @@ export default function Home() {
                   <strong className="coupon-box__code">{banner.coupon.code}</strong>
 
                   <div className="coupon-box__meta">
-                    {banner.discountText && (
-                     <span className="coupon-box__discount">
-  {banner.coupon.discount}% OFF
-</span>
-                    )}
+                    {banner.coupon && (
+  <span className="offer-tag">
+    {banner.coupon.discount}% OFF
+  </span>
+)}
 
                    {Number(banner.coupon.minOrder) > 0 && (
                       <>
