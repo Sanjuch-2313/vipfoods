@@ -13,21 +13,27 @@ export default function Customers() {
   }, [search, page]);
 
   const fetchCustomers = async () => {
-    const data = await getCustomers({ search, page });
-    setCustomers(data.customers);
+    try {
+      const data = await getCustomers({ search, page });
+
+      console.log("Customers:", data);
+
+      setCustomers(data.customers || []);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const fetchCustomers = async () => {
-  try {
-    const data = await getCustomers({ search, page });
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this customer?")) return;
 
-    console.log(data); // <-- Add this
-
-    setCustomers(data.customers || []);
-  } catch (err) {
-    console.error(err);
-  }
-};
+    try {
+      await deleteCustomer(id);
+      fetchCustomers();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="customers-page">
@@ -52,6 +58,7 @@ export default function Customers() {
             <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
           {customers.map((c) => (
             <tr key={c._id}>
@@ -61,17 +68,38 @@ export default function Customers() {
               <td>{c.ordersCount}</td>
               <td>
                 <Link to={`/customers/${c._id}`}>View</Link>
-                <button className="delete-btn" onClick={() => handleDelete(c._id)}>Delete</button>
+
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDelete(c._id)}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
+
+          {customers.length === 0 && (
+            <tr>
+              <td colSpan="5">No customers found.</td>
+            </tr>
+          )}
         </tbody>
       </table>
 
       <div className="pagination">
-        <button disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</button>
+        <button
+          disabled={page === 1}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          Prev
+        </button>
+
         <span>Page {page}</span>
-        <button onClick={() => setPage(page + 1)}>Next</button>
+
+        <button onClick={() => setPage((p) => p + 1)}>
+          Next
+        </button>
       </div>
     </div>
   );
