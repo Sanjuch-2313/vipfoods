@@ -1,44 +1,313 @@
 .order-success-page {
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-  background: #fafafa;
+  padding: 60px 20px 80px;
 }
 
 .success-card {
-  padding: 2rem;
+  width: min(560px, 100%);
+  padding: clamp(28px, 5vw, 44px);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(18px) saturate(160%);
   text-align: center;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .success-card h2 {
-  color: #4caf50;
-  margin-bottom: 1rem;
+  margin: 0 0 6px;
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
 }
 
-.success-card h3 {
-  font-size: 1.5rem;
-  margin: 1rem 0;
-  color: #333;
+.success-card > p {
+  margin: 4px 0;
+  color: #57534e;
 }
 
-.cta-btn.full {
-  margin-top: 1.5rem;
-  display: inline-block;
-  width: 100%;
-  padding: 0.75rem;
-  background: #ff5722;
-  color: #fff;
+.order-number {
+  margin: 6px 0 10px;
+  font-size: clamp(1.3rem, 3vw, 1.7rem);
+  color: #b91c1c;
+  letter-spacing: 0.5px;
+}
+
+.success-card hr {
   border: none;
-  border-radius: 8px;
-  text-decoration: none;
-  font-size: 1rem;
-  cursor: pointer;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  margin: 26px 0;
 }
 
-.cta-btn.full:hover {
-  background: #e64a19;
+/* ---------------- Review section ---------------- */
+
+.review-section {
+  text-align: center;
+}
+
+.review-heading {
+  margin: 0 0 18px;
+  font-size: 1.3rem;
+}
+
+.star-rating {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.star-btn {
+  border: none;
+  background: transparent;
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  line-height: 1;
+  color: #d4d4d8;
+  cursor: pointer;
+  transition: transform 0.18s ease, color 0.18s ease;
+  padding: 2px;
+}
+
+.star-btn:hover {
+  transform: scale(1.15);
+}
+
+.star-btn--filled {
+  color: #f59e0b;
+}
+
+.rating-label {
+  margin: 0 0 26px;
+  font-weight: 700;
+  color: #92400e;
+  font-size: 1rem;
+  letter-spacing: 0.3px;
+}
+
+.experience-block {
+  margin-bottom: 26px;
+  text-align: left;
+}
+
+.experience-label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #78716c;
+  text-align: center;
+}
+
+.experience-pills {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.experience-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(148, 163, 184, 0.35);
+  background: rgba(255, 255, 255, 0.7);
+  color: #44403c;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease,
+    color 0.2s ease;
+}
+
+.experience-pill:hover {
+  transform: translateY(-2px);
+  border-color: rgba(22, 163, 74, 0.4);
+}
+
+.experience-pill--active {
+  border-color: #16a34a;
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+}
+
+.experience-pill__emoji {
+  font-size: 1.15rem;
+}
+
+.review-field {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.review-input,
+.review-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid rgba(148, 163, 184, 0.35);
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 0.98rem;
+  font-family: inherit;
+  color: #1c1917;
+  background: rgba(255, 255, 255, 0.85);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-input:focus,
+.review-textarea:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
+}
+
+.review-textarea {
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.6;
+}
+
+.submit-review-btn {
+  width: 100%;
+  min-height: 56px;
+  margin-top: 6px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 18px 40px rgba(22, 163, 74, 0.3);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+}
+
+.submit-review-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 48px rgba(22, 163, 74, 0.38);
+}
+
+.submit-review-btn:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.submit-review-btn__loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------- Thank you state ---------------- */
+
+.thank-you-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0 6px;
+  animation: fadeUp 0.4s ease;
+}
+
+.thank-you-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 6px;
+  animation: popIn 0.4s ease;
+}
+
+.thank-you-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.thank-you-block h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #15803d;
+}
+
+.thank-you-block p {
+  margin: 0;
+  max-width: 380px;
+  color: #57534e;
+  line-height: 1.6;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ---------------- Continue shopping ---------------- */
+
+.continue-shopping-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+/* ---------------- Responsive ---------------- */
+
+@media (max-width: 640px) {
+  .order-success-page {
+    padding: 40px 16px 60px;
+  }
+
+  .success-card {
+    padding: 26px 20px;
+    border-radius: 22px;
+  }
+
+  .star-btn {
+    font-size: 2.1rem;
+  }
+
+  .experience-pill {
+    flex: 1 1 calc(50% - 10px);
+    justify-content: center;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 992px) {
+  .success-card {
+    width: min(520px, 100%);
+  }
 }

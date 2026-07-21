@@ -2495,181 +2495,200 @@
   }
 }
 /* =========================================================
-   CATEGORY STORIES (sticky, responsive, overlap-proof)
+   CATEGORY STORIES
 ========================================================= */
 
-:root {
-  --navbar-height: 76px;
-  --category-stories-gap: clamp(12px, 2vw, 22px);
-  --category-stories-padding-y: clamp(8px, 1.6vw, 14px);
-  --category-circle-size: clamp(52px, 8vw, 74px);
+.category-stories-section{
+    position:relative;
+    width:100%;
+    margin:18px auto 24px;
+    padding:0;
+    background:transparent;
+    border:none;
+    box-shadow:none;
+    z-index:5;
 }
 
-.category-stories-section {
-  width: 100%;
-  position: sticky;
-  top: var(--navbar-height);
-  z-index: 90;
+.category-stories-track{
+    width:min(1320px,100%);
+    margin:auto;
 
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+    display:flex;
+    justify-content:center;
+    align-items:center;
 
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    gap:22px;
 
-  padding-block: var(--category-stories-padding-y);
-  margin-bottom: clamp(14px, 2.5vw, 22px);
+    padding:0 20px;
 
-  /* No fixed height: content defines it, so it can never clip or overlap */
-  height: auto;
-  min-height: 0;
+    overflow-x:auto;
+    overflow-y:hidden;
+
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
 }
 
-.category-stories-track {
-  width: 100%;
-  max-width: 1320px;
-  margin-inline: auto;
-
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  flex-wrap: nowrap;
-
-  gap: var(--category-stories-gap);
-
-  padding-inline: clamp(14px, 4vw, 22px);
-
-  overflow-x: auto;
-  overflow-y: visible;
-
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
+.category-stories-track::-webkit-scrollbar{
+    display:none;
 }
 
-.category-stories-track::-webkit-scrollbar {
-  display: none;
+.category-story-item{
+    flex:0 0 auto;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+
+    text-decoration:none;
 }
 
-.category-story-item {
-  flex: 0 0 auto;
+.category-story-circle{
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    width:72px;
+    height:72px;
 
-  text-decoration: none;
-  transition: transform 0.25s ease;
+    padding:3px;
+
+    border-radius:50%;
+
+    background:linear-gradient(135deg,#ff8a00,#ff5e00);
+
+    transition:.3s;
 }
 
-.category-story-item:hover {
-  transform: translateY(-4px);
+.category-story-circle img{
+
+    width:100%;
+    height:100%;
+
+    object-fit:cover;
+
+    border-radius:50%;
+
+    border:3px solid #fff;
+
+    display:block;
+
 }
 
-.category-story-circle {
-  width: var(--category-circle-size);
-  height: var(--category-circle-size);
-  flex-shrink: 0;
+.category-story-item:hover .category-story-circle{
 
-  padding: 3px;
-  border-radius: 50%;
+    transform:scale(1.08);
 
-  background: linear-gradient(135deg, #ff8a00, #ff6200);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-
-  transition: 0.3s;
 }
 
-.category-story-circle img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 3px solid #fff;
+.category-story-label{
+
+    margin-top:8px;
+
+    width:74px;
+
+    text-align:center;
+
+    font-size:13px;
+    font-weight:600;
+
+    color:#222;
+
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+
 }
 
-.category-story-circle.active {
-  background: linear-gradient(135deg, #ff512f, #dd2476, #ffb347);
-  background-size: 300% 300%;
-  animation: categoryActiveGradient 4s linear infinite;
+/* ================= DESKTOP ================= */
+
+@media(min-width:992px){
+
+.category-stories-track{
+
+justify-content:center;
+
 }
 
-@keyframes categoryActiveGradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 
-.category-story-label {
-  margin-top: 8px;
-  width: calc(var(--category-circle-size) + 2px);
+/* ================= TABLET ================= */
 
-  text-align: center;
-  font-size: clamp(9px, 1.6vw, 13px);
-  font-weight: 600;
-  color: #222;
+@media(max-width:991px){
 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.2;
+.category-story-circle{
+
+width:66px;
+height:66px;
+
 }
 
-/* Prevent page-level horizontal overflow from the scroll track */
-body,
-html {
-  overflow-x: hidden;
+.category-story-label{
+
+width:66px;
+font-size:12px;
+
 }
 
-/* =========================================================
-   BREAKPOINT-DRIVEN NAVBAR HEIGHT (drives --navbar-height,
-   so sticky `top` always matches the real navbar, no guessing)
-========================================================= */
-
-@media (max-width: 1100px) {
-  :root {
-    --navbar-height: 72px;
-  }
 }
 
-@media (max-width: 850px) {
-  :root {
-    --navbar-height: 68px;
-  }
+/* ================= MOBILE ================= */
 
-  .category-stories-track {
-    justify-content: center;
-  }
+@media(max-width:768px){
+
+.category-stories-section{
+
+margin:14px 0 20px;
+
 }
 
-@media (max-width: 768px) {
-  :root {
-    --navbar-height: 64px;
-  }
+.category-stories-track{
 
-  .category-stories-track {
-    justify-content: flex-start;
-  }
+justify-content:flex-start;
+
+padding:0 16px;
+
+gap:16px;
+
 }
 
-@media (max-width: 640px) {
-  :root {
-    --navbar-height: 60px;
-  }
+.category-story-circle{
+
+width:58px;
+height:58px;
+
+padding:2px;
+
 }
 
-@media (max-width: 420px) {
-  :root {
-    --navbar-height: 56px;
-  }
+.category-story-circle img{
+
+border:2px solid #fff;
+
 }
 
-/* iOS Safari: dynamic toolbar changes viewport height mid-scroll.
-   Using svh/dvh-aware fallback keeps `top` accurate without JS. */
-@supports (top: env(safe-area-inset-top)) {
-  .category-stories-section {
-    top: calc(var(--navbar-height) + env(safe-area-inset-top, 0px));
-  }
+.category-story-label{
+
+width:60px;
+
+font-size:11px;
+
+}
+
+}
+
+/* ================= SMALL PHONES ================= */
+
+@media(max-width:420px){
+
+.category-story-circle{
+
+width:54px;
+height:54px;
+
+}
+
+.category-story-label{
+
+width:56px;
+font-size:10px;
+
+}
+
 }

@@ -1,53 +1,145 @@
-.reviews-page {
+.review-page {
   padding: 24px;
 }
 
-.reviews-table {
+.review-page h2 {
+  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #222;
+}
+
+.review-table-wrapper {
+  background: #fff;
+  border-radius: 14px;
+  overflow-x: auto;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.review-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
+  min-width: 1100px;
 }
 
-.reviews-table th,
-.reviews-table td {
-  border: 1px solid #e5e7eb;
-  padding: 10px;
+.review-table thead {
+  background: #f8f8f8;
+}
+
+.review-table th,
+.review-table td {
+  padding: 16px;
   text-align: left;
+  border-bottom: 1px solid #ececec;
+  vertical-align: top;
 }
 
-.reply-box {
-  display: flex;
-  gap: 8px;
+.review-table th {
+  font-size: 14px;
+  color: #555;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
-.reply-box input {
-  padding: 6px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+.review-table td {
+  font-size: 14px;
+  color: #333;
 }
 
-.reply-box button {
-  background: #2563eb;
-  color: #fff;
-  border: none;
+.review-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.review-comment {
+  max-width: 320px;
+  white-space: normal;
+  line-height: 1.6;
+}
+
+.review-rating {
+  font-size: 18px;
+  color: #ffb400;
+}
+
+.status-badge {
+  display: inline-block;
   padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-.reply-box button:hover {
-  background: #1e40af;
+.status-approved {
+  background: #d4edda;
+  color: #1d7a39;
 }
 
-.delete-btn {
-  background: #dc2626;
-  color: #fff;
+.status-pending {
+  background: #fff3cd;
+  color: #9a6700;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-approve,
+.btn-delete {
   border: none;
-  padding: 6px 10px;
-  border-radius: 6px;
+  padding: 9px 14px;
+  border-radius: 8px;
   cursor: pointer;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  transition: 0.25s;
 }
 
-.delete-btn:hover {
-  background: #b91c1c;
+.btn-approve {
+  background: #28a745;
+}
+
+.btn-approve:hover {
+  background: #218838;
+}
+
+.btn-delete {
+  background: #dc3545;
+}
+
+.btn-delete:hover {
+  background: #c82333;
+}
+
+.empty-state {
+  padding: 40px;
+  text-align: center;
+  color: #777;
+  font-size: 15px;
+}
+
+@media (max-width: 768px) {
+  .review-page {
+    padding: 16px;
+  }
+
+  .review-page h2 {
+    font-size: 22px;
+  }
+
+  .review-table th,
+  .review-table td {
+    padding: 12px;
+  }
+
+  .btn-approve,
+  .btn-delete {
+    width: 100%;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
 }

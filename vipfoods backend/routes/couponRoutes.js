@@ -6,6 +6,7 @@ import {
   createCoupon,
   updateCoupon,
   deleteCoupon,
+  validateCoupon,
 } from "../controllers/couponController.js";
 
 const router = express.Router();
@@ -15,6 +16,9 @@ router.get("/", getCoupons);
 
 // Get active coupons (For Home Banner)
 router.get("/active", getActiveCoupons);
+
+// Validate coupon (Checkout)
+router.post("/validate", validateCoupon);
 
 // Get coupon by ID
 router.get("/:id", getCouponById);

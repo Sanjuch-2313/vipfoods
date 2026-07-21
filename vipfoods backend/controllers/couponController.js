@@ -142,3 +142,79 @@ export const deleteCoupon = async (req, res) => {
     });
   }
 };
+
+// ✅ Validate Coupon (Checkout)
+export const validateCoupon = async (req, res) => {
+  try {
+    const { code, subtotal, category = "all" } = req.body;
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        message: "Coupon code is required",
+      });
+    }
+
+    const coupon = await Coupon.findOne({
+      code: code.trim().toUpperCase(),
+    });
+
+    if (!coupon) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid coupon code",
+      });
+    }
+
+    // Expiry Check
+    if (coupon.expiry && new Date() > coupon.expiry) {
+      return res.status(400).json({
+        success: false,
+        message: "Coupon has expired",
+      });
+    }
+
+    // Minimum Order Check
+    if (coupon.minOrder && subtotal < coupon.minOrder) {
+      return res.status(400).json({
+        success: false,
+        message: `Minimum order should be ₹${coupon.minOrder}`,
+      });
+    }
+
+    // Category Check
+    if (
+      coupon.categoryScope !== "all" &&
+      coupon.categoryScope !== category
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Coupon is not applicable for this category",
+      });
+    }
+
+    // Usage Limit Check
+    if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
+      return res.status(400).json({
+        success: false,
+        message: "Coupon usage limit reached",
+      });
+    }
+
+    const discountAmount = (subtotal * coupon.discount) / 100;
+
+    return res.json({
+      success: true,
+      coupon,
+      discountAmount,
+      finalAmount: subtotal - discountAmount,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

@@ -2,15 +2,31 @@ import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema(
   {
+    order: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+      required: true,
+    },
+
+    orderNumber: {
+      type: String,
+      required: true,
+    },
+
     product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
-      required: true,
+      default: null,
     },
 
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
+      required: true,
+    },
+
+    customerName: {
+      type: String,
       required: true,
     },
 
@@ -21,9 +37,19 @@ const reviewSchema = new mongoose.Schema(
       max: 5,
     },
 
+    title: {
+      type: String,
+      default: "",
+    },
+
     comment: {
       type: String,
       default: "",
+    },
+
+    approved: {
+      type: Boolean,
+      default: false,
     },
   },
   {
