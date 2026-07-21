@@ -17,12 +17,17 @@ export default function Customers() {
     setCustomers(data.customers);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Delete this customer?")) {
-      await deleteCustomer(id);
-      fetchCustomers();
-    }
-  };
+  const fetchCustomers = async () => {
+  try {
+    const data = await getCustomers({ search, page });
+
+    console.log(data); // <-- Add this
+
+    setCustomers(data.customers || []);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   return (
     <div className="customers-page">

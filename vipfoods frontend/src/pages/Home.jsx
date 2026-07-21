@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { FiPercent, FiCopy, FiArrowRight } from "react-icons/fi";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
@@ -65,6 +65,14 @@ const categories = [
     className: "dairy-card",
     image: dairyCard,
   },
+];
+
+const categoryStories = [
+  { name: "VIP Pickles", image: picklesCard, category: "pickles" },
+  { name: "Fresh Vegetables", image: freshCard, category: "fresh" },
+  { name: "Home Snacks", image: snacksCard, category: "snacks" },
+  { name: "Spices", image: spicesCard, category: "spices" },
+  { name: "Dairy", image: dairyCard, category: "dairy" },
 ];
 
 const highlights = [
@@ -144,6 +152,35 @@ function TiltCard({ children, className = "" }) {
   );
 }
 
+function CategoryStories() {
+  const [searchParams] = useSearchParams();
+  const activeCategory = searchParams.get("category");
+
+  return (
+    <section className="category-stories-section">
+      <div className="category-stories-track">
+        {categoryStories.map((cat) => (
+          <Link
+            key={cat.category}
+            to={`/products?category=${cat.category}`}
+            className="category-story-item"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          >
+            <div
+              className={`category-story-circle ${
+                activeCategory === cat.category ? "active" : ""
+              }`}
+            >
+              <img src={cat.image} alt={cat.name} />
+            </div>
+            <span className="category-story-label">{cat.name}</span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const [banner, setBanner] = useState(null);
   const [couponCopied, setCouponCopied] = useState(false);
@@ -195,6 +232,8 @@ export default function Home() {
       <div className="page-accent accent-lime"></div>
       <div className="page-accent accent-orange"></div>
       <div className="page-accent accent-red-b"></div>
+
+      <CategoryStories />
 
       <section id="home" className="vip-hero">
         <div className="hero-noise"></div>

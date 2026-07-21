@@ -19,6 +19,7 @@ import settingsRoutes from "./routes/settingsRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import adminAuthRoutes from "./routes/adminAuthRoutes.js";
 import homeBannerRoutes from "./routes/homeBannerRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 
 
@@ -63,6 +64,7 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/home-banner", homeBannerRoutes);
+app.use("/api/users", userRoutes);
 
 app.use(errorMiddleware);
 
