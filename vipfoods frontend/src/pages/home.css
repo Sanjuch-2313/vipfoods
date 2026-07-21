@@ -2495,43 +2495,57 @@
   }
 }
 /* =========================================================
-   CATEGORY STORIES
+   CATEGORY STORIES (sticky, responsive, overlap-proof)
 ========================================================= */
+
+:root {
+  --navbar-height: 76px;
+  --category-stories-gap: clamp(12px, 2vw, 22px);
+  --category-stories-padding-y: clamp(8px, 1.6vw, 14px);
+  --category-circle-size: clamp(52px, 8vw, 74px);
+}
 
 .category-stories-section {
   width: 100%;
-  padding: 18px 0 12px;
-
-  background: rgba(255, 255, 255, 0.78);
-
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-
   position: sticky;
-  top: 82px;
+  top: var(--navbar-height);
   z-index: 90;
+
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+  padding-block: var(--category-stories-padding-y);
+  margin-bottom: clamp(14px, 2.5vw, 22px);
+
+  /* No fixed height: content defines it, so it can never clip or overlap */
+  height: auto;
+  min-height: 0;
 }
 
 .category-stories-track {
-  width: min(1320px, calc(100% - 40px));
-  margin: 0 auto;
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
 
   display: flex;
+  align-items: flex-start;
   justify-content: center;
-  align-items: center;
+  flex-wrap: nowrap;
 
-  gap: 26px;
+  gap: var(--category-stories-gap);
 
-  padding: 0 20px 6px;
+  padding-inline: clamp(14px, 4vw, 22px);
 
   overflow-x: auto;
-
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+  overflow-y: visible;
 
   scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 .category-stories-track::-webkit-scrollbar {
@@ -2539,21 +2553,14 @@
 }
 
 .category-story-item {
+  flex: 0 0 auto;
+
   display: flex;
   flex-direction: column;
   align-items: center;
 
-  gap: 10px;
-
   text-decoration: none;
-
-  flex-shrink: 0;
-
-  scroll-snap-align: center;
-
-  cursor: pointer;
-
-  transition: transform .3s ease;
+  transition: transform 0.25s ease;
 }
 
 .category-story-item:hover {
@@ -2561,182 +2568,108 @@
 }
 
 .category-story-circle {
-  width: 82px;
-  height: 82px;
+  width: var(--category-circle-size);
+  height: var(--category-circle-size);
+  flex-shrink: 0;
 
-  padding: 4px;
-
+  padding: 3px;
   border-radius: 50%;
 
-  background: linear-gradient(
-    135deg,
-    #ff8a00,
-    #d35400
-  );
+  background: linear-gradient(135deg, #ff8a00, #ff6200);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 
-  box-shadow:
-    0 8px 22px rgba(0,0,0,.12);
-
-  transition:
-    transform .35s ease,
-    box-shadow .35s ease;
+  transition: 0.3s;
 }
 
 .category-story-circle img {
   width: 100%;
   height: 100%;
-
   display: block;
-
   object-fit: cover;
-
   border-radius: 50%;
-
   border: 3px solid #fff;
-
-  background: #fff;
-}
-
-.category-story-item:hover .category-story-circle {
-  transform: scale(1.08);
-
-  box-shadow:
-    0 14px 30px rgba(0,0,0,.18);
 }
 
 .category-story-circle.active {
-  background:
-    linear-gradient(
-      135deg,
-      #ff512f,
-      #dd2476,
-      #ffb347
-    );
-
+  background: linear-gradient(135deg, #ff512f, #dd2476, #ffb347);
   background-size: 300% 300%;
-
-  animation: categoryActiveGradient 4s ease infinite;
+  animation: categoryActiveGradient 4s linear infinite;
 }
 
 @keyframes categoryActiveGradient {
-
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .category-story-label {
-  font-size: .82rem;
-
-  font-weight: 600;
-
-  color: #1f1f1f;
+  margin-top: 8px;
+  width: calc(var(--category-circle-size) + 2px);
 
   text-align: center;
+  font-size: clamp(9px, 1.6vw, 13px);
+  font-weight: 600;
+  color: #222;
 
   white-space: nowrap;
-
-  max-width: 90px;
-
   overflow: hidden;
-
   text-overflow: ellipsis;
-
   line-height: 1.2;
 }
 
-/* =========================================================
-   TABLET
-========================================================= */
-
-@media (max-width:1024px){
-
-.category-stories-track{
-
-gap:22px;
-
-}
-
-.category-story-circle{
-
-width:72px;
-height:72px;
-
-}
-
-.category-story-label{
-
-font-size:.76rem;
-
-max-width:76px;
-
-}
-
+/* Prevent page-level horizontal overflow from the scroll track */
+body,
+html {
+  overflow-x: hidden;
 }
 
 /* =========================================================
-   MOBILE
+   BREAKPOINT-DRIVEN NAVBAR HEIGHT (drives --navbar-height,
+   so sticky `top` always matches the real navbar, no guessing)
 ========================================================= */
 
-@media (max-width:768px){
-
-.category-stories-section{
-
-top:72px;
-
-padding:14px 0 10px;
-
+@media (max-width: 1100px) {
+  :root {
+    --navbar-height: 72px;
+  }
 }
 
-.category-stories-track{
+@media (max-width: 850px) {
+  :root {
+    --navbar-height: 68px;
+  }
 
-justify-content:flex-start;
-
-gap:18px;
-
-padding:0 16px 6px;
-
+  .category-stories-track {
+    justify-content: center;
+  }
 }
 
-.category-story-circle{
+@media (max-width: 768px) {
+  :root {
+    --navbar-height: 64px;
+  }
 
-width:64px;
-height:64px;
-
+  .category-stories-track {
+    justify-content: flex-start;
+  }
 }
 
-.category-story-label{
-
-font-size:.70rem;
-
-max-width:68px;
-
+@media (max-width: 640px) {
+  :root {
+    --navbar-height: 60px;
+  }
 }
 
+@media (max-width: 420px) {
+  :root {
+    --navbar-height: 56px;
+  }
 }
 
-@media (max-width:480px){
-
-.category-stories-track{
-
-gap:16px;
-
-}
-
-.category-story-circle{
-
-width:60px;
-height:60px;
-
-}
-
+/* iOS Safari: dynamic toolbar changes viewport height mid-scroll.
+   Using svh/dvh-aware fallback keeps `top` accurate without JS. */
+@supports (top: env(safe-area-inset-top)) {
+  .category-stories-section {
+    top: calc(var(--navbar-height) + env(safe-area-inset-top, 0px));
+  }
 }
