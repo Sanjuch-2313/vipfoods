@@ -6,11 +6,6 @@ import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import picklesCard from "../assets/pickles.png";
-import snacksCard from "../assets/homefoods.png";
-import freshCard from "../assets/vegetable.png";
-import spicesCard from "../assets/spices.png";
-import dairyCard from "../assets/dairy.png";
 import bussiness1 from "../assets/bussiness1.jpg";
 import bussiness2 from "../assets/bussiness2.jpg";
 import bussiness3 from "../assets/bussiness3.jpg";
@@ -18,66 +13,16 @@ import bussiness4 from "../assets/bussiness4.jpg";
 import bussiness5 from "../assets/bussiness5.jpg";
 import "./home.css";
 import { getHomeBanner } from "../services/homeBannerService";
-import {
-  getCategories,
-  getFeaturedCategories,
-} from "../services/categoryService";
+import { getCategories } from "../services/categoryService";
 
-const categories = [
-  {
-    id: "pickles",
-    title: "VIP Pickles",
-    eyebrow: "Sun-cured jars",
-    desc: "Mango, gongura, lemon and seasonal pickles made in small home-style batches.",
-    emoji: "🫙",
-    className: "pickle-card",
-    image: picklesCard,
-  },
-  {
-    id: "snacks",
-    title: "Home Snacks",
-    eyebrow: "Fresh crunch",
-    desc: "Roasted mixtures, traditional bites and tea-time snacks packed fresh.",
-    emoji: "🥨",
-    className: "snack-card",
-    image: snacksCard,
-  },
-  {
-    id: "fresh",
-    title: "VIP Fresh",
-    eyebrow: "Vegetables",
-    desc: "Leafy greens and daily vegetables are sourced from trusted local farms.",
-    emoji: "🥬",
-    className: "fresh-card",
-    image: freshCard,
-  },
-  {
-    id: "spices",
-    title: "VIP Spices",
-    eyebrow: "Pure powders",
-    desc: "Turmeric, chilli powder and masalas stone-ground for bold aroma.",
-    emoji: "🌶️",
-    className: "spice-card",
-    image: spicesCard,
-  },
-  {
-    id: "dairy",
-    title: "VIP Dairy",
-    eyebrow: "Creamy dairy",
-    desc: "Curd, milk, ghee and paneer made with farm-fresh milk for every kitchen.",
-    emoji: "🥛",
-    className: "dairy-card",
-    image: dairyCard,
-  },
-];
-
-const categoryStories = [
-  { name: "VIP Pickles", image: picklesCard, category: "pickles" },
-  { name: "Fresh Vegetables", image: freshCard, category: "fresh" },
-  { name: "Home Snacks", image: snacksCard, category: "snacks" },
-  { name: "Spices", image: spicesCard, category: "spices" },
-  { name: "Dairy", image: dairyCard, category: "dairy" },
-];
+const PLACEHOLDER_IMAGE =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'>
+      <rect width='100%' height='100%' fill='#f3f0e8'/>
+      <text x='50%' y='50%' font-family='sans-serif' font-size='24' fill='#c2a878' text-anchor='middle' dominant-baseline='middle'>VIP Foods</text>
+    </svg>`
+  );
 
 const highlights = [
   "No preservatives",
@@ -156,26 +101,35 @@ function TiltCard({ children, className = "" }) {
   );
 }
 
-function CategoryStories() {
+function CategoryStories({ categories }) {
   const [searchParams] = useSearchParams();
   const activeCategory = searchParams.get("category");
+
+  if (!categories.length) return null;
 
   return (
     <section className="category-stories-section">
       <div className="category-stories-track">
-        {categoryStories.map((cat) => (
+        {categories.map((cat) => (
           <Link
-            key={cat.category}
-            to={`/products?category=${cat.category}`}
+            key={cat._id}
+            to={`/products?category=${cat.slug}`}
             className="category-story-item"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
             <div
               className={`category-story-circle ${
-                activeCategory === cat.category ? "active" : ""
+                activeCategory === cat.slug ? "active" : ""
               }`}
             >
-              <img src={cat.image} alt={cat.name} />
+              <img
+                src={cat.image || PLACEHOLDER_IMAGE}
+                alt={cat.name}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = PLACEHOLDER_IMAGE;
+                }}
+              />
             </div>
             <span className="category-story-label">{cat.name}</span>
           </Link>
@@ -188,6 +142,8 @@ function CategoryStories() {
 export default function Home() {
   const [banner, setBanner] = useState(null);
   const [couponCopied, setCouponCopied] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -210,8 +166,45 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const data = await getCategories();
+
+        const list = Array.isArray(data) ? data : [];
+
+        const activeSorted = list
+          .filter((cat) => cat.active !== false)
+          .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+        if (isMounted) {
+          setCategories(activeSorted);
+        }
+      } catch (err) {
+        console.error(err);
+        if (isMounted) {
+          setCategories([]);
+        }
+      } finally {
+        if (isMounted) {
+          setCategoriesLoading(false);
+        }
+      }
+    };
+
+    loadCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleCopyCoupon = async () => {
-if (!banner?.coupon?.code) return;
+    if (!banner?.coupon?.code) return;
+
     try {
       await navigator.clipboard.writeText(banner.coupon.code);
       setCouponCopied(true);
@@ -236,7 +229,7 @@ if (!banner?.coupon?.code) return;
       <div className="page-accent accent-orange"></div>
       <div className="page-accent accent-red-b"></div>
 
-      <CategoryStories />
+      <CategoryStories categories={categories} />
 
       <section id="home" className="vip-hero">
         <div className="hero-noise"></div>
@@ -322,7 +315,7 @@ if (!banner?.coupon?.code) return;
 
             {banner.subtitle && <p className="offer-subtitle">{banner.subtitle}</p>}
 
-            {banner.coupon &&  (
+            {banner.coupon && (
               <div
                 className="coupon-box"
                 role="button"
@@ -340,12 +333,12 @@ if (!banner?.coupon?.code) return;
 
                   <div className="coupon-box__meta">
                     {banner.coupon && (
-  <span className="offer-tag">
-    {banner.coupon.discount}% OFF
-  </span>
-)}
+                      <span className="offer-tag">
+                        {banner.coupon.discount}% OFF
+                      </span>
+                    )}
 
-                   {Number(banner.coupon.minOrder) > 0 && (
+                    {Number(banner.coupon.minOrder) > 0 && (
                       <>
                         <span className="coupon-box__divider"></span>
                         <span className="coupon-box__min">
@@ -390,50 +383,67 @@ if (!banner?.coupon?.code) return;
           <h2>Colors that feel like pickles, farms and spice tins.</h2>
         </div>
 
-        <div className="category-carousel">
-          <Swiper
-            modules={[Autoplay, Navigation, Pagination]}
-            spaceBetween={24}
-            loop
-            autoplay={{
-              delay: 3500,
-              disableOnInteraction: false,
-            }}
-            pagination={{ clickable: true }}
-            navigation
-            breakpoints={{
-              0: { slidesPerView: 1 },
-              640: { slidesPerView: 1 },
-              768: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
-              1320: { slidesPerView: 4 },
-            }}
-          >
-            {categories.map((category) => (
-              <SwiperSlide key={category.id}>
-                <TiltCard className={`glass-card category-card ${category.className}`}>
-                  <img src={category.image} alt={category.title} className="category-art" />
-                  <span className="category-eyebrow">{category.eyebrow}</span>
-                  <div className="category-emoji">{category.emoji}</div>
-                  <h3>{category.title}</h3>
-                  <p>{category.desc}</p>
-                  <Link
-                    to={`/products?category=${category.id}`}
-                    className="category-link"
-                    onClick={() =>
-                      window.scrollTo({
-                        top: 0,
-                        behavior: "smooth",
-                      })
-                    }
-                  >
-                    Explore
-                  </Link>
-                </TiltCard>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
+        {categoriesLoading ? (
+          <div className="empty-state">
+            <h3>Loading categories...</h3>
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="empty-state">
+            <h3>No categories available yet</h3>
+            <p>Check back soon for new categories.</p>
+          </div>
+        ) : (
+          <div className="category-carousel">
+            <Swiper
+              modules={[Autoplay, Navigation, Pagination]}
+              spaceBetween={24}
+              loop
+              autoplay={{
+                delay: 3500,
+                disableOnInteraction: false,
+              }}
+              pagination={{ clickable: true }}
+              navigation
+              breakpoints={{
+                0: { slidesPerView: 1 },
+                640: { slidesPerView: 1 },
+                768: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+                1320: { slidesPerView: 4 },
+              }}
+            >
+              {categories.map((category) => (
+                <SwiperSlide key={category._id}>
+                  <TiltCard className={`glass-card category-card ${category.slug}-card`}>
+                    <img
+                      src={category.image || PLACEHOLDER_IMAGE}
+                      alt={category.name}
+                      className="category-art"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = PLACEHOLDER_IMAGE;
+                      }}
+                    />
+                    <h3>{category.name}</h3>
+                    <p>{category.description || "Freshly made VIP Foods essentials."}</p>
+                    <Link
+                      to={`/products?category=${category.slug}`}
+                      className="category-link"
+                      onClick={() =>
+                        window.scrollTo({
+                          top: 0,
+                          behavior: "smooth",
+                        })
+                      }
+                    >
+                      Explore
+                    </Link>
+                  </TiltCard>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+        )}
       </section>
 
       <section id="about" className="section-wrap why-section">

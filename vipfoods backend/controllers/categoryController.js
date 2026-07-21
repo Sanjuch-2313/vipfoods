@@ -32,7 +32,12 @@ export const createCategory = async (req, res) => {
       });
     }
 
-    const category = await Category.create({
+    console.log("=================================");
+console.log("REQ.FILE =", req.file);
+console.log("REQ.BODY =", req.body);
+console.log("=================================");
+
+const category = await Category.create({
       name: name.trim(),
       slug,
       description,
