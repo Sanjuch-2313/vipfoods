@@ -1,5 +1,4 @@
 import slugify from "slugify";
-import Category from "../models/Category.js";
 
 // ==============================
 // Create Category
