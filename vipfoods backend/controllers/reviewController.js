@@ -6,14 +6,17 @@ export const getReviews = async (req, res) => {
     const reviews = await Review.find()
       .populate({
         path: "customer",
+        model: "User",
         select: "name email",
       })
       .populate({
         path: "product",
+        model: "Product",
         select: "name",
       })
       .populate({
         path: "order",
+        model: "Order",
         select: "orderNumber",
       })
       .sort({ createdAt: -1 });
@@ -23,11 +26,14 @@ export const getReviews = async (req, res) => {
       reviews,
     });
   } catch (err) {
+    console.error("========== REVIEW ERROR ==========");
     console.error(err);
+    console.error(err.stack);
 
     return res.status(500).json({
       success: false,
-      message: err.message,
+      error: err.message,
+      stack: err.stack, // Remove this after debugging
     });
   }
 };
@@ -36,9 +42,21 @@ export const getReviews = async (req, res) => {
 export const getReviewById = async (req, res) => {
   try {
     const review = await Review.findById(req.params.id)
-      .populate("customer", "name email")
-      .populate("order", "orderNumber")
-      .populate("product", "name");
+      .populate({
+        path: "customer",
+        model: "User",
+        select: "name email",
+      })
+      .populate({
+        path: "order",
+        model: "Order",
+        select: "orderNumber",
+      })
+      .populate({
+        path: "product",
+        model: "Product",
+        select: "name",
+      });
 
     if (!review) {
       return res.status(404).json({
@@ -47,14 +65,17 @@ export const getReviewById = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       review,
     });
   } catch (err) {
-    res.status(500).json({
+    console.error(err);
+
+    return res.status(500).json({
       success: false,
       error: err.message,
+      stack: err.stack,
     });
   }
 };
@@ -73,11 +94,11 @@ export const createReview = async (req, res) => {
       comment,
     } = req.body;
 
-    // Prevent duplicate review for same order
-const exists = await Review.findOne({
-  order,
-  customer,
-});
+    const exists = await Review.findOne({
+      order,
+      customer,
+    });
+
     if (exists) {
       return res.status(400).json({
         success: false,
@@ -96,14 +117,17 @@ const exists = await Review.findOne({
       comment,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       review,
     });
   } catch (err) {
-    res.status(400).json({
+    console.error(err);
+
+    return res.status(400).json({
       success: false,
       error: err.message,
+      stack: err.stack,
     });
   }
 };
@@ -124,14 +148,17 @@ export const approveReview = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       review,
     });
   } catch (err) {
-    res.status(500).json({
+    console.error(err);
+
+    return res.status(500).json({
       success: false,
       error: err.message,
+      stack: err.stack,
     });
   }
 };
@@ -148,14 +175,17 @@ export const deleteReview = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: "Review deleted",
     });
   } catch (err) {
-    res.status(500).json({
+    console.error(err);
+
+    return res.status(500).json({
       success: false,
       error: err.message,
+      stack: err.stack,
     });
   }
 };
