@@ -240,7 +240,7 @@ export default function Home() {
 
         <div className="hero-shell">
           <div className="hero-copy">
-            <p className="hero-kicker">Organic pickles, snacks, fresh vegetables and spices</p>
+            <p className="hero-kicker"> pickles, snacks, fresh vegetables, fruits, spices & organic products</p>
             <h1>
               VIP Foods
               <span>Homemade taste. Premium everyday groceries.</span>

@@ -1,6 +1,67 @@
 import api from "./api";
 
 /* ===========================
+   CREATE ORDER
+=========================== */
+export const createOrder = async (orderData) => {
+  try {
+    const response = await api.post("/orders", orderData);
+    return response.data;
+  } catch (error) {
+    console.error("CREATE ORDER ERROR:", error);
+    throw (
+      error.response?.data || {
+        success: false,
+        message: "Failed to create order",
+      }
+    );
+  }
+};
+
+/* ===========================
+   CREATE RAZORPAY ORDER
+=========================== */
+export const createRazorpayOrder = async (amount) => {
+  try {
+    const response = await api.post("/payment/create-order", {
+      amount,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("CREATE RAZORPAY ORDER ERROR:", error);
+    throw (
+      error.response?.data || {
+        success: false,
+        message: "Failed to create Razorpay order",
+      }
+    );
+  }
+};
+
+/* ===========================
+   VERIFY PAYMENT
+=========================== */
+export const verifyPayment = async (paymentData) => {
+  try {
+    const response = await api.post(
+      "/payment/verify-payment",
+      paymentData
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("VERIFY PAYMENT ERROR:", error);
+    throw (
+      error.response?.data || {
+        success: false,
+        message: "Payment verification failed",
+      }
+    );
+  }
+};
+
+/* ===========================
    GET MY ORDERS
 =========================== */
 export const getMyOrders = async () => {

@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { createOrder } from "../services/orderService";
+import {
+  createOrder,
+  createRazorpayOrder,
+  verifyPayment,
+} from "../services/orderService";
 import api from "../services/api";
 import "./checkout.css";
 
@@ -11,6 +15,7 @@ const INDIAN_STATE_CODES = {
 };
 
 const CHECKOUT_STORAGE_KEY = "checkout_form_state";
+const RAZORPAY_SCRIPT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
 
 function getCodCharge(paymentMethod, state) {
   if (paymentMethod !== "COD") return 0;
@@ -26,6 +31,22 @@ function loadStoredCheckoutState() {
     console.error("Failed to read saved checkout details", err);
     return null;
   }
+}
+
+// Loads the Razorpay checkout script once, reuses it on subsequent calls.
+function loadRazorpayScript() {
+  return new Promise((resolve) => {
+    if (document.querySelector(`script[src="${RAZORPAY_SCRIPT_SRC}"]`)) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = RAZORPAY_SCRIPT_SRC;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
 }
 
 export default function Checkout() {
@@ -217,7 +238,201 @@ export default function Checkout() {
     return Object.keys(errors).length === 0;
   };
 
-  // ---- Place order ----
+  // ---- Build order payload (shared by COD and ONLINE flows) ----
+  const buildOrderPayload = () => {
+    const items = cartItems.map((item) => ({
+      product: item._id || item.id,
+      productName: item.name,
+      image: item.image,
+      variant: {
+        weight: item.weight,
+        sku: item.sku || "",
+        price: item.offerPrice || item.price,
+      },
+      quantity: item.quantity,
+      total: (item.offerPrice || item.price) * item.quantity,
+    }));
+
+    const shippingAddress = {
+      fullName: customer.name,
+      phone: customer.phone,
+      addressLine1: customer.address1,
+      addressLine2: customer.address2,
+      city: customer.city,
+      state: customer.state,
+      postalCode: customer.pincode,
+      country: customer.country,
+    };
+
+    return {
+      customer: user.id || user._id,
+      items,
+      shippingAddress,
+      paymentMethod,
+      subtotal,
+      discount,
+      codCharge,
+      grandTotal,
+      coupon: coupon?._id || null,
+    };
+  };
+
+  const finalizeOrderSuccess = (order) => {
+    clearCart();
+    sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
+    navigate(`/order-success/${order.orderNumber}`, {
+      state: { order },
+    });
+  };
+
+  // ---- COD flow (unchanged) ----
+  const placeCodOrder = async () => {
+  const scriptLoaded = await loadRazorpayScript();
+
+  if (!scriptLoaded) {
+    setOrderError("Unable to load payment gateway.");
+    return;
+  }
+
+  // Pay only COD charge
+  const { order: razorpayOrder } = await createRazorpayOrder(codCharge);
+
+  const options = {
+    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+    amount: razorpayOrder.amount,
+    currency: razorpayOrder.currency,
+    order_id: razorpayOrder.id,
+    name: "VIP Foods",
+    description: "COD Delivery Charge",
+
+    prefill: {
+      name: customer.name,
+      email: customer.email,
+      contact: customer.phone,
+    },
+
+    theme: {
+      color: "#16a34a",
+    },
+
+    handler: async (response) => {
+      try {
+        const verification = await verifyPayment({
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature,
+        });
+
+        if (!verification.success) {
+          setOrderError("Payment verification failed.");
+          return;
+        }
+
+        const orderPayload = {
+          ...buildOrderPayload(),
+
+          codChargePaid: true,
+
+razorpayOrderId: response.razorpay_order_id,
+
+razorpayPaymentId: response.razorpay_payment_id,
+
+razorpaySignature: response.razorpay_signature,
+        };
+
+        const res = await createOrder(orderPayload);
+
+        finalizeOrderSuccess(res.order);
+
+      } catch (err) {
+        console.error(err);
+        setOrderError(err.message);
+      } finally {
+        setPlacing(false);
+      }
+    },
+  };
+
+  new window.Razorpay(options).open();
+};
+
+  // ---- ONLINE (Razorpay) flow ----
+  const placeOnlineOrder = async () => {
+    const scriptLoaded = await loadRazorpayScript();
+
+    if (!scriptLoaded) {
+      setOrderError("Unable to load payment gateway. Please try again.");
+      return;
+    }
+
+   const { order: razorpayOrder } = await createRazorpayOrder(grandTotal);
+
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      order_id: razorpayOrder.id,
+      name: "VIP Foods",
+      description: "Order Payment",
+      prefill: {
+        name: customer.name,
+        email: customer.email,
+        contact: customer.phone,
+      },
+      theme: {
+        color: "#16a34a",
+      },
+      handler: async (response) => {
+        try {
+          const verification = await verifyPayment({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+
+          if (!verification?.success) {
+            setOrderError("Payment verification failed. Please try again.");
+            setPlacing(false);
+            return;
+          }
+
+          const orderPayload = {
+            ...buildOrderPayload(),
+            razorpayOrderId: response.razorpay_order_id,
+            razorpayPaymentId: response.razorpay_payment_id,
+          };
+
+          const res = await createOrder(orderPayload);
+          finalizeOrderSuccess(res.order);
+        } catch (err) {
+          console.error(err);
+          setOrderError(err.message || "Payment verification failed");
+        } finally {
+          setPlacing(false);
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          setOrderError("Payment was cancelled.");
+          setPlacing(false);
+        },
+      },
+    };
+
+    const razorpayInstance = new window.Razorpay(options);
+
+    razorpayInstance.on("payment.failed", (response) => {
+      console.error("Razorpay payment failed:", response.error);
+      setOrderError(
+        response.error?.description || "Payment failed. Please try again."
+      );
+      setPlacing(false);
+    });
+
+    razorpayInstance.open();
+  };
+
+  // ---- Place order (routes to COD or ONLINE) ----
   const placeOrder = async () => {
     if (!user) {
       navigate("/login");
@@ -235,54 +450,17 @@ export default function Checkout() {
       setPlacing(true);
       setOrderError("");
 
-      const items = cartItems.map((item) => ({
-        product: item._id || item.id,
-        productName: item.name,
-        image: item.image,
-        variant: {
-          weight: item.weight,
-          sku: item.sku || "",
-          price: item.offerPrice || item.price,
-        },
-        quantity: item.quantity,
-        total: (item.offerPrice || item.price) * item.quantity,
-      }));
-
-      const shippingAddress = {
-        fullName: customer.name,
-        phone: customer.phone,
-        addressLine1: customer.address1,
-        addressLine2: customer.address2,
-        city: customer.city,
-        state: customer.state,
-        postalCode: customer.pincode,
-        country: customer.country,
-      };
-
-      const orderPayload = {
-        customer: user.id || user._id,
-        items,
-        shippingAddress,
-        paymentMethod,
-        subtotal,
-        discount,
-        codCharge,
-        grandTotal,
-        coupon: coupon?._id || null,
-      };
-
-      const res = await createOrder(orderPayload);
-      clearCart();
-      sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
-      navigate(`/order-success/${res.order.orderNumber}`, {
-  state: {
-    order: res.order,
-  },
-});
+      if (paymentMethod === "COD") {
+        await placeCodOrder();
+        setPlacing(false);
+      } else {
+        // For ONLINE, `placing` stays true until the Razorpay handler/modal
+        // callbacks resolve it — those set it back to false themselves.
+        await placeOnlineOrder();
+      }
     } catch (err) {
       console.error(err);
       setOrderError(err.message || "Failed to place order");
-    } finally {
       setPlacing(false);
     }
   };

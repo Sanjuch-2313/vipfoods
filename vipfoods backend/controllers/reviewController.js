@@ -4,19 +4,30 @@ import Review from "../models/Review.js";
 export const getReviews = async (req, res) => {
   try {
     const reviews = await Review.find()
-      .populate("customer", "name email")
-      .populate("order", "orderNumber")
-      .populate("product", "name")
+      .populate({
+        path: "customer",
+        select: "name email",
+      })
+      .populate({
+        path: "product",
+        select: "name",
+      })
+      .populate({
+        path: "order",
+        select: "orderNumber",
+      })
       .sort({ createdAt: -1 });
 
-    res.json({
+    return res.status(200).json({
       success: true,
       reviews,
     });
   } catch (err) {
-    res.status(500).json({
+    console.error(err);
+
+    return res.status(500).json({
       success: false,
-      error: err.message,
+      message: err.message,
     });
   }
 };
@@ -63,8 +74,10 @@ export const createReview = async (req, res) => {
     } = req.body;
 
     // Prevent duplicate review for same order
-    const exists = await Review.findOne({ order });
-
+const exists = await Review.findOne({
+  order,
+  customer,
+});
     if (exists) {
       return res.status(400).json({
         success: false,

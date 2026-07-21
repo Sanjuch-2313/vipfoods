@@ -12,16 +12,21 @@ const generateOrderNumber = () => {
 export const createOrder = async (req, res) => {
   try {
     const {
-      items,
-      shippingAddress,
-      paymentMethod,
-      subtotal,
-      discount = 0,
-      grandTotal,
-      notes,
-      customer,
-      coupon,
-    } = req.body;
+  items,
+  shippingAddress,
+  paymentMethod,
+  subtotal,
+  discount = 0,
+  grandTotal,
+  notes,
+  customer,
+  coupon,
+
+  codChargePaid,
+  razorpayOrderId,
+  razorpayPaymentId,
+  razorpaySignature,
+} = req.body;
 
     const customerId = req.user?._id || customer;
 
@@ -52,14 +57,17 @@ export const createOrder = async (req, res) => {
     let paymentStatus = "PENDING";
 
     if (paymentMethod === "ONLINE") {
-      onlinePaidAmount = grandTotal;
-      remainingAmount = 0;
-      paymentStatus = "PAID";
-    } else {
-      onlinePaidAmount = codCharge;
-      remainingAmount = grandTotal;
-      paymentStatus = "PARTIALLY_PAID";
-    }
+  onlinePaidAmount = grandTotal;
+  remainingAmount = 0;
+  paymentStatus = "PAID";
+} else {
+  onlinePaidAmount = codCharge;
+  remainingAmount = grandTotal - codCharge;
+
+  paymentStatus = codChargePaid
+    ? "PARTIALLY_PAID"
+    : "PENDING";
+}
 
     // Create Order
     const order = await Order.create({
@@ -90,6 +98,13 @@ export const createOrder = async (req, res) => {
       coupon,
 
       notes,
+      codChargePaid,
+
+razorpayOrderId,
+
+razorpayPaymentId,
+
+razorpaySignature,
     });
 
     // Increase coupon usage count

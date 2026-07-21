@@ -65,3 +65,37 @@ export const deleteOrder = async (id) => {
     throw error.response?.data || { success: false, message: "Failed to delete order" };
   }
 };
+// ✅ Create Razorpay Order
+export const createRazorpayOrder = async (amount) => {
+  try {
+    const res = await api.post("/payment/create-order", {
+      amount,
+    });
+
+    return res.data;
+  } catch (error) {
+    console.error("CREATE RAZORPAY ORDER ERROR:", error);
+    throw (
+      error.response?.data || {
+        success: false,
+        message: "Failed to create Razorpay order",
+      }
+    );
+  }
+};
+
+// ✅ Verify Razorpay Payment
+export const verifyPayment = async (paymentData) => {
+  try {
+    const res = await api.post("/payment/verify-payment", paymentData);
+    return res.data;
+  } catch (error) {
+    console.error("VERIFY PAYMENT ERROR:", error);
+    throw (
+      error.response?.data || {
+        success: false,
+        message: "Payment verification failed",
+      }
+    );
+  }
+};
