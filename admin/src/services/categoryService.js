@@ -1,16 +1,21 @@
 import api from "./api";
 
 export const getCategories = async () => {
-  const response = await api.get("/categories");
-  return response.data;
+  const { data } = await api.get("/categories");
+  return data.categories || [];
 };
 
-export const createCategory = async (payload) => {
-  const response = await api.post("/categories", payload);
-  return response.data;
+export const getFeaturedCategories = async () => {
+  const { data } = await api.get("/categories?featured=true");
+  return data.categories || [];
+};
+
+export const createCategory = async (formData) => {
+  const { data } = await api.post("/categories", formData);
+  return data;
 };
 
 export const deleteCategory = async (id) => {
-  const response = await api.delete(`/categories/${id}`);
-  return response.data;
+  const { data } = await api.delete(`/categories/${id}`);
+  return data;
 };

@@ -28,8 +28,8 @@ export default function Categories() {
 
   const loadCategories = async () => {
     try {
-      const response = await getCategories();
-      setCategories(response.categories || []);
+      const categories = await getCategories();
+setCategories(categories);
     } catch (err) {
       console.error(err);
       toast.error("Failed to load categories");
