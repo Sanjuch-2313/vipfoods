@@ -384,7 +384,7 @@ export default function Shop() {
         <p>Chat with us directly and we'll help you find the right product.</p>
         <a
   className="shop-btn shop-btn--whatsapp"
-  href="https://wa.me/910000000000"
+  href="https://wa.me/8125828564"
   target="_blank"
   rel="noopener noreferrer"
 >
