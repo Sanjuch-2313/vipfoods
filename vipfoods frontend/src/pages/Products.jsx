@@ -13,12 +13,21 @@ const sortOptions = [
   { value: "price-desc", label: "Price: high to low" },
 ];
 
+// Helper: resolve product subCategory consistently
+function getProductSubCategoryName(product) {
+  if (!product.subCategory) return "";
+  return typeof product.subCategory === "object"
+    ? product.subCategory.name
+    : product.subCategory;
+}
+
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { wishlistItems, addToCart, toggleWishlist } = useCart();
   const navigate = useNavigate();
 
   const category = searchParams.get("category") || "all";
+  const subCategory = searchParams.get("subCategory") || "";
   const search = searchParams.get("search") || "";
   const sortBy = searchParams.get("sort") || "";
   const trending = searchParams.get("trending") === "true";
@@ -27,7 +36,7 @@ export default function Products() {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ---------- LOAD CATEGORIES (for tabs + dynamic filters) ----------
+  // ---------- LOAD CATEGORIES ----------
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -56,6 +65,13 @@ export default function Products() {
           products = products.filter((p) => p.category?.slug === category);
         }
 
+        // Sub Category filter (compare product subCategory name to selected sub.name)
+        if (subCategory) {
+          products = products.filter(
+            (p) => getProductSubCategoryName(p) === subCategory
+          );
+        }
+
         // Search filter
         if (search) {
           products = products.filter((p) =>
@@ -63,9 +79,8 @@ export default function Products() {
           );
         }
 
-        // Dynamic filters (foodType, snackType, freshType, spiceType, etc.)
-        // Reads directly from URL params, matching product fields by same key
-        const reservedParams = ["category", "search", "sort", "trending"];
+        // Dynamic filters
+        const reservedParams = ["category", "subCategory", "search", "sort", "trending"];
         for (const [key, value] of searchParams.entries()) {
           if (!value || reservedParams.includes(key)) continue;
           products = products.filter((p) => p[key] === value);
@@ -113,7 +128,7 @@ export default function Products() {
 
     fetchProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, search, sortBy, searchParams.toString()]);
+  }, [category, subCategory, search, sortBy, searchParams.toString()]);
 
   const handleChange = (key, value) => {
     const next = new URLSearchParams(searchParams);
@@ -126,13 +141,22 @@ export default function Products() {
   };
 
   const handleCategoryChange = (slug) => {
-    // switching category clears any previous category-specific filter params
     const next = new URLSearchParams();
     if (slug !== "all") next.set("category", slug);
     if (search) next.set("search", search);
     if (sortBy) next.set("sort", sortBy);
+
+    // Reset subcategory whenever category changes
+    next.delete("subCategory");
+
     setSearchParams(next);
   };
+
+  const headingTitle = trending
+    ? "Trending VIP Products"
+    : category === "all"
+    ? "All VIP Foods"
+    : selectedCategory?.name || category;
 
   return (
     <main className="section-wrap product-page">
@@ -140,15 +164,20 @@ export default function Products() {
         <FiArrowLeft /> Back
       </button>
 
-      <section className="section-heading">
-        <p>Products</p>
-        <h2>
-          {trending
-            ? "Trending VIP Products"
-            : category === "all"
-            ? "All VIP Foods"
-            : selectedCategory?.name || category}
-        </h2>
+      <section className="section-heading category-heading">
+        <div className="category-heading__breadcrumb">
+          Home / Shop / {headingTitle}
+        </div>
+
+        <div className="category-heading__row">
+          <div className="category-heading__icon">🫙</div>
+          <div>
+            <h2>{headingTitle}</h2>
+            <p className="category-heading__count">
+              {filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+        </div>
       </section>
 
       <section className="products-toolbar">
@@ -174,6 +203,31 @@ export default function Products() {
         </div>
 
         <div className="filters-row compact">
+          {/* Subcategory chips */}
+          {selectedCategory?.subCategories?.length > 0 && (
+            <div className="chip-group">
+              <button
+                type="button"
+                className={subCategory === "" ? "chip active" : "chip"}
+                onClick={() => handleChange("subCategory", "")}
+              >
+                All
+              </button>
+
+              {selectedCategory.subCategories.map((sub) => (
+                <button
+                  key={sub.slug}
+                  type="button"
+                  className={subCategory === sub.name ? "chip active" : "chip"}
+                  onClick={() => handleChange("subCategory", sub.name)}
+                >
+                  {sub.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Existing dynamic filters */}
           {selectedCategory?.filters?.map((filter) => {
             const selectedValue = searchParams.get(filter.param) || "";
 

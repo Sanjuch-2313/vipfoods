@@ -1,13 +1,9 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  FiMinus,
-  FiPlus,
   FiHeart,
-  FiTruck,
 } from "react-icons/fi";
 
-import { useCart } from "../context/CartContext";
 import { getDefaultWeight, getProductPrice, getWeightOptions } from "../services/productService";
 import "./ProductCard.css";
 
@@ -19,12 +15,11 @@ export default function ProductCard({
 }) {
   const cardRef = useRef(null);
   const weightOptions = getWeightOptions(product);
-  const [selectedWeight, setSelectedWeight] = useState(getDefaultWeight(product));
+  const [selectedWeight] = useState(getDefaultWeight(product));
 
-  const { cartItems, addToCart, updateCartQuantity } = useCart();
-  const cartItem = cartItems.find((item) => item.id === product.id && item.weight === selectedWeight);
-  const quantity = cartItem ? cartItem.quantity : 0;
   const selectedPrice = getProductPrice(product, selectedWeight);
+  const mrp = product.price;
+  const hasDiscount = mrp && selectedPrice && selectedPrice < mrp;
 
   const handleMouseMove = (e) => {
     const card = cardRef.current;
@@ -46,19 +41,6 @@ export default function ProductCard({
   const handleMouseLeave = () => {
     cardRef.current.style.transform =
       "perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)";
-  };
-
-  // Render stars for rating
-  const renderStars = (rating) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <span key={i} className={i <= rating ? "star filled" : "star"}>
-          ★
-        </span>
-      );
-    }
-    return stars;
   };
 
   return (
@@ -115,70 +97,30 @@ export default function ProductCard({
         {product.tag}
       </p>
 
-      <div className="vip-bottom">
-        <div className="vip-left">  </div>
+      <div className="vip-price-row">
+        <span className="vip-price">
+          ₹{selectedPrice ?? product.price}
+        </span>
 
-        <div>
-
-          <div className="vip-price">
-            ₹{selectedPrice ?? product.price}
-          </div>
-
-          {weightOptions.length > 0 && (
-            <select
-              className="vip-weight"
-              value={selectedWeight}
-              onChange={(e)=>setSelectedWeight(e.target.value)}
-            >
-              {weightOptions.map(option=>(
-                <option
-                  key={option.label}
-                  value={option.label}
-                >
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          )}
-
-        </div>
-
-        {quantity>0 ? (
-
-          <div className="vip-qty">
-
-            <button
-             onClick={()=>updateCartQuantity(product.id,selectedWeight,quantity-1)}
-            >
-              <FiMinus/>
-            </button>
-
-            <span>{quantity}</span>
-
-            <button
-            onClick={()=>updateCartQuantity(product.id,selectedWeight,quantity+1)}
-            >
-              <FiPlus/>
-            </button>
-
-          </div>
-
-        ):(
-
-          <button
-            className="vip-add-btn"
-            onClick={()=>
-              onAddToCart
-                ? onAddToCart({...product,weight:selectedWeight})
-                : addToCart({...product,weight:selectedWeight})
-            }
-          >
-            ADD
-          </button>
-
+        {hasDiscount && (
+          <span className="vip-mrp">₹{mrp}</span>
         )}
-
       </div>
+
+      {weightOptions.length > 0 && (
+        <div className="vip-weight-pills">
+          {weightOptions.map((option) => (
+            <span
+              key={option.label}
+              className={`vip-weight-pill ${
+                option.label === selectedWeight ? "active" : ""
+              }`}
+            >
+              {option.label}
+            </span>
+          ))}
+        </div>
+      )}
 
     </div>
 
