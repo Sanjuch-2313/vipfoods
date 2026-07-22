@@ -26,6 +26,7 @@ const initialFormData = {
   description: "",
   brand: "",
   category: "",
+  subCategory: "",
 
   featured: false,
   published: true,
@@ -120,6 +121,26 @@ const EditProduct = () => {
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
+
+    // Changing the category invalidates whatever subcategory was
+    // previously selected (it belonged to the old category's list),
+    // so clear it here — same behavior as AddProduct.jsx.
+    if (name === "category") {
+      setFormData((prev) => ({
+        ...prev,
+        category: value,
+        subCategory: "",
+      }));
+
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        category: "",
+        subCategory: "",
+      }));
+
+      setSubmitError("");
+      return;
+    }
 
     setFormData((currentFormData) => ({
       ...currentFormData,
@@ -308,6 +329,8 @@ const EditProduct = () => {
     appendTextField(payload, "brand", formData.brand.trim());
 
     appendTextField(payload, "category", formData.category);
+
+    appendTextField(payload, "subCategory", formData.subCategory);
 
     appendTextField(payload, "featured", String(formData.featured));
 
@@ -502,6 +525,7 @@ useEffect(() => {
         ...initialFormData,
         ...product,
         category: product.category?._id || "",
+        subCategory: product.subCategory || "",
         calories: product.nutrition?.calories || "",
         protein: product.nutrition?.protein || "",
         fat: product.nutrition?.fat || "",
@@ -744,6 +768,31 @@ useEffect(() => {
                     <p className="field-error">
                       {errors.category}
                     </p>
+                  )}
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="subCategory">Sub Category</label>
+
+                  <select
+                    id="subCategory"
+                    name="subCategory"
+                    value={formData.subCategory}
+                    onChange={handleChange}
+                    disabled={!selectedCategory}
+                    className={errors.subCategory ? "input-error" : ""}
+                  >
+                    <option value="">Select Sub Category</option>
+
+                    {selectedCategory?.subCategories?.map((sub) => (
+                      <option key={sub.slug} value={sub.name}>
+                        {sub.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  {errors.subCategory && (
+                    <p className="field-error">{errors.subCategory}</p>
                   )}
                 </div>
               </div>

@@ -12,6 +12,17 @@ function getProductCategoryId(product) {
     : product.category;
 }
 
+// Products store their subcategory as the subcategory's `name` string
+// (see EditProduct.jsx / AddProduct.jsx, where the <select> option value
+// is `sub.name`). This mirrors getProductCategoryId's defensive shape
+// handling in case a product's subCategory ever arrives populated as an
+// object instead of a raw string.
+function getProductSubCategoryName(product) {
+  return typeof product.subCategory === "object" && product.subCategory !== null
+    ? product.subCategory.name
+    : product.subCategory;
+}
+
 function getLowestPrice(variants) {
   if (!variants?.length) return null;
   const prices = variants
@@ -142,21 +153,71 @@ export default function Shop() {
           (product) => product.active !== false && product.published !== false
         );
 
-        // Group products under their category, purely from live data —
-        // nothing hardcoded. A category with zero matching products is
-        // dropped entirely per spec.
+        // Group products under their category, then under each category's
+        // subcategories, purely from live data — nothing hardcoded. A
+        // category or subcategory with zero matching products is dropped
+        // entirely per spec.
         const sections = categories
           .map((category) => {
             const categoryProducts = activeProducts.filter(
               (product) => getProductCategoryId(product) === category._id
             );
 
+            if (categoryProducts.length === 0) return null;
+
+            const subCategoryDefs = category.subCategories || [];
+
+            const subCategorySections = subCategoryDefs
+              .map((sub) => {
+                const subProducts = categoryProducts.filter(
+                  (product) =>
+                    getProductSubCategoryName(product) === sub.name
+                );
+
+                if (subProducts.length === 0) return null;
+
+                return {
+                  key: sub.slug || sub.name,
+                  name: sub.name,
+                  slug: sub.slug,
+                  products: subProducts,
+                };
+              })
+              .filter(Boolean);
+
+            // Products whose subCategory doesn't match any subcategory
+            // currently defined on the category (missing value, or a
+            // subcategory that was renamed/removed since the product was
+            // saved) are grouped into a generic "Other" bucket instead of
+            // silently vanishing from the storefront. This label isn't
+            // pulled from — or tied to — any specific category's data, so
+            // it doesn't count as hardcoding a category/subcategory name.
+            const matchedProductIds = new Set(
+              subCategorySections.flatMap((section) =>
+                section.products.map((product) => product._id)
+              )
+            );
+
+            const unmatchedProducts = categoryProducts.filter(
+              (product) => !matchedProductIds.has(product._id)
+            );
+
+            if (unmatchedProducts.length > 0) {
+              subCategorySections.push({
+                key: "other",
+                name: "Other",
+                slug: null,
+                products: unmatchedProducts,
+              });
+            }
+
             return {
               ...category,
               products: categoryProducts,
+              subCategorySections,
             };
           })
-          .filter((category) => category.products.length > 0);
+          .filter(Boolean);
 
         setCategorizedSections(sections);
       } catch (err) {
@@ -221,8 +282,15 @@ export default function Shop() {
           <EmptyShopState onBackHome={() => navigate("/")} />
         ) : (
           categorizedSections.map((category) => {
-            const previewProducts = category.products.slice(0, PREVIEW_LIMIT);
-            const hasMore = category.products.length > PREVIEW_LIMIT;
+            // Total products actually rendered across all of this
+            // category's subcategory previews (each capped at
+            // PREVIEW_LIMIT). If the category has more products than
+            // that, a category-level "View All" makes sense.
+            const totalDisplayed = category.subCategorySections.reduce(
+              (sum, sub) => sum + Math.min(sub.products.length, PREVIEW_LIMIT),
+              0
+            );
+            const categoryHasMore = category.products.length > totalDisplayed;
 
             return (
               <section className="category-section" key={category._id}>
@@ -247,7 +315,7 @@ export default function Shop() {
                     </div>
                   </div>
 
-                  {hasMore && (
+                  {categoryHasMore && (
                     <button
                       type="button"
                       className="shop-btn shop-btn--ghost"
@@ -261,15 +329,49 @@ export default function Shop() {
 
                 <div className="category-section__divider" />
 
-                <div className="product-grid">
-                  {previewProducts.map((product) => (
-                    <ProductCard
-                      key={product._id}
-                      product={product}
-                      onOpen={openProduct}
-                    />
-                  ))}
-                </div>
+                {category.subCategorySections.map((sub) => {
+                  const previewProducts = sub.products.slice(0, PREVIEW_LIMIT);
+                  const subHasMore = sub.products.length > PREVIEW_LIMIT;
+
+                  return (
+                    <div className="subcategory-section" key={sub.key}>
+                      <div className="subcategory-section__header">
+                        <div className="subcategory-section__identity">
+                          <h3 className="subcategory-section__title">
+                            {sub.name}
+                          </h3>
+                          <p className="subcategory-section__count">
+                            {sub.products.length}{" "}
+                            {sub.products.length === 1 ? "product" : "products"}
+                          </p>
+                        </div>
+
+                        {subHasMore && sub.slug && (
+                          <button
+                            type="button"
+                            className="shop-btn shop-btn--ghost shop-btn--ghost-sm"
+                            onClick={() =>
+                              navigate(`/shop/${category.slug}/${sub.slug}`)
+                            }
+                          >
+                            View All
+                            <span aria-hidden="true">→</span>
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="product-grid">
+                        {previewProducts.map((product) => (
+                          <ProductCard
+                            key={product._id}
+                            product={product}
+                            onOpen={openProduct}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </section>
             );
           })
@@ -281,13 +383,13 @@ export default function Shop() {
         <h2>Can't find what you're looking for?</h2>
         <p>Chat with us directly and we'll help you find the right product.</p>
         <a
-          className="shop-btn shop-btn--whatsapp"
-          href="https://wa.me/910000000000"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Chat on WhatsApp
-        </a>
+  className="shop-btn shop-btn--whatsapp"
+  href="https://wa.me/910000000000"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  Chat on WhatsApp
+</a>
       </section>
     </div>
   );
