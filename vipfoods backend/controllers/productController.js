@@ -254,7 +254,8 @@ export const updateProduct = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findByIdAndDelete(req.params.id);
+
     if (!product) {
       return res.status(404).json({
         success: false,
@@ -262,13 +263,9 @@ export const deleteProduct = async (req, res) => {
       });
     }
 
-    product.isDeleted = true;
-    product.deletedAt = new Date();
-    await product.save();
-
-    return res.json({
+    return res.status(200).json({
       success: true,
-      message: "Product archived successfully",
+      message: "Product deleted permanently",
     });
   } catch (error) {
     return res.status(500).json({
