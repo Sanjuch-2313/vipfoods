@@ -414,7 +414,23 @@ const EditProduct = () => {
 
     payload.append("badges", JSON.stringify(badges));
 
-    images.forEach((image) => {
+    // `images` currently holds a mix of:
+    //  - existing Cloudinary URLs (strings) — already uploaded, kept as-is
+    //  - newly selected File objects — need to go through Multer/Cloudinary
+    // Sending an existing URL string as a "file" would corrupt the upload,
+    // so the two are split and sent through separate fields. The backend
+    // merges them back together (existingImages + newly uploaded files).
+    const existingImages = images.filter(
+      (image) => typeof image === "string"
+    );
+
+    const newImageFiles = images.filter(
+      (image) => image instanceof File
+    );
+
+    payload.append("existingImages", JSON.stringify(existingImages));
+
+    newImageFiles.forEach((image) => {
       payload.append("images", image);
     });
 
@@ -505,6 +521,10 @@ useEffect(() => {
       );
 
       setBadges(product.badges || []);
+
+      // Load existing Cloudinary image URLs into the images state so the
+      // ImageUploader shows them immediately, without requiring re-upload.
+      setImages(product.images || []);
     } catch (err) {
       console.error(err);
     }

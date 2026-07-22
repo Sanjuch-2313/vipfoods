@@ -1,0 +1,817 @@
+/* ==========================================================================
+   SHOP.CSS — Premium Homemade Grocery Storefront
+   ==========================================================================
+   Design direction: artisanal grocer, not corporate SaaS.
+   Palette:  warm cream fields, deep chili-red accent, turmeric gold trim,
+             forest green for "in stock" truth-telling.
+   Type:     Fraunces (display serif, warm ink-trap) for headings,
+             Manrope (clean geometric-humanist) for body & UI.
+   Signature: the "seal" ring — a dotted stamp-like ring used on the hero
+             badge and stock badge, echoing a hand-stamped grocer's label.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. TOKENS
+   -------------------------------------------------------------------------- */
+.shop-page {
+  --shop-bg: #fbf5e9;
+  --shop-bg-deep: #f1e6d1;
+  --shop-surface: #ffffff;
+  --shop-surface-muted: #f6efe0;
+  --shop-border: #e8ddc3;
+  --shop-border-soft: #f0e6cf;
+
+  --shop-text: #2a2018;
+  --shop-text-soft: #6f6152;
+  --shop-text-faint: #a89a86;
+
+  --shop-accent: #a63b2a;
+  --shop-accent-dark: #7f2c1f;
+  --shop-accent-soft: #f2d9c6;
+  --shop-accent-tint: #fbeee3;
+
+  --shop-gold: #bd8c2e;
+  --shop-gold-soft: #f2e2b8;
+
+  --shop-green: #2e6b45;
+  --shop-green-soft: #dceee0;
+  --shop-green-deep: #1f4f32;
+
+  --shop-red-soft: #f6dcd6;
+  --shop-red-deep: #8a2f22;
+
+  --shop-whatsapp: #25d366;
+  --shop-whatsapp-dark: #1da851;
+
+  --shop-shadow-sm: 0 1px 2px rgba(42, 32, 24, 0.06);
+  --shop-shadow-md: 0 8px 24px rgba(42, 32, 24, 0.08);
+  --shop-shadow-lg: 0 20px 48px rgba(42, 32, 24, 0.14);
+  --shop-shadow-card-hover: 0 18px 32px rgba(166, 59, 42, 0.16);
+
+  --shop-radius-sm: 10px;
+  --shop-radius-md: 16px;
+  --shop-radius-lg: 20px;
+  --shop-radius-pill: 999px;
+
+  --shop-font-display: "Fraunces", "Georgia", serif;
+  --shop-font-body: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --shop-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  font-family: var(--shop-font-body);
+  color: var(--shop-text);
+  background: var(--shop-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.shop-page * {
+  box-sizing: border-box;
+}
+
+.shop-page img {
+  max-width: 100%;
+  display: block;
+}
+
+.shop-page button {
+  font-family: inherit;
+}
+
+/* Global focus visibility (accessibility floor) */
+.shop-page a:focus-visible,
+.shop-page button:focus-visible {
+  outline: 2px solid var(--shop-accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shop-page * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. PAGE SHELL
+   -------------------------------------------------------------------------- */
+.shop-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(189, 140, 46, 0.05), transparent 40%),
+    var(--shop-bg);
+  padding-bottom: 64px;
+}
+
+/* --------------------------------------------------------------------------
+   3. HERO — compact, centered, cream gradient with subtle food pattern
+   -------------------------------------------------------------------------- */
+.shop-hero {
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 28px 24px 32px;
+  overflow: hidden;
+
+  background:
+    linear-gradient(180deg, var(--shop-bg-deep) 0%, var(--shop-bg) 100%);
+  border-bottom: 1px solid var(--shop-border);
+}
+
+/* Subtle repeating dot/seed pattern for a hand-milled, food-market texture */
+.shop-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(166, 59, 42, 0.07) 1.5px, transparent 1.5px),
+    radial-gradient(circle, rgba(189, 140, 46, 0.06) 1.5px, transparent 1.5px);
+  background-size: 26px 26px, 26px 26px;
+  background-position: 0 0, 13px 13px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.shop-hero::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -60px;
+  width: 420px;
+  height: 160px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(166, 59, 42, 0.10), transparent 70%);
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.shop-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.shop-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--shop-text-soft);
+  margin-bottom: 2px;
+}
+
+.shop-breadcrumb button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--shop-text-soft);
+  cursor: pointer;
+  transition: color 0.2s var(--shop-ease);
+}
+
+.shop-breadcrumb button:hover {
+  color: var(--shop-accent);
+}
+
+.shop-breadcrumb span[aria-current="page"] {
+  color: var(--shop-accent-dark);
+  font-weight: 700;
+}
+
+.shop-breadcrumb span[aria-hidden="true"] {
+  color: var(--shop-text-faint);
+}
+
+/* Signature "seal" badge — dotted ring, evokes a hand-stamped grocer label */
+.shop-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--shop-font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--shop-accent-dark);
+  background: var(--shop-accent-tint);
+  border: 1.5px dashed var(--shop-accent);
+  border-radius: var(--shop-radius-pill);
+  padding: 6px 16px;
+  margin-bottom: 6px;
+}
+
+.shop-hero__title {
+  font-family: var(--shop-font-display);
+  font-weight: 600;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--shop-text);
+  margin: 4px 0 2px;
+}
+
+.shop-hero__subtitle {
+  font-size: 15px;
+  color: var(--shop-text-soft);
+  max-width: 480px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .shop-hero {
+    min-height: 232px;
+    padding: 36px 24px 40px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. BODY LAYOUT
+   -------------------------------------------------------------------------- */
+.shop-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+@media (min-width: 768px) {
+  .shop-body {
+    padding: 40px 32px 16px;
+    gap: 36px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. CATEGORY SECTION CARD
+   -------------------------------------------------------------------------- */
+.category-section {
+  background: var(--shop-surface);
+  border: 1px solid var(--shop-border-soft);
+  border-radius: var(--shop-radius-lg);
+  box-shadow: var(--shop-shadow-md);
+  padding: 24px 20px 28px;
+  animation: shop-fade-up 0.5s var(--shop-ease) both;
+}
+
+@media (min-width: 768px) {
+  .category-section {
+    padding: 32px 32px 36px;
+  }
+}
+
+@keyframes shop-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.category-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.category-section__identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.category-section__icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--shop-surface-muted);
+  border: 2px solid var(--shop-accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-section__icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.category-section__identity-text {
+  min-width: 0;
+}
+
+.category-section__identity-text h2 {
+  font-family: var(--shop-font-display);
+  font-weight: 600;
+  font-size: 22px;
+  color: var(--shop-text);
+  margin: 0 0 2px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.category-section__count {
+  font-size: 13px;
+  color: var(--shop-text-faint);
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.category-section__divider {
+  height: 1px;
+  background: linear-gradient(90deg, var(--shop-border) 0%, transparent 100%);
+  margin: 20px 0 22px;
+}
+
+/* --------------------------------------------------------------------------
+   6. BUTTONS
+   -------------------------------------------------------------------------- */
+.shop-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--shop-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border-radius: var(--shop-radius-pill);
+  padding: 11px 22px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: transform 0.25s var(--shop-ease), box-shadow 0.25s var(--shop-ease),
+    background 0.25s var(--shop-ease), color 0.25s var(--shop-ease), border-color 0.25s var(--shop-ease);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.shop-btn--primary {
+  background: var(--shop-accent);
+  color: #fff9f2;
+  box-shadow: 0 6px 16px rgba(166, 59, 42, 0.28);
+}
+
+.shop-btn--primary:hover {
+  background: var(--shop-accent-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(166, 59, 42, 0.32);
+}
+
+.shop-btn--primary:active {
+  transform: translateY(0);
+}
+
+.shop-btn--ghost {
+  background: transparent;
+  color: var(--shop-accent-dark);
+  border-color: var(--shop-accent-soft);
+  padding: 9px 18px;
+  font-size: 13px;
+}
+
+.shop-btn--ghost:hover {
+  background: var(--shop-accent-tint);
+  border-color: var(--shop-accent);
+  transform: translateY(-1px);
+}
+
+.shop-btn--ghost span {
+  transition: transform 0.25s var(--shop-ease);
+  display: inline-block;
+}
+
+.shop-btn--ghost:hover span {
+  transform: translateX(3px);
+}
+
+.shop-btn--whatsapp {
+  background: var(--shop-whatsapp);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(37, 211, 102, 0.35), 0 2px 6px rgba(37, 211, 102, 0.25);
+}
+
+.shop-btn--whatsapp:hover {
+  background: var(--shop-whatsapp-dark);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px rgba(37, 211, 102, 0.4), 0 4px 10px rgba(37, 211, 102, 0.3);
+}
+
+.shop-btn--whatsapp:active {
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   7. PRODUCT GRID
+   -------------------------------------------------------------------------- */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 18px;
+}
+
+@media (min-width: 560px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. PRODUCT CARD
+   -------------------------------------------------------------------------- */
+.product-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--shop-surface);
+  border: 1px solid var(--shop-border-soft);
+  border-radius: var(--shop-radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  box-shadow: var(--shop-shadow-sm);
+  transition: transform 0.3s var(--shop-ease), box-shadow 0.3s var(--shop-ease),
+    border-color 0.3s var(--shop-ease);
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shop-shadow-card-hover);
+  border-color: var(--shop-accent-soft);
+}
+
+.product-card__image-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--shop-surface-muted);
+  overflow: hidden;
+}
+
+.product-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--shop-ease);
+}
+
+.product-card:hover .product-card__image {
+  transform: scale(1.06);
+}
+
+.product-card__image--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--shop-surface-muted),
+    var(--shop-surface-muted) 10px,
+    var(--shop-border-soft) 10px,
+    var(--shop-border-soft) 20px
+  );
+}
+
+.product-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 16px 18px;
+}
+
+.product-card__name {
+  font-family: var(--shop-font-display);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--shop-text);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-card__meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.product-card__price {
+  font-family: var(--shop-font-body);
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--shop-accent-dark);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+/* Stock badge — echoes the hero's dotted "seal" motif at a smaller scale */
+.stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: var(--shop-radius-pill);
+  white-space: nowrap;
+}
+
+.stock-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stock-badge--in {
+  background: var(--shop-green-soft);
+  color: var(--shop-green-deep);
+}
+
+.stock-badge--in::before {
+  background: var(--shop-green);
+}
+
+.stock-badge--out {
+  background: var(--shop-red-soft);
+  color: var(--shop-red-deep);
+}
+
+.stock-badge--out::before {
+  background: var(--shop-red-deep);
+}
+
+/* --------------------------------------------------------------------------
+   9. SKELETON LOADER — shimmer, mirrors final layout
+   -------------------------------------------------------------------------- */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--shop-surface-muted);
+  border-radius: 8px;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.65) 50%,
+    transparent 100%
+  );
+  animation: shop-shimmer 1.6s infinite;
+}
+
+@keyframes shop-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton--circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton--line {
+  height: 12px;
+  border-radius: 6px;
+}
+
+.skeleton--line-lg {
+  width: 160px;
+  height: 20px;
+  margin-bottom: 8px;
+}
+
+.skeleton--line-md {
+  width: 80%;
+  height: 15px;
+}
+
+.skeleton--line-sm {
+  width: 60%;
+}
+
+.skeleton--pill {
+  width: 96px;
+  height: 34px;
+  border-radius: var(--shop-radius-pill);
+}
+
+.skeleton--image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 0;
+}
+
+.category-section--skeleton .category-section__identity-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.category-section--skeleton .product-card--skeleton {
+  cursor: default;
+  box-shadow: none;
+}
+
+.category-section--skeleton .product-card--skeleton:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--shop-border-soft);
+}
+
+.category-section--skeleton .product-card--skeleton .product-card__body {
+  gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   10. EMPTY STATE
+   -------------------------------------------------------------------------- */
+.shop-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 64px 24px 72px;
+  background: var(--shop-surface);
+  border: 1px dashed var(--shop-border);
+  border-radius: var(--shop-radius-lg);
+}
+
+.shop-empty-state__illustration {
+  width: 180px;
+  height: auto;
+  margin-bottom: 12px;
+}
+
+.shop-empty-state h3 {
+  font-family: var(--shop-font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--shop-text);
+  margin: 0;
+}
+
+.shop-empty-state p {
+  font-size: 14px;
+  color: var(--shop-text-soft);
+  max-width: 360px;
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.shop-empty-state .shop-btn {
+  margin-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   11. FOOTER CTA
+   -------------------------------------------------------------------------- */
+.shop-cta {
+  max-width: 1200px;
+  margin: 8px auto 0;
+  padding: 44px 28px;
+  border-radius: var(--shop-radius-lg);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, var(--shop-accent-dark) 0%, var(--shop-accent) 60%, var(--shop-gold) 130%);
+  box-shadow: var(--shop-shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.shop-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.shop-cta > * {
+  position: relative;
+  z-index: 1;
+}
+
+.shop-cta h2 {
+  font-family: var(--shop-font-display);
+  font-weight: 600;
+  font-size: clamp(22px, 3vw, 28px);
+  color: #fff9f2;
+  margin: 0;
+}
+
+.shop-cta p {
+  font-size: 14px;
+  color: rgba(255, 249, 242, 0.85);
+  max-width: 420px;
+  margin: 0 0 8px;
+  line-height: 1.6;
+}
+
+.shop-cta .shop-btn--whatsapp {
+  margin-top: 4px;
+}
+
+@media (min-width: 768px) {
+  .shop-body ~ .shop-cta,
+  .shop-cta {
+    margin-top: 16px;
+    padding: 56px 32px;
+  }
+}
+
+/* Wrapper spacing: hero -> body -> cta */
+.shop-cta {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+@media (min-width: 768px) {
+  .shop-cta {
+    margin-left: 32px;
+    margin-right: 32px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   12. RESPONSIVE FINE-TUNING
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+  .category-section__header {
+    align-items: flex-start;
+  }
+
+  .category-section__identity-text h2 {
+    font-size: 19px;
+    white-space: normal;
+  }
+
+  .shop-btn--ghost {
+    padding: 8px 14px;
+  }
+
+  .shop-hero__title {
+    font-size: 26px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .shop-body,
+  .shop-cta {
+    max-width: 1240px;
+  }
+}

@@ -23,12 +23,24 @@ const ImageUploader = ({
   const [previews, setPreviews] = useState([]);
 
   useEffect(() => {
-    const urls = images.map((image) => URL.createObjectURL(image));
+    // Existing Cloudinary images are already URL strings and can be used
+    // directly as an <img src>. Only newly selected File objects need a
+    // blob URL generated via createObjectURL.
+    const urls = images.map((image) =>
+      typeof image === "string" ? image : URL.createObjectURL(image)
+    );
 
     setPreviews(urls);
 
     return () => {
-      urls.forEach((url) => URL.revokeObjectURL(url));
+      // Only revoke URLs we actually created (i.e. for File objects).
+      // Revoking a plain Cloudinary URL string would be a no-op at best
+      // and is avoided entirely here to prevent any confusion.
+      images.forEach((image, index) => {
+        if (typeof image !== "string") {
+          URL.revokeObjectURL(urls[index]);
+        }
+      });
     };
   }, [images]);
 

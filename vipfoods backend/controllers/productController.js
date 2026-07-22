@@ -184,9 +184,35 @@ export const updateProduct = async (req, res) => {
   try {
     const data = { ...req.body };
 
-    if (req.files?.length) {
-      data.images = req.files.map((file) => file.path);
+    // ---- Image handling ----
+    // The frontend now sends:
+    //   - `existingImages`: JSON string array of Cloudinary URLs the admin
+    //     kept (already uploaded previously, possibly with some removed)
+    //   - `images` (via Multer/Cloudinary): any newly selected files
+    // We merge the two into the final `images` array so existing images
+    // are preserved, removed ones stay removed, and new ones are appended.
+    let existingImages = [];
+
+    if (data.existingImages !== undefined) {
+      existingImages =
+        typeof data.existingImages === "string"
+          ? JSON.parse(data.existingImages)
+          : data.existingImages;
     }
+
+    const newlyUploadedImages = req.files?.length
+      ? req.files.map((file) => file.path)
+      : [];
+
+    // Only overwrite `images` if the client actually sent image info
+    // (existingImages field and/or new files). This keeps behavior safe
+    // for any other caller that doesn't send image data at all.
+    if (data.existingImages !== undefined || newlyUploadedImages.length) {
+      data.images = [...existingImages, ...newlyUploadedImages];
+    }
+
+    // Don't persist this helper field on the Product document.
+    delete data.existingImages;
 
     if (data.variants) {
       data.variants = JSON.parse(data.variants);
