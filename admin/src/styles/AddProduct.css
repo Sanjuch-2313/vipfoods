@@ -801,3 +801,337 @@
     width: 100%;
   }
 }
+/* =========================================================
+   DRAFT RESTORED BANNER
+========================================================= */
+
+.draft-restored-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  color: #166534;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.draft-restored-banner button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: #166534;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* =========================================================
+   PROGRESS BAR
+========================================================= */
+
+.product-progress-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.product-progress-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.03);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.product-progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.2);
+}
+
+.product-progress-step.complete {
+  background: rgba(22, 163, 74, 0.08);
+  color: #16a34a;
+}
+
+.product-progress-step.complete .product-progress-dot {
+  background: #16a34a;
+}
+
+/* =========================================================
+   SECTION EMPTY HINT
+========================================================= */
+
+.section-empty-hint {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.03);
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+/* =========================================================
+   NUTRITION GRID (cards)
+========================================================= */
+
+.nutrition-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.nutrition-card {
+  padding: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nutrition-card label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.nutrition-card input {
+  padding: 8px 10px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 640px) {
+  .nutrition-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.badges-subsection {
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.badges-subsection h3 {
+  margin: 0 0 2px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.badges-subsection > p {
+  margin: 0 0 14px;
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+.predefined-badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.predefined-badge-chip {
+  padding: 7px 14px;
+  border: 1.5px solid rgba(15, 23, 42, 0.12);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.predefined-badge-chip:hover {
+  border-color: rgba(22, 163, 74, 0.4);
+}
+
+.predefined-badge-chip.selected {
+  border-color: #16a34a;
+  background: rgba(22, 163, 74, 0.08);
+  color: #16a34a;
+}
+
+/* =========================================================
+   SEO PREVIEW
+========================================================= */
+
+.seo-preview {
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  background: #fafafa;
+  font-family: arial, sans-serif;
+}
+
+.seo-preview__site {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.seo-preview__title {
+  margin: 4px 0 2px;
+  color: #1a0dab;
+  font-size: 1.1rem;
+  line-height: 1.3;
+}
+
+.seo-preview__url {
+  margin: 0 0 6px;
+  color: #006621;
+  font-size: 0.82rem;
+}
+
+.seo-preview__description {
+  margin: 0;
+  color: #545454;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   LIVE PREVIEW CARD
+========================================================= */
+
+.live-preview-card {
+  position: sticky;
+  top: 20px;
+}
+
+.live-preview__image {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.live-preview__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.live-preview__image span {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.live-preview__brand {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #9ca3af;
+}
+
+.live-preview__name {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.live-preview__price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.live-preview__price {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.live-preview__mrp {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+.live-preview__discount {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.live-preview__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.live-preview__badges span {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.06);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+/* =========================================================
+   STICKY BOTTOM ACTION BAR
+========================================================= */
+
+.sticky-action-bar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.06);
+  z-index: 100;
+}
+
+@media (max-width: 640px) {
+  .sticky-action-bar {
+    flex-wrap: wrap;
+  }
+
+  .sticky-action-bar button {
+    flex: 1;
+    min-width: 100px;
+  }
+}

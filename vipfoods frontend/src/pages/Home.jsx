@@ -250,10 +250,10 @@ export default function Home() {
               pure turmeric and chilli powders from one beautiful organic store.
             </p>
 
-            <div className="hero-actions">
-              <Link to="/products" className="cta-btn hero-cta" title="Shop Now">
-                Shop Now
-              </Link>
+           <div className="hero-actions">
+  <Link to="/shop" className="cta-btn hero-cta" title="Shop Now">
+    Shop Now
+  </Link>
 
               <Link to="/register" className="ghost-cta" title="Create Account">
                 Create Account

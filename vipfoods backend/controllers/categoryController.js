@@ -6,7 +6,14 @@ import Category from "../models/Category.js";
 // ==============================
 export const createCategory = async (req, res) => {
   try {
-    const { name, description, featured, active, displayOrder } = req.body;
+    let {
+      name,
+      description,
+      featured,
+      active,
+      displayOrder,
+      subCategories,
+    } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({
@@ -25,6 +32,7 @@ export const createCategory = async (req, res) => {
     const slug = slugify(name, { lower: true, strict: true });
 
     const exists = await Category.findOne({ slug });
+
     if (exists) {
       return res.status(409).json({
         success: false,
@@ -32,16 +40,26 @@ export const createCategory = async (req, res) => {
       });
     }
 
-    console.log("=================================");
-console.log("REQ.FILE =", req.file);
-console.log("REQ.BODY =", req.body);
-console.log("=================================");
+    // Parse sub categories
+    if (typeof subCategories === "string") {
+      subCategories = JSON.parse(subCategories);
+    }
 
-const category = await Category.create({
+    const formattedSubCategories = (subCategories || []).map((sub) => ({
+      name: sub.name.trim(),
+      slug: slugify(sub.name, {
+        lower: true,
+        strict: true,
+      }),
+      active: sub.active ?? true,
+    }));
+
+    const category = await Category.create({
       name: name.trim(),
       slug,
       description,
-      image: req.file.path, // Cloudinary/Multer should provide this
+      image: req.file.path,
+      subCategories: formattedSubCategories,
       featured: featured ?? false,
       active: active ?? true,
       displayOrder: Number(displayOrder) || 0,
@@ -54,6 +72,7 @@ const category = await Category.create({
     });
   } catch (error) {
     console.error(error);
+
     return res.status(500).json({
       success: false,
       message: "Server Error",
@@ -112,6 +131,88 @@ export const deleteCategory = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+// ==============================
+// Update Category
+// ==============================
+export const updateCategory = async (req, res) => {
+  try {
+    let {
+      name,
+      description,
+      featured,
+      active,
+      displayOrder,
+      subCategories,
+    } = req.body;
+
+    const category = await Category.findById(req.params.id);
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
+
+    const slug = slugify(name, {
+      lower: true,
+      strict: true,
+    });
+
+    const exists = await Category.findOne({
+      slug,
+      _id: { $ne: req.params.id },
+    });
+
+    if (exists) {
+      return res.status(409).json({
+        success: false,
+        message: "Category already exists",
+      });
+    }
+
+    if (typeof subCategories === "string") {
+      subCategories = JSON.parse(subCategories);
+    }
+
+    category.name = name.trim();
+    category.slug = slug;
+    category.description = description || "";
+
+    category.subCategories = (subCategories || []).map((sub) => ({
+      name: sub.name.trim(),
+      slug: slugify(sub.name, {
+        lower: true,
+        strict: true,
+      }),
+      active: sub.active ?? true,
+    }));
+
+    category.featured = featured ?? category.featured;
+    category.active = active ?? category.active;
+    category.displayOrder =
+      Number(displayOrder) || category.displayOrder;
+
+    if (req.file) {
+      category.image = req.file.path;
+    }
+
+    await category.save();
+
+    return res.json({
+      success: true,
+      message: "Category updated successfully",
+      category,
+    });
+  } catch (error) {
+    console.error(error);
+
     return res.status(500).json({
       success: false,
       message: "Server Error",

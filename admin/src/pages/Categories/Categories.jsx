@@ -13,7 +13,11 @@ import "./Categories.css";
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
-  const [form, setForm] = useState({ name: "", description: "" });
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    subCategories: [""],
+  });
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
 
@@ -39,7 +43,11 @@ export default function Categories() {
   }, []);
 
   const resetForm = () => {
-    setForm({ name: "", description: "" });
+    setForm({
+      name: "",
+      description: "",
+      subCategories: [""],
+    });
     setImage(null);
     setPreview(null);
     setEditingId(null);
@@ -59,6 +67,12 @@ export default function Categories() {
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("description", form.description);
+
+      const subCategories = form.subCategories
+        .filter((item) => item.trim() !== "")
+        .map((item) => ({ name: item }));
+
+      formData.append("subCategories", JSON.stringify(subCategories));
 
       if (image) {
         formData.append("image", image);
@@ -86,7 +100,14 @@ export default function Categories() {
 
   const handleEdit = (category) => {
     setEditingId(category._id);
-    setForm({ name: category.name, description: category.description });
+    setForm({
+      name: category.name,
+      description: category.description,
+      subCategories:
+        category.subCategories?.length > 0
+          ? category.subCategories.map((s) => s.name)
+          : [""],
+    });
     setPreview(category.image);
     setImage(null);
     if (formRef.current) {
@@ -110,6 +131,28 @@ export default function Categories() {
     }
   };
 
+  const addSubCategory = () => {
+    setForm({
+      ...form,
+      subCategories: [...form.subCategories, ""],
+    });
+  };
+
+  const updateSubCategory = (index, value) => {
+    const updated = [...form.subCategories];
+    updated[index] = value;
+    setForm({ ...form, subCategories: updated });
+  };
+
+  const removeSubCategory = (index) => {
+    const updated = [...form.subCategories];
+    updated.splice(index, 1);
+    setForm({
+      ...form,
+      subCategories: updated.length ? updated : [""],
+    });
+  };
+
   return (
     <div className="category-page">
       <div className="category-form" ref={formRef}>
@@ -126,6 +169,35 @@ export default function Categories() {
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
+
+          <div className="subcategory-section">
+            <label>Sub Categories</label>
+            {form.subCategories.map((sub, index) => (
+              <div key={index} className="subcategory-row">
+                <input
+                  type="text"
+                  placeholder={`Sub Category ${index + 1}`}
+                  value={sub}
+                  onChange={(e) => updateSubCategory(index, e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="delete-sub-btn"
+                  onClick={() => removeSubCategory(index)}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="add-sub-btn"
+              onClick={addSubCategory}
+            >
+              <Plus size={16} />
+              Add Sub Category
+            </button>
+          </div>
 
           <input
             ref={fileInputRef}
@@ -171,6 +243,7 @@ export default function Categories() {
               <th>Image</th>
               <th>Name</th>
               <th>Description</th>
+              <th>Sub Categories</th>
               <th>Edit</th>
               <th>Delete</th>
             </tr>
@@ -183,6 +256,11 @@ export default function Categories() {
                 </td>
                 <td>{item.name}</td>
                 <td>{item.description}</td>
+                <td>
+                  {item.subCategories?.length
+                    ? item.subCategories.map((s) => s.name).join(", ")
+                    : "-"}
+                </td>
                 <td>
                   <button
                     className="edit-btn"

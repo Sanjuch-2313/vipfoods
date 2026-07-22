@@ -30,6 +30,7 @@ import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import { LocationProvider } from "./context/LocationContext";
 import ScrollToTop from "./components/ScrollToTop";
+import Shop from "./pages/Shop";
 
 const INTRO_SESSION_KEY = "vipfoods-intro-shown";
 
@@ -94,6 +95,7 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/shop" element={<Shop />} />
       </Routes>
 
       {/* FOOTER */}

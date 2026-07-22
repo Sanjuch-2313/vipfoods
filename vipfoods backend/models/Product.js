@@ -103,29 +103,13 @@ const productSchema = new mongoose.Schema(
       ref: "Category",
       required: true,
     },
-    foodType: {
-  type: String,
-  enum: ["veg", "non-veg"],
-  default: null,
-},
 
-snackType: {
-  type: String,
-  enum: ["sweet", "hot"],
-  default: null,
-},
-
-freshType: {
-  type: String,
-  enum: ["fruits", "vegetables"],
-  default: null,
-},
-
-spiceType: {
-  type: String,
-  enum: ["grinded", "normal"],
-  default: null,
-},
+    // NEW FIELD
+    subCategory: {
+      type: String,
+      trim: true,
+      default: "",
+    },
 
     brand: {
       type: String,
@@ -214,15 +198,16 @@ spiceType: {
       type: Boolean,
       default: true,
     },
-    isDeleted: {
-  type: Boolean,
-  default: false,
-},
 
-deletedAt: {
-  type: Date,
-  default: null,
-},
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
 
     metaTitle: {
       type: String,

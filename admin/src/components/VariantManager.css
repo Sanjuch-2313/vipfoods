@@ -1,0 +1,424 @@
+.variant-manager {
+  margin-top: 24px;
+}
+
+/* =========================================================
+   CARD GRID
+========================================================= */
+
+.variant-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.variant-card {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  padding: 18px 20px 20px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.variant-card:hover {
+  border-color: rgba(15, 23, 42, 0.14);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+}
+
+.variant-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.variant-card__index {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #6b7280;
+}
+
+.variant-card__delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(220, 38, 38, 0.06);
+  color: #dc2626;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.variant-card__delete:hover {
+  background: rgba(220, 38, 38, 0.12);
+}
+
+.variant-delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: #374151;
+}
+
+.variant-delete-cancel,
+.variant-delete-confirm-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.variant-delete-cancel {
+  background: rgba(15, 23, 42, 0.06);
+  color: #374151;
+}
+
+.variant-delete-confirm-btn {
+  background: #dc2626;
+  color: #fff;
+}
+
+/* =========================================================
+   CARD BODY / FIELDS
+========================================================= */
+
+.variant-card__body {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.variant-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.variant-field--full {
+  grid-column: 1 / -1;
+}
+
+.variant-field label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.variant-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.variant-field input:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+
+.variant-field input.input-error {
+  border-color: #dc2626;
+}
+
+.variant-input-prefix {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.variant-input-prefix:focus-within {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+
+.variant-input-prefix span {
+  padding: 10px 0 10px 12px;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.variant-input-prefix input {
+  border: none;
+  border-radius: 0;
+}
+
+.variant-input-prefix input:focus {
+  box-shadow: none;
+}
+
+.variant-discount-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.field-error {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #dc2626;
+}
+
+/* =========================================================
+   WEIGHT PICKER
+========================================================= */
+
+.weight-picker {
+  position: relative;
+}
+
+.weight-picker__trigger {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 0.9rem;
+  color: #111827;
+  cursor: pointer;
+}
+
+.weight-picker__trigger.input-error {
+  border-color: #dc2626;
+}
+
+.weight-picker__placeholder {
+  color: #9ca3af;
+}
+
+.chevron {
+  color: #6b7280;
+  transition: transform 0.2s ease;
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+.weight-picker__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.weight-picker__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.14);
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.weight-picker__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  color: #6b7280;
+}
+
+.weight-picker__search input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 0.88rem;
+}
+
+.weight-picker__options {
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.weight-picker__group {
+  margin-bottom: 6px;
+}
+
+.weight-picker__group-label {
+  display: block;
+  padding: 6px 8px 2px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9ca3af;
+}
+
+.weight-picker__option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: #111827;
+  cursor: pointer;
+}
+
+.weight-picker__option:hover {
+  background: rgba(22, 163, 74, 0.06);
+}
+
+.weight-picker__option.selected {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.weight-picker__empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: #9ca3af;
+}
+
+.weight-picker__custom-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  padding: 10px;
+  border: none;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(22, 163, 74, 0.04);
+  color: #16a34a;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.weight-picker__custom-trigger:hover {
+  background: rgba(22, 163, 74, 0.09);
+}
+
+.weight-picker__custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weight-picker__custom-input {
+  flex: 1;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.weight-picker__custom-input.input-error {
+  border-color: #dc2626;
+}
+
+.weight-picker__back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.weight-picker__back-btn:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+/* =========================================================
+   ADD VARIANT BUTTON
+========================================================= */
+
+.variant-add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 12px 20px;
+  border: 1.5px dashed rgba(22, 163, 74, 0.4);
+  border-radius: 12px;
+  background: rgba(22, 163, 74, 0.03);
+  color: #16a34a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.variant-add-button:hover {
+  background: rgba(22, 163, 74, 0.08);
+  border-color: rgba(22, 163, 74, 0.6);
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1024px) {
+  .variant-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .variant-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .variant-card__body {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .variant-card {
+    padding: 16px;
+  }
+
+  .variant-card__body {
+    grid-template-columns: 1fr;
+  }
+}

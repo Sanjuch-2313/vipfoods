@@ -33,6 +33,32 @@ const filterSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// ==========================
+// SUB CATEGORY SCHEMA
+// ==========================
+const subCategorySchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    slug: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+    },
+
+    active: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  { _id: false }
+);
+
 const categorySchema = new mongoose.Schema(
   {
     name: {
@@ -61,6 +87,14 @@ const categorySchema = new mongoose.Schema(
     image: {
       type: String,
       default: "",
+    },
+
+    // ==========================
+    // SUB CATEGORIES
+    // ==========================
+    subCategories: {
+      type: [subCategorySchema],
+      default: [],
     },
 
     displayOrder: {
