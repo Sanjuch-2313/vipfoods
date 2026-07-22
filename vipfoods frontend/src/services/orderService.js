@@ -12,6 +12,7 @@ export const createOrder = async (orderPayload) => {
     const { data } = await api.post("/orders", orderPayload);
     return data;
   } catch (error) {
+    console.error("CREATE ORDER ERROR:", error);
     throw new Error(getErrorMessage(error, "Failed to place order"));
   }
 };
@@ -27,6 +28,7 @@ export const createRazorpayOrder = async (amount) => {
 
     return data;
   } catch (error) {
+    console.error("CREATE RAZORPAY ORDER ERROR:", error);
     throw new Error(getErrorMessage(error, "Failed to create Razorpay order"));
   }
 };
@@ -43,6 +45,7 @@ export const verifyPayment = async (paymentData) => {
 
     return data;
   } catch (error) {
+    console.error("VERIFY PAYMENT ERROR:", error);
     throw new Error(getErrorMessage(error, "Payment verification failed"));
   }
 };

@@ -1,44 +1,36 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
 
-let razorpay = null;
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
-// Initialize Razorpay only if keys are available
-if (
-  process.env.RAZORPAY_KEY_ID &&
-  process.env.RAZORPAY_KEY_SECRET
-) {
-  razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-  });
-
-  console.log("✅ Razorpay initialized");
-} else {
-  console.warn("⚠ Razorpay keys are missing. Payment APIs are disabled.");
-}
-
-// ✅ Create Razorpay Order
+// =======================
+// Create Razorpay Order
+// =======================
 export const createOrder = async (req, res) => {
   try {
-    if (!razorpay) {
-      return res.status(500).json({
+    const { amount } = req.body;
+
+    if (!amount) {
+      return res.status(400).json({
         success: false,
-        message: "Razorpay is not configured.",
+        message: "Amount is required",
       });
     }
 
-    const { amount } = req.body;
+    const amountInPaise = Math.round(Number(amount) * 100);
 
-    if (!amount || Number(amount) <= 0) {
+    if (amountInPaise < 100) {
       return res.status(400).json({
         success: false,
-        message: "Invalid amount.",
+        message: "Minimum amount is ₹1",
       });
     }
 
     const order = await razorpay.orders.create({
-      amount: Math.round(Number(amount) * 100),
+      amount: amountInPaise,
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
     });
@@ -48,25 +40,24 @@ export const createOrder = async (req, res) => {
       order,
     });
   } catch (error) {
-    console.error("Create Razorpay Order Error:", error);
+    console.error("========== RAZORPAY CREATE ORDER ==========");
+    console.error(error);
 
-    return res.status(500).json({
+    return res.status(error.statusCode || 500).json({
       success: false,
-      message: error.message || "Failed to create Razorpay order.",
+      message:
+        error.error?.description ||
+        error.message ||
+        "Unable to create Razorpay order",
     });
   }
 };
 
-// ✅ Verify Razorpay Payment
+// =======================
+// Verify Payment
+// =======================
 export const verifyPayment = async (req, res) => {
   try {
-    if (!process.env.RAZORPAY_KEY_SECRET) {
-      return res.status(500).json({
-        success: false,
-        message: "Razorpay is not configured.",
-      });
-    }
-
     const {
       razorpay_order_id,
       razorpay_payment_id,
@@ -80,32 +71,47 @@ export const verifyPayment = async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: "Missing payment details.",
+        message: "Missing payment details",
       });
     }
+
+    console.log("\n========== VERIFY PAYMENT ==========");
+    console.log("Order ID:", razorpay_order_id);
+    console.log("Payment ID:", razorpay_payment_id);
+    console.log("Received Signature:", razorpay_signature);
+    console.log("Razorpay Secret:", process.env.RAZORPAY_KEY_SECRET);
 
     const generatedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
+    console.log("Generated Signature:", generatedSignature);
+
     if (generatedSignature !== razorpay_signature) {
+      console.log("❌ SIGNATURE MISMATCH");
+
       return res.status(400).json({
         success: false,
-        message: "Invalid payment signature.",
+        message: "Invalid payment signature",
+        receivedSignature: razorpay_signature,
+        generatedSignature,
       });
     }
 
+    console.log("✅ PAYMENT VERIFIED");
+
     return res.status(200).json({
       success: true,
-      message: "Payment verified successfully.",
+      message: "Payment verified successfully",
     });
   } catch (error) {
-    console.error("Verify Payment Error:", error);
+    console.error("========== VERIFY PAYMENT ERROR ==========");
+    console.error(error);
 
     return res.status(500).json({
       success: false,
-      message: error.message || "Payment verification failed.",
+      message: error.message || "Payment verification failed",
     });
   }
 };

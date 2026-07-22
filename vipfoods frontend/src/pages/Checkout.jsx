@@ -400,6 +400,7 @@ razorpaySignature: response.razorpay_signature,
             ...buildOrderPayload(),
             razorpayOrderId: response.razorpay_order_id,
             razorpayPaymentId: response.razorpay_payment_id,
+            razorpaySignature: response.razorpay_signature,
           };
 
           const res = await createOrder(orderPayload);
