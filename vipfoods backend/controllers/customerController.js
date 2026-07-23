@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import Order from "../models/Order.js";
 
 // GET all customers (registered users)
 export const getCustomers = async (req, res) => {
@@ -19,10 +20,18 @@ export const getCustomers = async (req, res) => {
       .select("-password -otp -otpExpires")
       .sort({ createdAt: -1 });
 
-    const formattedCustomers = customers.map((customer) => ({
-      ...customer.toObject(),
-      ordersCount: 0, // We'll replace this with actual order count later
-    }));
+    const formattedCustomers = await Promise.all(
+      customers.map(async (customer) => {
+        const ordersCount = await Order.countDocuments({
+          customer: customer._id,
+        });
+
+        return {
+          ...customer.toObject(),
+          ordersCount,
+        };
+      })
+    );
 
     res.json({
       success: true,
@@ -50,11 +59,20 @@ export const getCustomerById = async (req, res) => {
       });
     }
 
+    const orders = await Order.find({
+      customer: customer._id,
+    })
+      .sort({ createdAt: -1 })
+      .select(
+        "orderNumber grandTotal paymentMethod paymentStatus orderStatus createdAt"
+      );
+
     res.json({
       success: true,
       customer: {
         ...customer.toObject(),
-        ordersCount: 0,
+        ordersCount: orders.length,
+        orders,
       },
     });
   } catch (err) {
@@ -65,7 +83,7 @@ export const getCustomerById = async (req, res) => {
   }
 };
 
-// CREATE customer (Not required because customers register from the website)
+// CREATE customer (Customers register through website)
 export const createCustomer = async (req, res) => {
   res.status(405).json({
     success: false,
@@ -73,7 +91,7 @@ export const createCustomer = async (req, res) => {
   });
 };
 
-// UPDATE customer (Optional)
+// UPDATE customer
 export const updateCustomer = async (req, res) => {
   try {
     const customer = await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -112,9 +130,13 @@ export const deleteCustomer = async (req, res) => {
       });
     }
 
+    await Order.deleteMany({
+      customer: req.params.id,
+    });
+
     res.json({
       success: true,
-      message: "Customer deleted successfully.",
+      message: "Customer and associated orders deleted successfully.",
     });
   } catch (err) {
     res.status(500).json({

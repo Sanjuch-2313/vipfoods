@@ -32,8 +32,8 @@ export default function CustomerDetails() {
       <ul>
         {customer.orders.map((order) => (
           <li key={order._id}>
-            Order #{order.orderId} — ₹{order.totalAmount} — {order.status}
-          </li>
+  {order.orderNumber} — ₹{order.grandTotal} — {order.orderStatus}
+</li>
         ))}
       </ul>
     </div>
