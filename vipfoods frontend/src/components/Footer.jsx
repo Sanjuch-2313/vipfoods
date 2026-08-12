@@ -10,7 +10,10 @@ export default function Footer() {
         <p className="footer-org-info">
           <strong>Name of organization:</strong> Village Inti Products and Foods (VIP Food’s)<br />
           <strong>Full Address:</strong> 14-26 Telaprolu, Tenali Mandal, Guntur: 522202<br />
-          <strong>Phone:</strong> <a href="tel:9966817199">9966 81 71 99</a>
+         <strong>Email:</strong>{" "}
+<a href="mailto:vipvillagefoods@gmail.com">
+  vipvillagefoods@gmail.com
+</a>
         </p>
       </div>
 
