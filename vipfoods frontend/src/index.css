@@ -1,76 +1,46 @@
 @import "@fontsource/poppins";
-
 @import "tailwindcss";
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
+@layer base {
+  * {
+    @apply m-0 p-0 box-border;
+  }
 
-html{
-    scroll-behavior:smooth;
-}
+  html {
+    @apply scroll-smooth;
+  }
 
-body{
+  body {
+    /* Kept Poppins as default to respect original index.css, though theme.css might override */
+    font-family: 'Poppins', sans-serif;
+    @apply bg-slate-50 text-gray-900 overflow-x-hidden;
+  }
 
-    font-family:'Poppins',sans-serif;
+  a {
+    @apply no-underline text-inherit;
+  }
 
-    background:#F8FAFC;
+  button {
+    @apply border-none outline-none cursor-pointer;
+  }
 
-    color:#111827;
+  img {
+    @apply block max-w-full;
+  }
 
-    overflow-x:hidden;
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
 
-}
+  ::-webkit-scrollbar-thumb {
+    @apply bg-green-700 rounded-full;
+  }
 
-a{
-    text-decoration:none;
-    color:inherit;
-}
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-200;
+  }
 
-button{
-
-    border:none;
-
-    outline:none;
-
-    cursor:pointer;
-
-}
-
-img{
-
-    display:block;
-
-    max-width:100%;
-
-}
-
-::-webkit-scrollbar{
-
-    width:8px;
-
-}
-
-::-webkit-scrollbar-thumb{
-
-    background:#15803d;
-
-    border-radius:20px;
-
-}
-
-::-webkit-scrollbar-track{
-
-    background:#e5e7eb;
-
-}
-
-::selection{
-
-    background:#16a34a;
-
-    color:white;
-
+  ::selection {
+    @apply bg-green-600 text-white;
+  }
 }
