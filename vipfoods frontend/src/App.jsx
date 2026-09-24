@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import BrandIntro from "./components/BrandIntro";
+import GuestWarningModal from "./components/GuestWarningModal";
+import NotificationPopup from "./components/NotificationPopup";
 
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -23,6 +25,13 @@ import Register from "./pages/Register";
 import OrderSuccess from "./pages/orderSuccess";
 import MyOrders from "./pages/MyOrders";
 import AdminOrders from "./pages/Orders";
+import CouponsPage from "./pages/CouponsPage";
+import SettingsPage from "./pages/SettingsPage";
+import WalletPage from "./pages/WalletPage";
+import AddressesPage from "./pages/AddressesPage";
+import PaymentMethodsPage from "./pages/PaymentMethodsPage";
+import SupportPage from "./pages/SupportPage";
+import NotificationsPage from "./pages/NotificationsPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -77,6 +86,10 @@ function AppRoutes() {
 
       <ScrollToTop />
 
+      {/* GUEST WARNING & NOTIFICATION POPUP */}
+      <GuestWarningModal />
+      <NotificationPopup />
+
       {/* NAVBAR */}
       {!hideShell && <Navbar />}
 
@@ -92,6 +105,13 @@ function AppRoutes() {
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/coupons" element={<CouponsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/wallet" element={<WalletPage />} />
+        <Route path="/addresses" element={<AddressesPage />} />
+        <Route path="/payment-methods" element={<PaymentMethodsPage />} />
+        <Route path="/support" element={<SupportPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="*" element={<NotFound />} />

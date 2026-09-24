@@ -13,6 +13,7 @@ import Categories from "../pages/Categories/Categories";
 import Orders from "../pages/Orders/Orders";
 
 import Customers from "../pages/Customers/Customers";
+import CustomerDetails from "../pages/Customers/CustomerDetails";
 
 import Coupons from "../pages/Coupons/Coupons";
 import CouponForm from "../pages/Coupons/CouponForm";
@@ -22,6 +23,7 @@ import Reviews from "../pages/Reviews/Reviews";
 import Settings from "../pages/Settings/Settings";
 
 import HomeBanner from "../pages/HomeBanner/HomeBanner";
+import Notifications from "../pages/Notifications/Notifications";
 
 import NotFound from "../pages/NotFound";
 
@@ -58,6 +60,7 @@ export default function AppRoutes() {
 
         {/* Customers */}
         <Route path="/customers" element={<Customers />} />
+        <Route path="/customers/:id" element={<CustomerDetails />} />
 
         {/* Coupons */}
         <Route path="/coupons" element={<Coupons />} />
@@ -68,6 +71,9 @@ export default function AppRoutes() {
 
         {/* Home Banner */}
         <Route path="/home-banner" element={<HomeBanner />} />
+
+        {/* Notifications */}
+        <Route path="/notifications" element={<Notifications />} />
 
         {/* Settings */}
         <Route path="/settings" element={<Settings />} />

@@ -48,44 +48,47 @@ export default function Customers() {
         />
       </div>
 
-      <table className="customers-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Orders</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {customers.map((c) => (
-            <tr key={c._id}>
-              <td>{c._id}</td>
-              <td>{c.name}</td>
-              <td>{c.email}</td>
-              <td>{c.ordersCount}</td>
-              <td>
-                <Link to={`/customers/${c._id}`}>View</Link>
-
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDelete(c._id)}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-
-          {customers.length === 0 && (
+      <div className="table-scroll-wrapper">
+        <table className="customers-table">
+          <thead>
             <tr>
-              <td colSpan="5">No customers found.</td>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Orders</th>
+              <th>Actions</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {customers.map((c) => (
+              <tr key={c._id}>
+                <td>{c._id}</td>
+                <td>{c.name}</td>
+                <td>{c.email}</td>
+                <td>{c.ordersCount}</td>
+                <td>
+                  <Link to={`/customers/${c._id}`}>View</Link>
+
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(c._id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+
+            {customers.length === 0 && (
+              <tr>
+                <td colSpan="5">No customers found.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
 
       <div className="pagination">
         <button

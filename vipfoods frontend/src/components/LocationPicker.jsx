@@ -13,7 +13,7 @@ async function fetchAddressFromCoords(lat, lon) {
   return data.display_name || `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
 }
 
-export default function LocationPicker({ onLocationChange }) {
+export default function LocationPicker({ onLocationChange, customTrigger }) {
   const {
     location,
     setLocation,
@@ -215,19 +215,29 @@ export default function LocationPicker({ onLocationChange }) {
 
   return (
     <div className="relative" ref={wrapperRef}>
-      <motion.button
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.97 }}
-        type="button"
-        onClick={() => {
-          updatePanelPosition();
-          openPicker();
-        }}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/60 backdrop-blur-xl border border-white/70 shadow text-stone-800 font-medium text-sm sm:text-base max-w-[220px] sm:max-w-xs"
-      >
-        <FiMapPin className="text-red-600 shrink-0" size={18} />
-        <span className="truncate">{location || "Set delivery location"}</span>
-      </motion.button>
+      {customTrigger ? (
+        customTrigger({
+          onClick: () => {
+            updatePanelPosition();
+            openPicker();
+          },
+          location,
+        })
+      ) : (
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          type="button"
+          onClick={() => {
+            updatePanelPosition();
+            openPicker();
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/60 backdrop-blur-xl border border-white/70 shadow text-stone-800 font-medium text-sm sm:text-base max-w-[220px] sm:max-w-xs"
+        >
+          <FiMapPin className="text-red-600 shrink-0" size={18} />
+          <span className="truncate">{location || "Set delivery location"}</span>
+        </motion.button>
+      )}
 
       <AnimatePresence>
         {isPickerOpen && !required && panelContent}

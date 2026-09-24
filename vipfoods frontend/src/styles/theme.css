@@ -1,128 +1,122 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg-light: #fafaf8;
-  --color-bg-dark: #0d0d0d;
-  --color-text-dark: #1a1a1a;
-  --color-text-light: #f5f5f0;
+  /* Minimalist Premium Colors */
+  --color-bg-base: #fcfcfc;
+  --color-bg-surface: #ffffff;
+  --color-bg-subtle: #f4f5f4;
+  
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #9ca3af;
 
-  --color-glass-bg: rgba(255, 255, 255, 0.55);
-  --color-glass-border: rgba(255, 255, 255, 0.35);
-  --color-glass-shadow: rgba(0, 0, 0, 0.08);
+  /* Premium Earthy Palette for VIP Foods */
+  --color-brand-emerald: #065f46;     /* Deep rich green for Fresh/Pickles */
+  --color-brand-sage: #d1fae5;        /* Soft green accent */
+  --color-brand-terracotta: #c2410c;  /* Warm spice / chilli */
+  --color-brand-sand: #fef3c7;        /* Turmeric / Gold */
+  
+  --color-border-subtle: #f3f4f6;
+  --color-border-focus: #065f46;
 
-  --color-pickle-1: #2d5016;
-  --color-pickle-2: #6b8e23;
-  --color-pickle-glow: rgba(107, 142, 35, 0.35);
-
-  --color-fresh-1: #2e7d32;
-  --color-fresh-2: #ff9800;
-  --color-fresh-glow: rgba(76, 175, 80, 0.35);
-
-  --color-spice-1: #d4a017;
-  --color-spice-2: #c1440e;
-  --color-spice-glow: rgba(212, 160, 23, 0.35);
-
-  --radius-xl: 28px;
-  --radius-lg: 18px;
-
-  --animate-gradient-shift: gradientShift 10s ease infinite;
-  --animate-float-3d: float3d 5s ease-in-out infinite;
-
-  @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-
-  @keyframes float3d {
-    0%   { transform: translateY(0px) rotateZ(0deg) rotateY(0deg); }
-    25%  { transform: translateY(-14px) rotateZ(2deg) rotateY(6deg); }
-    50%  { transform: translateY(-4px) rotateZ(-1deg) rotateY(0deg); }
-    75%  { transform: translateY(-18px) rotateZ(1deg) rotateY(-6deg); }
-    100% { transform: translateY(0px) rotateZ(0deg) rotateY(0deg); }
-  }
+  /* Sophisticated Soft Shadows */
+  --shadow-premium: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  --shadow-premium-hover: 0 12px 30px -4px rgba(0, 0, 0, 0.08);
 }
 
 @layer base {
   body {
-    @apply bg-bg-light text-text-dark overflow-x-hidden;
-    font-family: 'SF Pro Display', 'Inter', -apple-system, sans-serif;
+    @apply bg-bg-base text-text-primary antialiased;
+    /* Using modern sans-serif stack for a very clean look */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
 
 @layer components {
-  /* ---------- Glassmorphism ---------- */
-  .glass-card {
-    @apply bg-glass-bg border border-glass-border rounded-xl transition-transform duration-500 will-change-transform backdrop-blur-[18px] backdrop-saturate-[160%];
-    box-shadow: 0 8px 32px var(--color-glass-shadow);
-    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Elevated Surface / Card - Replaces old 3D tilt cards */
+  .glass-card, .premium-card {
+    @apply bg-bg-surface border border-border-subtle rounded-[24px] p-6 transition-all duration-500 ease-out;
+    box-shadow: var(--shadow-premium);
   }
   
-  .glass-card:hover {
-    @apply -translate-y-[10px] scale-[1.02];
-    box-shadow: 0 20px 45px var(--color-glass-shadow);
+  .glass-card:hover, .premium-card:hover {
+    @apply -translate-y-[4px] border-gray-200;
+    box-shadow: var(--shadow-premium-hover);
   }
 
-  /* ---------- Animated Gradient Backgrounds ---------- */
-  .gradient-pickle {
-    @apply animate-gradient-shift;
-    background: linear-gradient(120deg, var(--color-pickle-1), var(--color-pickle-2), var(--color-pickle-1));
-    background-size: 300% 300%;
+  /* Trending Glass Effect (Subtle Apple-style) */
+  .glass-nav {
+    @apply bg-white/75 backdrop-blur-xl backdrop-saturate-150 border-b border-gray-200/50 sticky top-0 z-50;
   }
 
+  /* Premium Buttons */
+  .cta-btn, .btn-primary {
+    @apply inline-flex items-center justify-center px-8 py-3.5 rounded-full font-medium text-white bg-brand-emerald transition-all duration-300 ease-out;
+  }
+  
+  .cta-btn:hover, .btn-primary:hover {
+    @apply bg-emerald-800 -translate-y-0.5;
+    box-shadow: 0 8px 20px -4px rgba(6, 95, 70, 0.3);
+  }
+  
+  .cta-btn:active, .btn-primary:active {
+    @apply scale-[0.97] translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-8 py-3.5 rounded-full font-medium text-brand-emerald bg-brand-sage transition-all duration-300 ease-out;
+  }
+  
+  .btn-secondary:hover {
+    @apply bg-emerald-200 -translate-y-0.5;
+  }
+
+  .btn-accent {
+    @apply inline-flex items-center justify-center px-8 py-3.5 rounded-full font-medium text-white bg-brand-terracotta transition-all duration-300 ease-out;
+  }
+  
+  .btn-accent:hover {
+    @apply bg-[#9a3412] -translate-y-0.5;
+    box-shadow: 0 8px 20px -4px rgba(194, 65, 12, 0.3);
+  }
+
+  /* Subtle Mesh/Glow Backgrounds (Replaces old heavy moving gradients) */
+  .gradient-pickle, .bg-glow-emerald {
+    @apply relative overflow-hidden;
+    background: radial-gradient(circle at 10% 0%, rgba(6, 95, 70, 0.06) 0%, transparent 60%),
+                radial-gradient(circle at 90% 100%, rgba(209, 250, 229, 0.4) 0%, transparent 60%);
+  }
+  
   .gradient-fresh {
-    @apply animate-gradient-shift;
-    background: linear-gradient(120deg, var(--color-fresh-1), var(--color-fresh-2), var(--color-fresh-1));
-    background-size: 300% 300%;
+    @apply relative overflow-hidden;
+    background: radial-gradient(circle at 50% 0%, rgba(6, 95, 70, 0.05) 0%, transparent 70%);
   }
 
-  .gradient-spice {
-    @apply animate-gradient-shift;
-    background: linear-gradient(120deg, var(--color-spice-1), var(--color-spice-2), var(--color-spice-1));
-    background-size: 300% 300%;
+  .gradient-spice, .bg-glow-spice {
+    @apply relative overflow-hidden;
+    background: radial-gradient(circle at 90% 0%, rgba(194, 65, 12, 0.06) 0%, transparent 60%),
+                radial-gradient(circle at 10% 100%, rgba(254, 243, 199, 0.5) 0%, transparent 60%);
   }
 
-  /* ---------- Premium CTA button ---------- */
-  .cta-btn {
-    @apply relative px-[38px] py-4 border-none rounded-full font-semibold text-base tracking-[0.3px] text-white cursor-pointer overflow-hidden transition-transform duration-[350ms];
-    background: linear-gradient(135deg, var(--color-pickle-1), var(--color-spice-2));
-    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Refined Image Hover */
+  .img-zoom-container {
+    @apply overflow-hidden rounded-[20px];
+  }
+  
+  .img-zoom {
+    @apply transition-transform duration-700 ease-out w-full h-full object-cover;
+  }
+  
+  .img-zoom-container:hover .img-zoom {
+    @apply scale-[1.05];
   }
 
-  .cta-btn::before {
-    content: "";
-    @apply absolute inset-0 -translate-x-full transition-transform duration-[600ms];
-    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
-    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Badges */
+  .badge-fresh {
+    @apply px-3 py-1 text-xs font-bold rounded-full bg-brand-sage text-brand-emerald uppercase tracking-[0.05em];
   }
-
-  .cta-btn:hover::before {
-    @apply translate-x-full;
-  }
-
-  .cta-btn:hover {
-    @apply -translate-y-1 scale-[1.04];
-    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
-  }
-
-  .cta-btn:active {
-    @apply -translate-y-[1px] scale-[0.98];
-  }
-
-  /* ---------- Mouse hover 3D tilt ---------- */
-  .tilt-card {
-    perspective: 1000px;
-  }
-
-  .tilt-card-inner {
-    @apply transition-transform duration-150 ease-out;
-    transform-style: preserve-3d;
-  }
-}
-
-@layer utilities {
-  .float-3d {
-    @apply animate-float-3d;
-    transform-style: preserve-3d;
+  
+  .badge-spice {
+    @apply px-3 py-1 text-xs font-bold rounded-full bg-orange-100 text-brand-terracotta uppercase tracking-[0.05em];
   }
 }

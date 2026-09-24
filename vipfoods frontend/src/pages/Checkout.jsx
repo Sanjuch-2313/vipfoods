@@ -1,5 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  FiHome,
+  FiShield,
+  FiChevronDown,
+  FiChevronUp,
+  FiMapPin,
+  FiCreditCard,
+  FiDollarSign,
+  FiCheck,
+  FiPercent,
+  FiArrowLeft,
+} from "react-icons/fi";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -8,19 +20,15 @@ import {
   verifyPayment,
 } from "../services/orderService";
 import api from "../services/api";
-import "./checkout.css";
-
-const INDIAN_STATE_CODES = {
-  "andhra pradesh": "Andhra Pradesh",
-};
 
 const CHECKOUT_STORAGE_KEY = "checkout_form_state";
 const RAZORPAY_SCRIPT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
 
 function getCodCharge(paymentMethod, state) {
   if (paymentMethod !== "COD") return 0;
-  if (!state.trim()) return 0;
-  return state.trim().toLowerCase() === "andhra pradesh" ? 50 : 70;
+  if (!state || !state.trim()) return 75; // Default COD advance if state not yet specified
+  const norm = state.trim().toLowerCase();
+  return norm === "andhra pradesh" || norm === "ap" ? 50 : 75;
 }
 
 function loadStoredCheckoutState() {
@@ -33,20 +41,29 @@ function loadStoredCheckoutState() {
   }
 }
 
-// Loads the Razorpay checkout script once, reuses it on subsequent calls.
 function loadRazorpayScript() {
   return new Promise((resolve) => {
     if (document.querySelector(`script[src="${RAZORPAY_SCRIPT_SRC}"]`)) {
       resolve(true);
       return;
     }
-
     const script = document.createElement("script");
     script.src = RAZORPAY_SCRIPT_SRC;
     script.onload = () => resolve(true);
     script.onerror = () => resolve(false);
     document.body.appendChild(script);
   });
+}
+
+// Coupon Ticket Icon matching Image 1
+function CouponIcon({ className = "w-5 h-5" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z" />
+      <line x1="9" y1="9" x2="15" y2="9" strokeDasharray="2 2" />
+      <line x1="9" y1="15" x2="15" y2="15" strokeDasharray="2 2" />
+    </svg>
+  );
 }
 
 export default function Checkout() {
@@ -56,8 +73,6 @@ export default function Checkout() {
 
   const storedState = loadStoredCheckoutState();
 
-  // Customer details — restored from sessionStorage if present, so a page
-  // refresh doesn't wipe out what the user already typed.
   const [customer, setCustomer] = useState({
     name: "",
     phone: "",
@@ -72,6 +87,9 @@ export default function Checkout() {
   });
 
   const [fieldErrors, setFieldErrors] = useState({});
+  const [editingAddress, setEditingAddress] = useState(false);
+  const [showItems, setShowItems] = useState(false);
+  const [changingPayment, setChangingPayment] = useState(false);
 
   // Location autofill
   const [locationLoading, setLocationLoading] = useState(false);
@@ -82,27 +100,52 @@ export default function Checkout() {
   const [coupon, setCoupon] = useState(null);
   const [discount, setDiscount] = useState(0);
   const [couponMessage, setCouponMessage] = useState("");
-  const [couponStatus, setCouponStatus] = useState(null); // "success" | "error" | null
+  const [couponStatus, setCouponStatus] = useState(null);
   const [couponLoading, setCouponLoading] = useState(false);
 
   // Payment
   const [paymentMethod, setPaymentMethod] = useState(storedState?.paymentMethod || "COD");
 
+  // Wallet
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [useWallet, setUseWallet] = useState(false);
+
   // Order placement
   const [placing, setPlacing] = useState(false);
   const [orderError, setOrderError] = useState("");
 
-  // ---- Derived values (single source of truth, no duplicate calculations) ----
+  // Fetch wallet balance if logged in
+  useEffect(() => {
+    const fetchWallet = async () => {
+      try {
+        const { data } = await api.get("/auth/me");
+        if (data.success && data.user) {
+          setWalletBalance(data.user.walletBalance || 0);
+        }
+      } catch (err) {
+        console.error("Wallet fetch error on checkout", err);
+      }
+    };
+    fetchWallet();
+  }, []);
+
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + (item.offerPrice || item.price) * item.quantity,
+    (sum, item) => sum + (item.offerPrice || item.price || 0) * item.quantity,
     0
   );
   const codCharge = getCodCharge(paymentMethod, customer.state);
-  const grandTotal = subtotal - discount + codCharge;
+  // Delivery fee completely removed in checkout page
+  const deliveryFee = 0;
 
-  // Persist customer details + payment method on every change so a refresh
-  // restores them. Coupon state is intentionally excluded — it's re-validated
-  // against the live backend each time rather than trusted from storage.
+  const totalBeforeWallet = Math.max(0, subtotal - discount + codCharge);
+  // Wallet deduction ONLY works for ONLINE payment as per user requirement: "for cod wallet option doesnt works"
+  const walletDeduction =
+    paymentMethod === "ONLINE" && useWallet
+      ? Math.min(walletBalance, totalBeforeWallet)
+      : 0;
+  const grandTotal = Math.max(0, totalBeforeWallet - walletDeduction);
+  const totalItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
   useEffect(() => {
     try {
       sessionStorage.setItem(
@@ -121,7 +164,7 @@ export default function Checkout() {
     }
   };
 
-  // ---- Coupon ----
+  // Coupon validation
   const handleApplyCoupon = async () => {
     if (!couponCode.trim() || couponLoading || coupon) return;
 
@@ -131,7 +174,7 @@ export default function Checkout() {
       setCouponStatus(null);
 
       const { data } = await api.post("/coupons/validate", {
-        code: couponCode,
+        code: couponCode.trim(),
         subtotal,
         category: "all",
       });
@@ -158,7 +201,7 @@ export default function Checkout() {
     setCouponStatus(null);
   };
 
-  // ---- Use current location ----
+  // Current location detector
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
       setLocationError("Location is not supported on this device.");
@@ -172,13 +215,10 @@ export default function Checkout() {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
           );
-
           if (!response.ok) throw new Error("Unable to fetch address");
-
           const data = await response.json();
           const addr = data.address || {};
 
@@ -190,43 +230,32 @@ export default function Checkout() {
 
           setCustomer((prev) => ({
             ...prev,
-            address1: road || prev.address1,
+            address1: road || prev.address1 || "My Location",
             city: city || prev.city,
             state: stateName || prev.state,
             pincode: pincode || prev.pincode,
             country: country || prev.country,
           }));
 
-          setFieldErrors((prev) => ({
-            ...prev,
-            address1: undefined,
-            city: undefined,
-            state: undefined,
-            pincode: undefined,
-          }));
+          setFieldErrors({});
+          setEditingAddress(false);
         } catch (err) {
           console.error(err);
-          setLocationError("Could not detect your address. Please enter it manually.");
+          setLocationError("Could not detect address. Please enter manually.");
         } finally {
           setLocationLoading(false);
         }
       },
       (err) => {
         console.error(err);
-        setLocationError(
-          err.code === err.PERMISSION_DENIED
-            ? "Location permission denied. Please enter your address manually."
-            : "Could not get your location. Please enter your address manually."
-        );
+        setLocationError("Location access denied. Please enter address manually.");
         setLocationLoading(false);
       }
     );
   };
 
-  // ---- Validation ----
   const validate = () => {
     const errors = {};
-
     if (!customer.name.trim()) errors.name = "Name is required";
     if (!customer.phone.trim()) errors.phone = "Phone number is required";
     if (!customer.address1.trim()) errors.address1 = "Address is required";
@@ -235,10 +264,13 @@ export default function Checkout() {
     if (!customer.pincode.trim()) errors.pincode = "Pincode is required";
 
     setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
+    if (Object.keys(errors).length > 0) {
+      setEditingAddress(true);
+      return false;
+    }
+    return true;
   };
 
-  // ---- Build order payload (shared by COD and ONLINE flows) ----
   const buildOrderPayload = () => {
     const items = cartItems.map((item) => ({
       product: item._id || item.id,
@@ -265,7 +297,7 @@ export default function Checkout() {
     };
 
     return {
-      customer: user.id || user._id,
+      customer: user?.id || user?._id,
       items,
       shippingAddress,
       paymentMethod,
@@ -285,87 +317,100 @@ export default function Checkout() {
     });
   };
 
-  // ---- COD flow (unchanged) ----
   const placeCodOrder = async () => {
-  const scriptLoaded = await loadRazorpayScript();
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded) {
+      setOrderError("Unable to load payment gateway.");
+      return;
+    }
 
-  if (!scriptLoaded) {
-    setOrderError("Unable to load payment gateway.");
-    return;
-  }
+    if (codCharge > 0) {
+      const { order: razorpayOrder } = await createRazorpayOrder(codCharge);
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        order_id: razorpayOrder.id,
+        name: "VIP Foods",
+        description: "COD Delivery Charge",
+        prefill: {
+          name: customer.name,
+          email: customer.email,
+          contact: customer.phone,
+        },
+        theme: { color: "#f43f5e" },
+        handler: async (response) => {
+          try {
+            const verification = await verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
 
-  // Pay only COD charge
-  const { order: razorpayOrder } = await createRazorpayOrder(codCharge);
+            if (!verification.success) {
+              setOrderError("Payment verification failed.");
+              return;
+            }
 
-  const options = {
-    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-    amount: razorpayOrder.amount,
-    currency: razorpayOrder.currency,
-    order_id: razorpayOrder.id,
-    name: "VIP Foods",
-    description: "COD Delivery Charge",
+            const orderPayload = {
+              ...buildOrderPayload(),
+              codChargePaid: true,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            };
 
-    prefill: {
-      name: customer.name,
-      email: customer.email,
-      contact: customer.phone,
-    },
+            const res = await createOrder(orderPayload);
+            finalizeOrderSuccess(res.order);
+          } catch (err) {
+            console.error(err);
+            setOrderError(err.message);
+          } finally {
+            setPlacing(false);
+          }
+        },
+      };
+      new window.Razorpay(options).open();
+    } else {
+      const orderPayload = buildOrderPayload();
+      const res = await createOrder(orderPayload);
+      finalizeOrderSuccess(res.order);
+      setPlacing(false);
+    }
+  };
 
-    theme: {
-      color: "#16a34a",
-    },
-
-    handler: async (response) => {
+  const placeOnlineOrder = async () => {
+    // If order is completely covered by wallet balance (grandTotal === 0)
+    if (grandTotal === 0 && walletDeduction > 0) {
       try {
-        const verification = await verifyPayment({
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_signature: response.razorpay_signature,
+        await api.post("/auth/wallet/use", {
+          amount: walletDeduction,
+          description: "Full wallet payment for order",
         });
-
-        if (!verification.success) {
-          setOrderError("Payment verification failed.");
-          return;
-        }
-
         const orderPayload = {
           ...buildOrderPayload(),
-
-          codChargePaid: true,
-
-razorpayOrderId: response.razorpay_order_id,
-
-razorpayPaymentId: response.razorpay_payment_id,
-
-razorpaySignature: response.razorpay_signature,
+          paymentStatus: "Paid",
+          paymentMethod: "WALLET",
+          walletAmountUsed: walletDeduction,
         };
-
         const res = await createOrder(orderPayload);
-
         finalizeOrderSuccess(res.order);
-
       } catch (err) {
         console.error(err);
-        setOrderError(err.message);
+        setOrderError(err.response?.data?.message || err.message || "Failed to process wallet payment");
       } finally {
         setPlacing(false);
       }
-    },
-  };
+      return;
+    }
 
-  new window.Razorpay(options).open();
-};
-
-  // ---- ONLINE (Razorpay) flow ----
-  const placeOnlineOrder = async () => {
     const scriptLoaded = await loadRazorpayScript();
-
     if (!scriptLoaded) {
       setOrderError("Unable to load payment gateway. Please try again.");
       return;
     }
 
-   const { order: razorpayOrder } = await createRazorpayOrder(grandTotal);
+    const { order: razorpayOrder } = await createRazorpayOrder(grandTotal);
 
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -379,9 +424,7 @@ razorpaySignature: response.razorpay_signature,
         email: customer.email,
         contact: customer.phone,
       },
-      theme: {
-        color: "#16a34a",
-      },
+      theme: { color: "#f43f5e" },
       handler: async (response) => {
         try {
           const verification = await verifyPayment({
@@ -396,11 +439,24 @@ razorpaySignature: response.razorpay_signature,
             return;
           }
 
+          // Deduct partial wallet amount if used
+          if (walletDeduction > 0) {
+            try {
+              await api.post("/auth/wallet/use", {
+                amount: walletDeduction,
+                description: `Partial wallet payment with order`,
+              });
+            } catch (wErr) {
+              console.error("Wallet deduction failed after payment", wErr);
+            }
+          }
+
           const orderPayload = {
             ...buildOrderPayload(),
             razorpayOrderId: response.razorpay_order_id,
             razorpayPaymentId: response.razorpay_payment_id,
             razorpaySignature: response.razorpay_signature,
+            walletAmountUsed: walletDeduction,
           };
 
           const res = await createOrder(orderPayload);
@@ -421,20 +477,15 @@ razorpaySignature: response.razorpay_signature,
     };
 
     const razorpayInstance = new window.Razorpay(options);
-
     razorpayInstance.on("payment.failed", (response) => {
       console.error("Razorpay payment failed:", response.error);
-      setOrderError(
-        response.error?.description || "Payment failed. Please try again."
-      );
+      setOrderError(response.error?.description || "Payment failed. Please try again.");
       setPlacing(false);
     });
-
     razorpayInstance.open();
   };
 
-  // ---- Place order (routes to COD or ONLINE) ----
-  const placeOrder = async () => {
+  const handlePlaceOrder = async () => {
     if (!user) {
       navigate("/login");
       return;
@@ -453,10 +504,7 @@ razorpaySignature: response.razorpay_signature,
 
       if (paymentMethod === "COD") {
         await placeCodOrder();
-        setPlacing(false);
       } else {
-        // For ONLINE, `placing` stays true until the Razorpay handler/modal
-        // callbacks resolve it — those set it back to false themselves.
         await placeOnlineOrder();
       }
     } catch (err) {
@@ -466,223 +514,459 @@ razorpaySignature: response.razorpay_signature,
     }
   };
 
+  const formattedAddress = customer.address1
+    ? `${customer.address1}${customer.city ? `, ${customer.city}` : ""}${customer.state ? `, ${customer.state}` : ""}`
+    : "123 Main Street, New York";
+
   return (
-    <main className="section-wrap checkout-page">
-      <h2>Checkout</h2>
+    <div className="bg-gray-50 min-h-screen pb-32 font-sans">
+      <div className="max-w-4xl lg:max-w-5xl mx-auto px-4 pt-4 sm:pt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
+          {/* ============================================================ */}
+          {/* LEFT COLUMN: 3-Step Review Card (Matching Image 1) */}
+          {/* ============================================================ */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="bg-white rounded-[24px] border border-gray-100 shadow-xs divide-y divide-gray-100 overflow-hidden">
+              {/* ------------------------------------------------------------ */}
+              {/* STEP 1: Delivery Details */}
+              {/* ------------------------------------------------------------ */}
+              <div className="p-4 sm:p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-purple-600 text-white font-extrabold text-xs flex items-center justify-center">
+                      1
+                    </span>
+                    <h3 className="font-extrabold text-sm sm:text-base text-gray-900">
+                      Delivery Details
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditingAddress((prev) => !prev)}
+                    className="text-xs sm:text-sm font-bold text-[#f43f5e] hover:text-[#e11d48] transition-colors"
+                  >
+                    {editingAddress ? "Done" : "Change"}
+                  </button>
+                </div>
 
-      <div className="checkout-grid">
-        {/* ---- Main column ---- */}
-        <div className="checkout-col-main">
-          <section className="checkout-card">
-            <h3>Customer Details</h3>
+                {/* Summary View */}
+                {!editingAddress ? (
+                  <div className="flex items-start gap-3 pl-9">
+                    <div className="w-9 h-9 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-600 shrink-0 mt-0.5">
+                      <FiHome size={17} />
+                    </div>
+                    <div>
+                      <p className="font-extrabold text-sm text-gray-900 leading-snug">
+                        Home: {formattedAddress}
+                      </p>
+                      <p className="text-xs text-gray-500 font-medium mt-0.5">
+                        Time: Today, 4:00 PM - 6:00 PM
+                      </p>
+                      {customer.name && (
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          Recipient: {customer.name} ({customer.phone})
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* Editable Address Form */
+                  <div className="pl-0 sm:pl-9 pt-2 space-y-3">
+                    <button
+                      type="button"
+                      onClick={handleUseCurrentLocation}
+                      disabled={locationLoading}
+                      className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-purple-50 text-purple-700 text-xs font-bold hover:bg-purple-100 transition-colors"
+                    >
+                      <FiMapPin size={14} />
+                      {locationLoading ? "Detecting location..." : "Use Current Location"}
+                    </button>
+                    {locationError && (
+                      <p className="text-xs text-red-500">{locationError}</p>
+                    )}
 
-            <button
-              type="button"
-              className="location-btn"
-              onClick={handleUseCurrentLocation}
-              disabled={locationLoading}
-            >
-              📍 {locationLoading ? "Detecting location..." : "Use Current Location"}
-            </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Full Name *"
+                          value={customer.name}
+                          onChange={(e) => updateCustomer("name", e.target.value)}
+                          className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                        />
+                        {fieldErrors.name && (
+                          <span className="text-[10px] text-red-500">{fieldErrors.name}</span>
+                        )}
+                      </div>
+                      <div>
+                        <input
+                          type="tel"
+                          placeholder="Phone Number *"
+                          value={customer.phone}
+                          onChange={(e) => updateCustomer("phone", e.target.value)}
+                          className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                        />
+                        {fieldErrors.phone && (
+                          <span className="text-[10px] text-red-500">{fieldErrors.phone}</span>
+                        )}
+                      </div>
+                    </div>
 
-            {locationError && <p className="field-error">{locationError}</p>}
+                    <input
+                      type="text"
+                      placeholder="Address Line 1 (Street, Building) *"
+                      value={customer.address1}
+                      onChange={(e) => updateCustomer("address1", e.target.value)}
+                      className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                    />
+                    {fieldErrors.address1 && (
+                      <span className="text-[10px] text-red-500">{fieldErrors.address1}</span>
+                    )}
 
-            <form className="checkout-form" onSubmit={(e) => e.preventDefault()}>
-              <div className="form-field">
-                <input
-                  placeholder="Full Name"
-                  value={customer.name}
-                  onChange={(e) => updateCustomer("name", e.target.value)}
-                />
-                {fieldErrors.name && <p className="field-error">{fieldErrors.name}</p>}
-              </div>
-
-              <div className="form-field">
-                <input
-                  placeholder="Phone Number"
-                  value={customer.phone}
-                  onChange={(e) => updateCustomer("phone", e.target.value)}
-                />
-                {fieldErrors.phone && <p className="field-error">{fieldErrors.phone}</p>}
-              </div>
-
-              <div className="form-field">
-                <input
-                  placeholder="Email"
-                  value={customer.email}
-                  onChange={(e) => updateCustomer("email", e.target.value)}
-                />
-              </div>
-
-              <div className="form-field">
-                <input
-                  placeholder="Address Line 1"
-                  value={customer.address1}
-                  onChange={(e) => updateCustomer("address1", e.target.value)}
-                />
-                {fieldErrors.address1 && (
-                  <p className="field-error">{fieldErrors.address1}</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        placeholder="City *"
+                        value={customer.city}
+                        onChange={(e) => updateCustomer("city", e.target.value)}
+                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                      />
+                      <input
+                        type="text"
+                        placeholder="State *"
+                        value={customer.state}
+                        onChange={(e) => updateCustomer("state", e.target.value)}
+                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Pincode *"
+                        value={customer.pincode}
+                        onChange={(e) => updateCustomer("pincode", e.target.value)}
+                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
 
-              <div className="form-field">
-                <input
-                  placeholder="Address Line 2"
-                  value={customer.address2}
-                  onChange={(e) => updateCustomer("address2", e.target.value)}
-                />
-              </div>
+              {/* ------------------------------------------------------------ */}
+              {/* STEP 2: Items in Cart */}
+              {/* ------------------------------------------------------------ */}
+              <div className="p-4 sm:p-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-purple-600 text-white font-extrabold text-xs flex items-center justify-center">
+                      2
+                    </span>
+                    <h3 className="font-extrabold text-sm sm:text-base text-gray-900">
+                      Items in Cart ({totalItemsCount})
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowItems((prev) => !prev)}
+                    className="text-xs sm:text-sm font-bold text-[#f43f5e] hover:text-[#e11d48] transition-colors"
+                  >
+                    {showItems ? "Hide Items" : "Show/Hide Items"}
+                  </button>
+                </div>
 
-              <div className="form-field">
-                <input
-                  placeholder="City"
-                  value={customer.city}
-                  onChange={(e) => updateCustomer("city", e.target.value)}
-                />
-                {fieldErrors.city && <p className="field-error">{fieldErrors.city}</p>}
-              </div>
-
-              <div className="form-field">
-                <input
-                  placeholder="State"
-                  value={customer.state}
-                  onChange={(e) => updateCustomer("state", e.target.value)}
-                />
-                {fieldErrors.state && <p className="field-error">{fieldErrors.state}</p>}
-              </div>
-
-              <div className="form-field">
-                <input
-                  placeholder="Postal Code"
-                  value={customer.pincode}
-                  onChange={(e) => updateCustomer("pincode", e.target.value)}
-                />
-                {fieldErrors.pincode && (
-                  <p className="field-error">{fieldErrors.pincode}</p>
+                {/* Expandable Cart Items */}
+                {showItems && (
+                  <div className="mt-4 pl-0 sm:pl-9 space-y-2.5 pt-2 border-t border-gray-50">
+                    {cartItems.map((item) => (
+                      <div
+                        key={`${item._id || item.id}-${item.weight}`}
+                        className="flex items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-9 h-9 rounded-lg object-cover bg-gray-50 shrink-0"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                          <div className="truncate">
+                            <p className="font-bold text-gray-900 truncate">{item.name}</p>
+                            <p className="text-gray-400 text-[11px]">
+                              {item.weight} × {item.quantity}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="font-extrabold text-gray-900 shrink-0">
+                          ₹{(item.offerPrice || item.price || 0) * item.quantity}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
 
-              <div className="form-field">
-                <input
-                  placeholder="Country"
-                  value={customer.country}
-                  onChange={(e) => updateCustomer("country", e.target.value)}
-                />
+              {/* ------------------------------------------------------------ */}
+              {/* STEP 3: Payment Method */}
+              {/* ------------------------------------------------------------ */}
+              <div className="p-4 sm:p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-purple-600 text-white font-extrabold text-xs flex items-center justify-center">
+                      3
+                    </span>
+                    <h3 className="font-extrabold text-sm sm:text-base text-gray-900">
+                      Payment Method
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setChangingPayment((prev) => !prev)}
+                    className="text-xs sm:text-sm font-bold text-[#f43f5e] hover:text-[#e11d48] transition-colors"
+                  >
+                    {changingPayment ? "Done" : "Change"}
+                  </button>
+                </div>
+
+                {!changingPayment ? (
+                  <div className="flex items-start gap-3 pl-9">
+                    <div className="w-9 h-9 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-600 shrink-0 mt-0.5">
+                      {paymentMethod === "COD" ? <FiDollarSign size={17} /> : <FiCreditCard size={17} />}
+                    </div>
+                    <div>
+                      <p className="font-extrabold text-sm text-gray-900 leading-snug">
+                        {paymentMethod === "COD" ? "Cash on Delivery" : "Online Payment"}
+                      </p>
+                      <p className="text-xs text-gray-500 font-medium mt-0.5">
+                        {paymentMethod === "COD"
+                          ? "Pay in cash at the time of delivery"
+                          : "Pay securely via UPI / Cards / Netbanking"}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  /* Payment Options Selector */
+                  <div className="pl-0 sm:pl-9 space-y-2 pt-1">
+                    <label
+                      onClick={() => setPaymentMethod("COD")}
+                      className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all ${
+                        paymentMethod === "COD"
+                          ? "border-purple-600 bg-purple-50/50"
+                          : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <FiDollarSign size={18} className="text-purple-600" />
+                        <div>
+                          <p className="font-bold text-xs sm:text-sm text-gray-900">Cash on Delivery</p>
+                          <p className="text-[11px] text-gray-500">Pay cash when package arrives</p>
+                        </div>
+                      </div>
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="COD"
+                        checked={paymentMethod === "COD"}
+                        onChange={() => setPaymentMethod("COD")}
+                        className="accent-purple-600"
+                      />
+                    </label>
+
+                    <label
+                      onClick={() => setPaymentMethod("ONLINE")}
+                      className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all ${
+                        paymentMethod === "ONLINE"
+                          ? "border-purple-600 bg-purple-50/50"
+                          : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <FiCreditCard size={18} className="text-purple-600" />
+                        <div>
+                          <p className="font-bold text-xs sm:text-sm text-gray-900">Online Payment</p>
+                          <p className="text-[11px] text-gray-500">UPI, Credit/Debit Cards, Netbanking</p>
+                        </div>
+                      </div>
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="ONLINE"
+                        checked={paymentMethod === "ONLINE"}
+                        onChange={() => setPaymentMethod("ONLINE")}
+                        className="accent-purple-600"
+                      />
+                    </label>
+
+                    {/* Wallet Option for Online Payment */}
+                    {paymentMethod === "ONLINE" && (
+                      <div className="mt-2 p-3 rounded-2xl bg-purple-50/70 border border-purple-200">
+                        <label className="flex items-center justify-between cursor-pointer">
+                          <div className="flex items-center gap-2.5">
+                            <input
+                              type="checkbox"
+                              checked={useWallet}
+                              onChange={(e) => setUseWallet(e.target.checked)}
+                              disabled={walletBalance <= 0}
+                              className="w-4 h-4 accent-purple-600 rounded cursor-pointer"
+                            />
+                            <div>
+                              <p className="text-xs font-bold text-gray-900">
+                                Use VIP Foods Wallet
+                              </p>
+                              <p className="text-[11px] text-gray-500">
+                                Available balance: ₹{walletBalance.toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                          {useWallet && walletDeduction > 0 && (
+                            <span className="text-xs font-black text-purple-700 bg-white px-2 py-0.5 rounded-md shadow-2xs">
+                              -₹{walletDeduction.toFixed(2)}
+                            </span>
+                          )}
+                        </label>
+                        {walletBalance <= 0 && (
+                          <p className="text-[10px] text-gray-400 mt-1 pl-6">
+                            Wallet empty. You can add money from your Wallet page!
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Note for COD */}
+                    {paymentMethod === "COD" && (
+                      <p className="text-[11px] text-gray-400 italic px-2 pt-1">
+                        Note: Wallet balance cannot be applied for Cash on Delivery. Delivery fee is waived for COD!
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
-            </form>
-          </section>
+            </div>
+          </div>
 
-          <section className="checkout-card">
-            <h3>Coupon</h3>
+          {/* ============================================================ */}
+          {/* RIGHT COLUMN: Promo Code & Order Summary (Matching Image 1) */}
+          {/* ============================================================ */}
+          <div className="lg:col-span-5 space-y-4">
+            {/* Promo Code Box */}
+            <div className="bg-white rounded-[22px] p-3 sm:p-4 border border-gray-100 shadow-xs">
+              <div className="flex items-center border border-gray-200 rounded-2xl p-1 focus-within:border-purple-500 transition-all">
+                <div className="pl-3 pr-2 text-gray-500">
+                  <CouponIcon className="w-5 h-5" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Enter a promo code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  disabled={Boolean(coupon)}
+                  className="w-full text-xs sm:text-sm font-semibold text-gray-900 bg-transparent outline-none placeholder-gray-400 py-2"
+                />
+                {!coupon ? (
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading || !couponCode.trim()}
+                    className="bg-pink-50 hover:bg-pink-100 border border-pink-200 text-[#f43f5e] px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-colors disabled:opacity-50 shrink-0"
+                  >
+                    {couponLoading ? "Applying..." : "Apply"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="text-xs font-bold text-red-500 hover:text-red-700 px-3 py-1 shrink-0"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
 
-            <div className="coupon-form">
-              <input
-                placeholder="Enter coupon code"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                disabled={Boolean(coupon)}
-              />
+              {couponMessage && (
+                <p
+                  className={`text-xs mt-2 px-1 font-semibold ${
+                    couponStatus === "success" ? "text-emerald-600" : "text-red-500"
+                  }`}
+                >
+                  {couponMessage}
+                </p>
+              )}
+            </div>
+
+            {/* Summary Card */}
+            <div className="bg-white rounded-[24px] p-4 sm:p-5 border border-gray-100 shadow-xs space-y-3">
+              <div className="space-y-2 text-xs sm:text-sm">
+                <div className="flex justify-between text-gray-600 font-medium">
+                  <span>Subtotal</span>
+                  <span className="font-extrabold text-gray-900">₹{subtotal.toFixed(2)}</span>
+                </div>
+                {codCharge > 0 && paymentMethod === "COD" && (
+                  <div className="p-2.5 rounded-xl bg-purple-50/70 border border-purple-200/80 space-y-1">
+                    <div className="flex justify-between text-purple-900 font-bold text-xs">
+                      <span>Pay Now via Razorpay (COD Advance)</span>
+                      <span className="font-extrabold text-sm">₹{codCharge.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600 font-semibold text-[11px]">
+                      <span>Remaining to pay on Delivery</span>
+                      <span className="font-extrabold text-gray-900">
+                        ₹{Math.max(0, subtotal - discount - codCharge).toFixed(2)}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-purple-700/80 italic mt-0.5">
+                      ({customer.state && (customer.state.toLowerCase().includes("andhra") || customer.state.toLowerCase() === "ap") ? "Andhra Pradesh: ₹50" : "Other States: ₹75"} advance deducted from total)
+                    </p>
+                  </div>
+                )}
+                <div className="flex justify-between text-gray-600 font-medium">
+                  <span>Discount</span>
+                  <span className="font-extrabold text-emerald-600">
+                    -₹{discount.toFixed(2)}
+                  </span>
+                </div>
+                {walletDeduction > 0 && (
+                  <div className="flex justify-between text-purple-700 font-semibold bg-purple-50 p-1.5 rounded-lg">
+                    <span>Wallet Applied</span>
+                    <span className="font-extrabold">
+                      -₹{walletDeduction.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Error Alert */}
+              {orderError && (
+                <div className="p-2.5 rounded-xl bg-red-50 text-red-600 text-xs font-semibold">
+                  {orderError}
+                </div>
+              )}
+
+              {/* Large Pink Place Order Button */}
               <button
                 type="button"
-                onClick={handleApplyCoupon}
-                disabled={couponLoading || Boolean(coupon) || !couponCode.trim()}
+                onClick={handlePlaceOrder}
+                disabled={placing}
+                className="w-full bg-[#f43f5e] hover:bg-[#e11d48] text-white py-3.5 px-6 rounded-2xl font-extrabold text-base flex justify-between items-center shadow-md active:scale-[0.99] transition-all disabled:opacity-70"
               >
-                {couponLoading ? "Applying..." : coupon ? "Applied" : "Apply Coupon"}
+                <span>
+                  {placing
+                    ? "Processing..."
+                    : paymentMethod === "COD"
+                    ? "Pay Advance & Place COD Order"
+                    : "Place Order"}
+                </span>
+                <span>
+                  ₹{paymentMethod === "COD" ? codCharge.toFixed(2) : grandTotal.toFixed(2)}
+                </span>
               </button>
-            </div>
 
-            {couponMessage && (
-              <p className={couponStatus === "success" ? "coupon-success" : "coupon-error"}>
-                {couponMessage}
-              </p>
-            )}
-
-            {discount > 0 && (
-              <div className="coupon-applied-row">
-                <p>Discount: -₹{discount}</p>
-                <button type="button" className="remove-coupon-btn" onClick={handleRemoveCoupon}>
-                  Remove Coupon
-                </button>
+              {/* Secure Checkout Banner */}
+              <div className="flex items-center justify-center gap-1.5 pt-1 text-xs text-gray-500 font-semibold">
+                <FiShield className="text-emerald-600" size={14} />
+                <span>Secure Checkout</span>
               </div>
-            )}
-          </section>
-        </div>
-
-        {/* ---- Side column ---- */}
-        <div className="checkout-col-side">
-          <section className="checkout-card checkout-summary-sticky">
-            <h3>Order Summary</h3>
-
-            <div className="order-summary">
-              {cartItems.map((item) => (
-                <div key={item._id || item.id} className="order-item">
-                  <img src={item.image} alt={item.name} />
-                  <div>
-                    <p>{item.name}</p>
-                    <p>{item.weight}</p>
-                    <p>Qty: {item.quantity}</p>
-                    <p>₹{item.offerPrice || item.price}</p>
-                  </div>
-                  <p>Subtotal: ₹{(item.offerPrice || item.price) * item.quantity}</p>
-                </div>
-              ))}
             </div>
-
-            <div className="summary-totals">
-              <p>Subtotal: ₹{subtotal}</p>
-              <p>Coupon Discount: -₹{discount}</p>
-              <p>COD Charge: ₹{codCharge}</p>
-              <h3>Grand Total: ₹{grandTotal}</h3>
-            </div>
-          </section>
-
-          <section className="checkout-card">
-            <h3>Payment Method</h3>
-
-            <label className="payment-option">
-              <input
-                type="radio"
-                value="COD"
-                checked={paymentMethod === "COD"}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              />
-              <span>
-                Cash on Delivery
-                <small>
-                  COD Charge: ₹{getCodCharge("COD", customer.state)}
-                  <br />
-                  Andhra Pradesh: ₹50 · Other states: ₹70
-                </small>
-              </span>
-            </label>
-
-            <label className="payment-option">
-              <input
-                type="radio"
-                value="ONLINE"
-                checked={paymentMethod === "ONLINE"}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              />
-              <span>
-                Online Payment
-                <small>No COD Charge (Razorpay-ready)</small>
-              </span>
-            </label>
-          </section>
-
-          <section className="checkout-card">
-            <button
-              type="button"
-              className="cta-btn full"
-              onClick={placeOrder}
-              disabled={placing}
-            >
-              {placing ? "Placing Order..." : "Place Order"}
-            </button>
-            {orderError && <p className="error-text">{orderError}</p>}
-          </section>
+          </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

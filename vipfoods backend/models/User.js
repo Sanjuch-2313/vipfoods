@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
 
 const userSchema = new mongoose.Schema(
   {
@@ -37,15 +38,67 @@ const userSchema = new mongoose.Schema(
     },
 
     isVerified: {
-  type: Boolean,
-  default: true,
-},
-    
+      type: Boolean,
+      default: true,
+    },
+
+    // Wallet
+    walletBalance: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    walletTransactions: [
+      {
+        type: {
+          type: String,
+          enum: ["credit", "debit"],
+        },
+        amount: Number,
+        description: String,
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
+    // Referral
+    referralCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
+    referredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    referralRewardClaimed: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Auto-generate referral code before saving if not set
+userSchema.pre("save", function (next) {
+  if (!this.referralCode) {
+    this.referralCode =
+      this.name
+        .replace(/\s+/g, "")
+        .toUpperCase()
+        .slice(0, 4) +
+      crypto.randomBytes(3).toString("hex").toUpperCase();
+  }
+  next();
+});
 
 const User = mongoose.model("User", userSchema);
 

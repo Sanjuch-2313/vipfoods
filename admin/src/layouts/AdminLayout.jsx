@@ -25,7 +25,7 @@ export default function AdminLayout() {
       />
 
       <div className="admin-main">
-        <Topbar />
+        <Topbar onMenuClick={() => setSidebarOpen(true)} />
 
         <div className="admin-content">
           <Outlet />

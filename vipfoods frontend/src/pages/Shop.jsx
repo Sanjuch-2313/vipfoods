@@ -1,396 +1,252 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCategories } from "../services/categoryService";
+import { FiHeart, FiPlus } from "react-icons/fi";
 import { getProducts } from "../services/productService";
-import "./Shop.css";
+import { useCart } from "../context/CartContext";
 
-const PREVIEW_LIMIT = 4;
-
-function getProductCategoryId(product) {
-  return typeof product.category === "object" && product.category !== null
-    ? product.category._id
-    : product.category;
-}
-
-// Products store their subcategory as the subcategory's `name` string
-// (see EditProduct.jsx / AddProduct.jsx, where the <select> option value
-// is `sub.name`). This mirrors getProductCategoryId's defensive shape
-// handling in case a product's subCategory ever arrives populated as an
-// object instead of a raw string.
-function getProductSubCategoryName(product) {
-  return typeof product.subCategory === "object" && product.subCategory !== null
-    ? product.subCategory.name
-    : product.subCategory;
-}
-
-function getLowestPrice(variants) {
-  if (!variants?.length) return null;
-  const prices = variants
-    .map((v) => Number(v.sellingPrice))
-    .filter((n) => !Number.isNaN(n));
-  return prices.length ? Math.min(...prices) : null;
-}
-
-function getTotalStock(variants) {
-  if (!variants?.length) return 0;
-  return variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
-}
-
-function CategorySkeleton() {
-  return (
-    <div className="category-section category-section--skeleton">
-      <div className="category-section__header">
-        <div className="category-section__identity">
-          <div className="skeleton skeleton--circle" />
-          <div className="category-section__identity-text">
-            <div className="skeleton skeleton--line skeleton--line-lg" />
-            <div className="skeleton skeleton--line skeleton--line-sm" />
-          </div>
-        </div>
-        <div className="skeleton skeleton--pill" />
-      </div>
-
-      <div className="category-section__divider" />
-
-      <div className="product-grid">
-        {Array.from({ length: PREVIEW_LIMIT }).map((_, index) => (
-          <div className="product-card product-card--skeleton" key={index}>
-            <div className="skeleton skeleton--image" />
-            <div className="product-card__body">
-              <div className="skeleton skeleton--line skeleton--line-md" />
-              <div className="skeleton skeleton--line skeleton--line-sm" />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+const PLACEHOLDER_IMG =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'>
+      <rect width='100%' height='100%' fill='#f3f4f6'/>
+      <text x='50%' y='50%' font-family='sans-serif' font-size='22' fill='#9ca3af' text-anchor='middle' dominant-baseline='middle'>VIP Foods</text>
+    </svg>`
   );
-}
 
-function ProductCard({ product, onOpen }) {
-  const lowestPrice = getLowestPrice(product.variants);
-  const totalStock = getTotalStock(product.variants);
-  const thumbnail = product.images?.[0];
-
-  return (
-    <button type="button" className="product-card" onClick={() => onOpen(product)}>
-      <div className="product-card__image-wrap">
-        {thumbnail ? (
-          <img src={thumbnail} alt={product.name} className="product-card__image" />
-        ) : (
-          <div className="product-card__image product-card__image--empty" />
-        )}
-      </div>
-
-      <div className="product-card__body">
-        <h4 className="product-card__name">{product.name}</h4>
-
-        <div className="product-card__meta-row">
-          {lowestPrice !== null && (
-            <p className="product-card__price">From ₹{lowestPrice}</p>
-          )}
-          <span className={`stock-badge ${totalStock > 0 ? "stock-badge--in" : "stock-badge--out"}`}>
-            {totalStock > 0 ? "In Stock" : "Out of Stock"}
-          </span>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function EmptyShopState({ onBackHome }) {
-  return (
-    <div className="shop-empty-state">
-      <svg
-        className="shop-empty-state__illustration"
-        viewBox="0 0 200 160"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <ellipse cx="100" cy="140" rx="70" ry="10" fill="var(--shop-surface-muted)" />
-        <rect x="45" y="55" width="110" height="75" rx="14" fill="var(--shop-surface)" stroke="var(--shop-border)" strokeWidth="2" />
-        <path d="M45 80 H155" stroke="var(--shop-border)" strokeWidth="2" />
-        <circle cx="75" cy="67" r="4" fill="var(--shop-accent)" />
-        <circle cx="90" cy="67" r="4" fill="var(--shop-border)" />
-        <rect x="65" y="95" width="70" height="10" rx="5" fill="var(--shop-surface-muted)" />
-        <rect x="75" y="112" width="50" height="8" rx="4" fill="var(--shop-surface-muted)" />
-        <path d="M100 30 L108 48 L128 50 L113 62 L117 82 L100 71 L83 82 L87 62 L72 50 L92 48 Z" fill="var(--shop-accent-soft)" />
-      </svg>
-
-      <h3>No products yet</h3>
-      <p>We're still stocking the shelves. Check back soon, or head back home for now.</p>
-      <button type="button" className="shop-btn shop-btn--primary" onClick={onBackHome}>
-        Back to Home
-      </button>
-    </div>
-  );
-}
+const PAGE_SIZE = 8;
 
 export default function Shop() {
   const navigate = useNavigate();
+  const { wishlistItems, toggleWishlist, addToCart } = useCart();
 
-  const [categorizedSections, setCategorizedSections] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  const [toastMsg, setToastMsg] = useState("");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     let isMounted = true;
 
-    const loadShop = async () => {
+    const fetchShopProducts = async () => {
       try {
-        const [categories, products] = await Promise.all([
-          getCategories(),
-          getProducts(),
-        ]);
+        setLoading(true);
+        const data = await getProducts();
 
-        if (!isMounted) return;
-
-        // Only active/published products should ever reach the storefront —
-        // filtered here defensively in case getProducts() doesn't already
-        // scope to active items.
-        const activeProducts = products.filter(
-          (product) => product.active !== false && product.published !== false
-        );
-
-        // Group products under their category, then under each category's
-        // subcategories, purely from live data — nothing hardcoded. A
-        // category or subcategory with zero matching products is dropped
-        // entirely per spec.
-        const sections = categories
-          .map((category) => {
-            const categoryProducts = activeProducts.filter(
-              (product) => getProductCategoryId(product) === category._id
-            );
-
-            if (categoryProducts.length === 0) return null;
-
-            const subCategoryDefs = category.subCategories || [];
-
-            const subCategorySections = subCategoryDefs
-              .map((sub) => {
-                const subProducts = categoryProducts.filter(
-                  (product) =>
-                    getProductSubCategoryName(product) === sub.name
-                );
-
-                if (subProducts.length === 0) return null;
-
-                return {
-                  key: sub.slug || sub.name,
-                  name: sub.name,
-                  slug: sub.slug,
-                  products: subProducts,
-                };
-              })
-              .filter(Boolean);
-
-            // Products whose subCategory doesn't match any subcategory
-            // currently defined on the category (missing value, or a
-            // subcategory that was renamed/removed since the product was
-            // saved) are grouped into a generic "Other" bucket instead of
-            // silently vanishing from the storefront. This label isn't
-            // pulled from — or tied to — any specific category's data, so
-            // it doesn't count as hardcoding a category/subcategory name.
-            const matchedProductIds = new Set(
-              subCategorySections.flatMap((section) =>
-                section.products.map((product) => product._id)
-              )
-            );
-
-            const unmatchedProducts = categoryProducts.filter(
-              (product) => !matchedProductIds.has(product._id)
-            );
-
-            if (unmatchedProducts.length > 0) {
-              subCategorySections.push({
-                key: "other",
-                name: "Other",
-                slug: null,
-                products: unmatchedProducts,
-              });
-            }
-
-            return {
-              ...category,
-              products: categoryProducts,
-              subCategorySections,
-            };
-          })
-          .filter(Boolean);
-
-        setCategorizedSections(sections);
-      } catch (err) {
-        console.error("Failed to load shop data:", err);
         if (isMounted) {
-          setLoadError("Unable to load the shop right now. Please try again shortly.");
+          const list = Array.isArray(data) ? data : [];
+          setProducts(list.filter((p) => p.active !== false && p.published !== false));
         }
+      } catch (err) {
+        console.error("Failed to load products:", err);
       } finally {
         if (isMounted) setLoading(false);
       }
     };
 
-    loadShop();
+    fetchShopProducts();
 
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const openProduct = (product) => {
-    navigate(`/products/${product._id}`);
+  const handleAddToCart = (e, product) => {
+    e.stopPropagation();
+
+    const price =
+      product.variants?.[0]?.sellingPrice ||
+      product.variants?.[0]?.price ||
+      product.offerPrice ||
+      product.price ||
+      99;
+
+    const weight =
+      product.variants?.[0]?.weight ||
+      product.variants?.[0]?.unit ||
+      product.weight ||
+      "1 kg";
+
+    addToCart({
+      id: product._id || product.id,
+      name: product.name,
+      image: product.images?.[0] || product.image || PLACEHOLDER_IMG,
+      price: Number(price),
+      offerPrice: Number(price),
+      weight,
+      tag: product.category?.name || "Groceries",
+    });
+
+    setToastMsg(`Added ${product.name} to cart!`);
+    setTimeout(() => setToastMsg(""), 2000);
   };
 
+  const isWishlisted = (productId) =>
+    wishlistItems.some((item) => item.id === productId || item._id === productId);
+
+  const visibleProducts = products.slice(0, visibleCount);
+  const hasMore = visibleCount < products.length;
+
   return (
-    <div className="shop-page">
-      {/* ---------- HERO ---------- */}
-      <section className="shop-hero">
-        <nav className="shop-breadcrumb" aria-label="Breadcrumb">
-          <button type="button" onClick={() => navigate("/")}>
-            Home
-          </button>
-          <span aria-hidden="true">/</span>
-          <span aria-current="page">Shop</span>
-        </nav>
+    <div className="bg-gray-50 min-h-screen pb-24 font-sans">
+      {toastMsg && (
+        <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg animate-bounce">
+          {toastMsg}
+        </div>
+      )}
 
-        {!loading && categorizedSections.length > 0 && (
-          <span className="shop-hero__badge">
-            {categorizedSections.length}{" "}
-            {categorizedSections.length === 1 ? "Category" : "Categories"}
-          </span>
-        )}
-
-        <h1 className="shop-hero__title">Everything We Make</h1>
-        <p className="shop-hero__subtitle">
-          Authentic homemade products prepared with traditional recipes.
-        </p>
-      </section>
-
-      {/* ---------- BODY ---------- */}
-      <div className="shop-body">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 pt-3 sm:pt-4">
         {loading ? (
-          <>
-            <CategorySkeleton />
-            <CategorySkeleton />
-          </>
-        ) : loadError ? (
-          <div className="shop-empty-state">
-            <h3>Something went wrong</h3>
-            <p>{loadError}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-[24px] p-3 shadow-xs animate-pulse flex flex-col justify-between h-64"
+              >
+                <div className="bg-gray-200 h-36 rounded-2xl w-full mb-3"></div>
+                <div className="bg-gray-200 h-4 rounded w-3/4 mb-2"></div>
+                <div className="bg-gray-200 h-3 rounded w-1/2 mb-3"></div>
+                <div className="flex justify-between items-center">
+                  <div className="bg-gray-200 h-5 rounded w-1/3"></div>
+                  <div className="bg-gray-200 h-8 w-8 rounded-full"></div>
+                </div>
+              </div>
+            ))}
           </div>
-        ) : categorizedSections.length === 0 ? (
-          <EmptyShopState onBackHome={() => navigate("/")} />
+        ) : products.length === 0 ? (
+          <div className="text-center py-16 px-4">
+            <h3 className="font-bold text-gray-800 text-lg mb-1">No products available</h3>
+            <p className="text-gray-500 text-sm mb-4">Check back soon for fresh arrivals!</p>
+            <button
+              onClick={() => navigate("/")}
+              className="bg-purple-600 text-white px-5 py-2.5 rounded-full text-sm font-semibold shadow hover:bg-purple-700 transition-colors"
+            >
+              Back to Home
+            </button>
+          </div>
         ) : (
-          categorizedSections.map((category) => {
-            // Total products actually rendered across all of this
-            // category's subcategory previews (each capped at
-            // PREVIEW_LIMIT). If the category has more products than
-            // that, a category-level "View All" makes sense.
-            const totalDisplayed = category.subCategorySections.reduce(
-              (sum, sub) => sum + Math.min(sub.products.length, PREVIEW_LIMIT),
-              0
-            );
-            const categoryHasMore = category.products.length > totalDisplayed;
+          <>
+            <p className="text-xs text-gray-500 font-medium mb-3 px-0.5">
+              Showing 1–{visibleProducts.length} of {products.length} results
+            </p>
 
-            return (
-              <section className="category-section" key={category._id}>
-                <div className="category-section__header">
-                  <div className="category-section__identity">
-                    <div className="category-section__icon">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+              {visibleProducts.map((product, idx) => {
+                const thumbnail =
+                  product.images?.[0] || product.image || PLACEHOLDER_IMG;
+                const price =
+                  product.variants?.[0]?.sellingPrice ||
+                  product.variants?.[0]?.price ||
+                  product.offerPrice ||
+                  product.price ||
+                  2.49;
+                const originalPrice =
+                  product.variants?.[0]?.mrp ||
+                  product.mrp ||
+                  product.originalPrice ||
+                  (price * 1.2).toFixed(2);
+                const weight =
+                  product.variants?.[0]?.weight ||
+                  product.variants?.[0]?.unit ||
+                  product.weight ||
+                  (idx % 2 === 0 ? "1 kg" : "500 g");
+
+                let badge = null;
+                if (idx % 3 === 0) badge = { text: "SALE", bg: "bg-red-500 text-white" };
+                else if (idx % 3 === 1) badge = { text: "50% OFF", bg: "bg-red-500 text-white" };
+                else if (idx % 4 === 0) badge = { text: "NEW", bg: "bg-amber-400 text-gray-900" };
+
+                const wish = isWishlisted(product._id || product.id);
+
+                return (
+                  <div
+                    key={product._id || product.id}
+                    className="bg-white rounded-[22px] border border-gray-100 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group"
+                  >
+                    <div className="relative w-full aspect-square bg-gray-50 overflow-hidden">
+                      {badge && (
+                        <span
+                          className={`absolute top-2.5 left-2.5 z-10 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-tight ${badge.bg}`}
+                        >
+                          {badge.text}
+                        </span>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleWishlist(product);
+                        }}
+                        className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow-xs text-gray-400 hover:text-red-500 hover:bg-white active:scale-90 transition-all focus:outline-none"
+                        aria-label="Wishlist"
+                      >
+                        <FiHeart
+                          className={wish ? "text-red-500 fill-red-500" : "text-gray-500"}
+                          size={16}
+                        />
+                      </button>
+
                       <img
-                        src={category.image}
-                        alt={category.name}
+                        src={thumbnail}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
-                          e.currentTarget.style.visibility = "hidden";
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = PLACEHOLDER_IMG;
                         }}
                       />
                     </div>
 
-                    <div className="category-section__identity-text">
-                      <h2>{category.name}</h2>
-                      <p className="category-section__count">
-                        {category.products.length}{" "}
-                        {category.products.length === 1 ? "product" : "products"}
-                      </p>
-                    </div>
-                  </div>
+                    <div className="p-3.5 flex flex-col justify-between flex-1">
+                      <div>
+                        <h3 className="font-extrabold text-sm text-gray-900 truncate leading-snug">
+                          {product.name}
+                        </h3>
+                        <p className="text-[11px] text-gray-400 font-medium mt-0.5">
+                          {weight}
+                        </p>
+                      </div>
 
-                  {categoryHasMore && (
-                    <button
-                      type="button"
-                      className="shop-btn shop-btn--ghost"
-                      onClick={() => navigate(`/shop/${category.slug}`)}
-                    >
-                      View All
-                      <span aria-hidden="true">→</span>
-                    </button>
-                  )}
-                </div>
-
-                <div className="category-section__divider" />
-
-                {category.subCategorySections.map((sub) => {
-                  const previewProducts = sub.products.slice(0, PREVIEW_LIMIT);
-                  const subHasMore = sub.products.length > PREVIEW_LIMIT;
-
-                  return (
-                    <div className="subcategory-section" key={sub.key}>
-                      <div className="subcategory-section__header">
-                        <div className="subcategory-section__identity">
-                          <h3 className="subcategory-section__title">
-                            {sub.name}
-                          </h3>
-                          <p className="subcategory-section__count">
-                            {sub.products.length}{" "}
-                            {sub.products.length === 1 ? "product" : "products"}
-                          </p>
+                      <div className="flex items-center justify-between mt-3 pt-1">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="font-extrabold text-sm sm:text-base text-gray-900">
+                            ₹{price}
+                          </span>
+                          {Number(originalPrice) > Number(price) && (
+                            <span className="text-[11px] text-gray-400 line-through">
+                              ₹{originalPrice}
+                            </span>
+                          )}
                         </div>
 
-                        {subHasMore && sub.slug && (
-                          <button
-                            type="button"
-                            className="shop-btn shop-btn--ghost shop-btn--ghost-sm"
-                            onClick={() =>
-                              navigate(`/shop/${category.slug}/${sub.slug}`)
-                            }
-                          >
-                            View All
-                            <span aria-hidden="true">→</span>
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="product-grid">
-                        {previewProducts.map((product) => (
-                          <ProductCard
-                            key={product._id}
-                            product={product}
-                            onOpen={openProduct}
-                          />
-                        ))}
+                        <button
+                          type="button"
+                          onClick={(e) => handleAddToCart(e, product)}
+                          className="w-8 h-8 rounded-full bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center shadow-sm active:scale-90 transition-transform focus:outline-none"
+                          title="Add to cart"
+                        >
+                          <FiPlus size={18} strokeWidth={2.5} />
+                        </button>
                       </div>
                     </div>
-                  );
-                })}
-              </section>
-            );
-          })
+                  </div>
+                );
+              })}
+            </div>
+
+            {hasMore && (
+              <div className="flex justify-center mt-6 mb-2">
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+                  className="bg-[#f43f5e] hover:bg-[#e11d48] active:scale-95 text-white font-bold px-8 py-3 rounded-full shadow-md transition-all text-sm tracking-wide"
+                >
+                  Load More Products
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
-
-      {/* ---------- FOOTER CTA ---------- */}
-      <section className="shop-cta">
-        <h2>Can't find what you're looking for?</h2>
-        <p>Chat with us directly and we'll help you find the right product.</p>
-        <a
-  className="shop-btn shop-btn--whatsapp"
-  href="https://wa.me/8125828564"
-  target="_blank"
-  rel="noopener noreferrer"
->
-  Chat on WhatsApp
-</a>
-      </section>
     </div>
   );
 }

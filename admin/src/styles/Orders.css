@@ -26,14 +26,21 @@
    Table
 ========================= */
 
+.table-scroll-wrapper{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    margin-bottom:20px;
+}
+
 .orders-table{
     width:100%;
     border-collapse:collapse;
-    margin-bottom:20px;
     background:#fff;
     border-radius:12px;
     overflow:hidden;
+    min-width:700px;
 }
+
 
 .orders-table th,
 .orders-table td{

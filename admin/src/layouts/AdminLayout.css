@@ -197,22 +197,26 @@
    Overlay
 ========================== */
 
-.sidebar-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  z-index:999;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .3s ease;
+.admin-sidebar-overlay,
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
-.sidebar-overlay.active{
-  opacity:1;
-  pointer-events:auto;
+.admin-sidebar-overlay.open,
+.sidebar-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
 }
-.mobile-menu-btn{
-    display:none;
+
+.mobile-menu-btn {
+  display: none;
 }
 
 @media (max-width:900px){

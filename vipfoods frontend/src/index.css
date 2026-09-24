@@ -8,16 +8,24 @@
 
   html {
     @apply scroll-smooth;
+    font-size: 16px;
   }
 
   body {
-    /* Kept Poppins as default to respect original index.css, though theme.css might override */
-    font-family: 'Poppins', sans-serif;
-    @apply bg-slate-50 text-gray-900 overflow-x-hidden;
+    /* Using Inter or system-ui for a more professional corporate feel, fallback to Poppins */
+    font-family: 'Inter', system-ui, 'Poppins', sans-serif;
+    @apply bg-[#fcfcfc] text-gray-900 overflow-x-hidden antialiased selection:bg-emerald-600 selection:text-white;
+    min-height: 100vh;
+  }
+
+  @media (max-width: 640px) {
+    html {
+      font-size: 15px;
+    }
   }
 
   a {
-    @apply no-underline text-inherit;
+    @apply no-underline text-inherit transition-colors duration-200;
   }
 
   button {
@@ -25,22 +33,22 @@
   }
 
   img {
-    @apply block max-w-full;
+    @apply block max-w-full h-auto;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 0.75rem;
+    background-color: rgba(248, 250, 252, 0.8);
   }
 
+  /* Refined Modern Scrollbar */
   ::-webkit-scrollbar {
-    @apply w-2;
+    @apply w-1.5 h-1.5;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-green-700 rounded-full;
+    @apply bg-gray-300 rounded-full hover:bg-emerald-700 transition-colors;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-gray-200;
-  }
-
-  ::selection {
-    @apply bg-green-600 text-white;
+    @apply bg-transparent;
   }
 }

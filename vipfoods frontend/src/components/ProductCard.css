@@ -1,155 +1,157 @@
 .vip-card {
   position: relative;
-  background: #fff;
-  border-radius: 18px;
+  background: #f5f5f3;
+  border-radius: 22px;
   overflow: hidden;
-  transition: transform 0.25s ease;
-  cursor: pointer;
-}
-.vip-card:hover {
-  transform: translateY(-6px);
+  border: 1px solid rgba(17, 24, 39, 0.05);
+  box-shadow: 0 10px 26px rgba(17, 24, 39, 0.04);
 }
 
-/* Image box */
 .vip-image-box {
   position: relative;
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 13;
+  aspect-ratio: 1.65 / 1;
   overflow: hidden;
-  border-radius: 18px;
+  background: #eceae4;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
 }
+
 .vip-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
-}
-.vip-card:hover .vip-image {
-  transform: scale(1.06);
+  display: block;
 }
 
-/* Offer overlay */
-.vip-offer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 14px;
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #fff;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
-}
-
-/* Wishlist button */
 .vip-wishlist {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  width: 42px;
-  height: 42px;
+  top: 14px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
   border: none;
   border-radius: 50%;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 5;
-  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 5px 14px rgba(17, 24, 39, 0.08);
 }
+
 .vip-wishlist.active {
   color: #ff4d4f;
 }
 
-/* Info section */
 .vip-info {
-  padding: 14px 10px 8px;
-}
-.vip-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #222;
-  margin-bottom: 8px;
-  line-height: 1.3;
-}
-.vip-title-link {
-  text-decoration: none;
-}
-.vip-rating-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-.vip-rating {
-  color: #0f9d58;
-}
-.vip-dot {
-  color: #999;
-}
-.vip-delivery {
-  color: #444;
-}
-.vip-category {
-  font-size: 0.9rem;
-  color: #777;
-  margin-bottom: 12px;
-  line-height: 1.4;
+  padding: 14px 12px 16px;
 }
 
-/* Price row */
 .vip-price-row {
   display: flex;
   align-items: baseline;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin: 0 0 8px;
 }
 
 .vip-price {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #111;
+  font-size: clamp(1.45rem, 1.8vw, 1.9rem);
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.04em;
 }
 
 .vip-mrp {
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   color: #9ca3af;
   text-decoration: line-through;
 }
 
-/* Weight pills (static, non-interactive display only) */
-.vip-weight-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.vip-title {
+  margin: 0;
+  font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+  line-height: 1.2;
+  font-weight: 800;
+  color: #111827;
 }
 
-.vip-weight-pill {
+.vip-weight {
+  margin: 6px 0 0;
+  color: #6b7280;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.vip-cart-btn,
+.vip-cart-quantity {
+  width: 100%;
+  margin-top: 18px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.vip-cart-btn {
+  border: none;
+  background: linear-gradient(135deg, #ff5a99, #ef4fa2);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 800;
+  padding: 15px 14px;
+  cursor: pointer;
+  box-shadow: 0 10px 18px rgba(241, 90, 155, 0.25);
+}
+
+.vip-cart-quantity {
+  display: grid;
+  grid-template-columns: 52px 1fr 52px;
+  align-items: center;
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  min-height: 52px;
+}
+
+.vip-cart-quantity button {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 1.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff5a99, #ef4fa2);
+}
+
+.vip-cart-quantity span {
   display: inline-flex;
   align-items: center;
-  padding: 5px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #f9fafb;
-  color: #4b5563;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: default;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #111827;
 }
 
-.vip-weight-pill.active {
-  border-color: #22c55e;
-  background: rgba(34, 197, 94, 0.08);
-  color: #16a34a;
-}
+@media (max-width: 768px) {
+  .vip-card {
+    border-radius: 18px;
+  }
 
-/* Responsive tweak for mobile */
-@media (max-width: 480px) {
-  .vip-weight-pills {
-    gap: 5px;
+  .vip-image-box {
+    aspect-ratio: 1.7 / 1;
+  }
+
+  .vip-info {
+    padding: 12px 10px 14px;
+  }
+
+  .vip-price {
+    font-size: 1.35rem;
+  }
+
+  .vip-cart-btn {
+    padding: 14px 12px;
+    font-size: 1rem;
   }
 }

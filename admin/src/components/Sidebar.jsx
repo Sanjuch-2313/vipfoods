@@ -8,6 +8,7 @@ import {
   Star,
   Settings,
   Image,
+  Bell,
   X,
 } from "lucide-react";
 
@@ -54,6 +55,11 @@ const menus = [
     name: "Home Banner",
     path: "/home-banner",
     icon: <Image size={20} />,
+  },
+  {
+    name: "Notifications",
+    path: "/notifications",
+    icon: <Bell size={20} />,
   },
   {
     name: "Settings",

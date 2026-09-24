@@ -46,9 +46,9 @@ export const createOrder = async (req, res) => {
         .toLowerCase();
 
       codCharge =
-        state === "andhra pradesh"
+        state === "andhra pradesh" || state === "ap"
           ? 50
-          : 70;
+          : 75;
     }
 
     // Payment Details
