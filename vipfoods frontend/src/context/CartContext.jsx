@@ -112,34 +112,51 @@ export function CartProvider({ children }) {
     return () => clearTimeout(timer);
   }, [wishlistItems, isLoggedIn, updateUserProfile]);
 
-  const getCartItemKey = (product) => `${product.id}-${product.weight || "default"}`;
+  const normalizeProductId = (product) => String(product?._id || product?.id || product?.productId || "");
+  const normalizeWeight = (value) => String(value ?? "default");
+
+  const getCartItemKey = (product) => `${normalizeProductId(product)}-${normalizeWeight(product?.weight)}`;
 
   const addToCart = (product) => {
     setCartItems((current) => {
-      const cartKey = getCartItemKey(product);
+      const normalizedProduct = {
+        ...product,
+        id: normalizeProductId(product),
+        weight: normalizeWeight(product?.weight),
+      };
+
+      const cartKey = getCartItemKey(normalizedProduct);
       const existing = current.find((item) => getCartItemKey(item) === cartKey);
       if (existing) {
         return current.map((item) =>
-          getCartItemKey(item) === cartKey ? { ...item, quantity: item.quantity + 1 } : item,
+          getCartItemKey(item) === cartKey ? { ...item, quantity: Number(item.quantity || 0) + 1 } : item,
         );
       }
-      return [...current, { ...product, quantity: 1 }];
+      return [...current, { ...normalizedProduct, quantity: 1 }];
     });
   };
 
   const removeFromCart = (productId, weight) => {
+    const normalizedId = String(productId ?? "");
+    const normalizedWeight = normalizeWeight(weight);
+
     setCartItems((current) =>
-      current.filter((item) => !(item.id === productId && item.weight === weight))
+      current.filter((item) => !(normalizeProductId(item) === normalizedId && normalizeWeight(item.weight) === normalizedWeight))
     );
   };
 
   const updateCartQuantity = (productId, weight, quantity) => {
+    const normalizedId = String(productId ?? "");
+    const normalizedWeight = normalizeWeight(weight);
+
     setCartItems((current) =>
       current
         .map((item) =>
-          item.id === productId && item.weight === weight ? { ...item, quantity } : item
+          normalizeProductId(item) === normalizedId && normalizeWeight(item.weight) === normalizedWeight
+            ? { ...item, quantity: Math.max(0, Number(quantity) || 0) }
+            : item
         )
-        .filter((item) => item.quantity > 0),
+        .filter((item) => Number(item.quantity || 0) > 0),
     );
   };
 
