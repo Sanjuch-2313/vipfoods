@@ -94,7 +94,7 @@ export default function OrderSuccess() {
           <span className="absolute top-12 left-1/6 w-2.5 h-2.5 bg-yellow-400 rounded-xs rotate-45"></span>
           <span className="absolute top-16 left-1/12 w-4 h-1.5 bg-emerald-500 rounded-xs -rotate-12"></span>
           <span className="absolute top-4 right-1/4 w-3.5 h-2 bg-pink-500 rounded-xs -rotate-12"></span>
-          <span className="absolute top-10 right-1/6 w-3 h-2 bg-purple-600 rounded-xs 45"></span>
+          <span className="absolute top-10 right-1/6 w-3 h-2 bg-green-600 rounded-xs 45"></span>
           <span className="absolute top-16 right-1/3 w-2.5 h-2 bg-amber-400 rounded-xs rotate-12"></span>
           <span className="absolute top-20 right-1/12 w-3.5 h-1.5 bg-emerald-400 rounded-xs -rotate-45"></span>
         </div>
@@ -216,7 +216,7 @@ export default function OrderSuccess() {
                     onClick={() => setExperience(opt.value)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                       experience === opt.value
-                        ? "bg-purple-600 text-white shadow-xs"
+                        ? "bg-green-600 text-white shadow-xs"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
@@ -232,7 +232,7 @@ export default function OrderSuccess() {
                 placeholder="Summarize your experience"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full text-xs sm:text-sm font-semibold p-3 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                className="w-full text-xs sm:text-sm font-semibold p-3 rounded-xl border border-gray-200 outline-none focus:border-green-500"
               />
 
               {/* Review Comment Textarea */}
@@ -241,7 +241,7 @@ export default function OrderSuccess() {
                 placeholder="What did you like? What can we improve?"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                className="w-full text-xs sm:text-sm font-semibold p-3 rounded-xl border border-gray-200 outline-none focus:border-purple-500 resize-none"
+                className="w-full text-xs sm:text-sm font-semibold p-3 rounded-xl border border-gray-200 outline-none focus:border-green-500 resize-none"
               />
 
               {/* Submit Review Button */}

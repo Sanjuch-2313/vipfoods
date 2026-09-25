@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiPlus, FiArrowRight, FiAward, FiTruck } from "react-icons/fi";
+import { FiPlus, FiArrowRight, FiAward, FiTruck, FiMinus } from "react-icons/fi";
 import { getCategories } from "../services/categoryService";
 import { getProducts } from "../services/productService";
 import { useCart } from "../context/CartContext";
@@ -14,9 +14,142 @@ const PLACEHOLDER_IMAGE =
     </svg>`
   );
 
+/* ── Per-deal card with variant state ── */
+function DealCard({ deal, idx, onToast }) {
+  const { addToCart, cartItems, updateCartQuantity } = useCart();
+
+  const normalizeWeightLabel = (value, fallback = "1 kg") => {
+    if (value === null || value === undefined || value === "") return fallback;
+
+    const text = String(value).trim();
+    if (!text) return fallback;
+
+    const lower = text.toLowerCase();
+    if (lower.endsWith("kg") || lower.endsWith("g")) return text;
+
+    return `${text}g`;
+  };
+
+  const variants = (deal.variants || []).map((v) => ({
+    label: normalizeWeightLabel(v.weight, v.unit || "1 kg"),
+    price: Number(v.sellingPrice || v.price || 0),
+    mrp: Number(v.mrp || 0),
+  }));
+
+  const [selectedIdx, setSelectedIdx] = useState(0);
+
+  const selected = variants[selectedIdx] || {
+    label: normalizeWeightLabel(deal.weight, deal.unit || "1 unit"),
+    price: Number(deal.offerPrice || deal.price || 0),
+    mrp: Number(deal.price || 0),
+  };
+
+  const id = deal._id || deal.id;
+  const thumbnail = deal.images?.[0] || deal.image || PLACEHOLDER_IMAGE;
+  const badge = deal.badges?.[0] || (idx % 2 === 0 ? "15% OFF" : idx % 3 === 0 ? "50% OFF" : "SALE");
+
+  const cartItem = cartItems.find((c) => c.id === id && c.weight === selected.label);
+  const qty = cartItem ? cartItem.quantity : 0;
+
+  const handleAdd = (e) => {
+    e.stopPropagation();
+    addToCart({
+      id,
+      name: deal.name,
+      image: thumbnail,
+      price: selected.price,
+      offerPrice: selected.price,
+      weight: selected.label,
+      tag: deal.category?.name || "Deals",
+    });
+    onToast(`Added ${deal.name} (${selected.label}) to cart!`);
+  };
+
+  const handleIncrease = (e) => { e.stopPropagation(); updateCartQuantity(id, selected.label, qty + 1); };
+  const handleDecrease = (e) => { e.stopPropagation(); updateCartQuantity(id, selected.label, Math.max(0, qty - 1)); };
+
+  return (
+    <div className="w-40 sm:w-48 md:w-52 shrink-0 snap-start bg-white rounded-[22px] border border-gray-100 p-2.5 sm:p-3 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+      {/* Image */}
+      <div className="relative w-full aspect-square rounded-2xl bg-gray-50 overflow-hidden mb-2">
+        <span className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs">
+          {badge}
+        </span>
+        <img
+          src={thumbnail}
+          alt={deal.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PLACEHOLDER_IMAGE; }}
+        />
+      </div>
+
+      {/* Name */}
+      <div>
+        <h4 className="font-extrabold text-sm sm:text-base text-gray-900 truncate">{deal.name}</h4>
+
+        {/* Sliding variant chips */}
+        {variants.length > 0 ? (
+          <div
+            className="flex gap-1.5 mt-1 overflow-x-auto pb-0.5"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {variants.map((v, i) => (
+              <button
+                key={`${v.label}-${i}`}
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setSelectedIdx(i); }}
+                className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all whitespace-nowrap ${
+                  selectedIdx === i
+                    ? "bg-rose-50 border-rose-400 text-rose-600"
+                    : "bg-gray-50 border-gray-200 text-gray-500"
+                }`}
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[11px] sm:text-xs text-gray-400 font-medium">{selected.label}</p>
+        )}
+      </div>
+
+      {/* Price + Add/Stepper */}
+      <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-gray-50">
+        <span className="font-extrabold text-sm sm:text-base text-gray-900">₹{selected.price}</span>
+
+        {qty > 0 ? (
+          <div className="flex items-center gap-1">
+            <button
+              type="button" onClick={handleDecrease}
+              className="w-7 h-7 rounded-full bg-[#f43f5e] text-white flex items-center justify-center active:scale-90 transition-transform"
+            >
+              <FiMinus size={12} strokeWidth={3} />
+            </button>
+            <span className="text-sm font-bold text-gray-900 min-w-[18px] text-center">{qty}</span>
+            <button
+              type="button" onClick={handleIncrease}
+              className="w-7 h-7 rounded-full bg-[#f43f5e] text-white flex items-center justify-center active:scale-90 transition-transform"
+            >
+              <FiPlus size={12} strokeWidth={3} />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleAdd}
+            className="w-8 h-8 rounded-full bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center shadow-xs active:scale-90 transition-transform"
+            title="Add to cart"
+          >
+            <FiPlus size={18} strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const navigate = useNavigate();
-  const { addToCart } = useCart();
 
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
@@ -54,41 +187,16 @@ export default function Home() {
     };
 
     loadData();
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, []);
 
-  // Up to 20 products purely fetched from backend (added from admin)
   const displayedDeals = products.slice(0, 20);
 
-  const handleQuickAdd = (e, deal) => {
-    e.stopPropagation();
-    const price =
-      deal.variants?.[0]?.sellingPrice ||
-      deal.variants?.[0]?.price ||
-      deal.offerPrice ||
-      deal.price ||
-      0;
-    const weight =
-      deal.variants?.[0]?.weight ||
-      deal.variants?.[0]?.unit ||
-      deal.weight ||
-      "1 kg";
-
-    addToCart({
-      id: deal._id || deal.id,
-      name: deal.name,
-      image: deal.images?.[0] || deal.image || PLACEHOLDER_IMAGE,
-      price: Number(price),
-      offerPrice: Number(price),
-      weight,
-      tag: deal.category?.name || "Deals",
-    });
-
-    setToastMsg(`Added ${deal.name} to cart!`);
+  const handleToast = (msg) => {
+    setToastMsg(msg);
     setTimeout(() => setToastMsg(""), 2000);
   };
+
 
   return (
     <main className="bg-gray-50 min-h-screen pb-28 font-sans w-full overflow-x-hidden">
@@ -190,83 +298,29 @@ export default function Home() {
             </div>
           ) : (
             <div className="flex gap-3.5 overflow-x-auto pb-4 pt-1 scrollbar-hide snap-x">
-              {displayedDeals.map((deal, idx) => {
-                const thumbnail = deal.images?.[0] || deal.image || PLACEHOLDER_IMAGE;
-                const price =
-                  deal.variants?.[0]?.sellingPrice ||
-                  deal.variants?.[0]?.price ||
-                  deal.offerPrice ||
-                  deal.price ||
-                  0;
-                const weight =
-                  deal.variants?.[0]?.weight
-                    ? `${deal.variants[0].weight}g`
-                    : deal.variants?.[0]?.unit || deal.weight || "1 unit";
-                const badge =
-                  deal.badges?.[0] ||
-                  (idx % 2 === 0 ? "15% OFF" : idx % 3 === 0 ? "50% OFF" : "SALE");
+              {displayedDeals.map((deal, idx) => (
+                <DealCard
+                  key={deal._id || deal.id || idx}
+                  deal={deal}
+                  idx={idx}
+                  onToast={handleToast}
+                />
+              ))}
 
-                return (
-                  <div
-                    key={deal._id || deal.id || idx}
-                    className="w-40 sm:w-48 md:w-52 shrink-0 snap-start bg-white rounded-[22px] border border-gray-100 p-2.5 sm:p-3 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
-                  >
-                    {/* Image Box with Discount Badge */}
-                    <div className="relative w-full aspect-square rounded-2xl bg-gray-50 overflow-hidden mb-2">
-                      <span className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs">
-                        {badge}
-                      </span>
-                      <img
-                        src={thumbnail}
-                        alt={deal.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = PLACEHOLDER_IMAGE;
-                        }}
-                      />
-                    </div>
 
-                    {/* Details */}
-                    <div>
-                      <h4 className="font-extrabold text-sm sm:text-base text-gray-900 truncate">
-                        {deal.name}
-                      </h4>
-                      <p className="text-[11px] sm:text-xs text-gray-400 font-medium">
-                        {weight}
-                      </p>
-                    </div>
-
-                    {/* Price & Add Button */}
-                    <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-gray-50">
-                      <span className="font-extrabold text-sm sm:text-base text-gray-900">
-                        ₹{price}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(e) => handleQuickAdd(e, deal)}
-                        className="w-8 h-8 rounded-full bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center shadow-xs active:scale-90 transition-transform"
-                        title="Add to cart"
-                      >
-                        <FiPlus size={18} strokeWidth={2.5} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
 
               {/* "View More" Slide-End Card */}
               <Link
                 to="/products?deals=true"
-                className="w-36 sm:w-44 shrink-0 snap-start bg-purple-50 hover:bg-purple-100 border border-purple-100 rounded-[22px] p-4 flex flex-col items-center justify-center text-center transition-colors group cursor-pointer"
+                className="w-36 sm:w-44 shrink-0 snap-start bg-green-50 hover:bg-green-100 border border-green-100 rounded-[22px] p-4 flex flex-col items-center justify-center text-center transition-colors group cursor-pointer"
               >
-                <div className="w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center mb-2 shadow group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center mb-2 shadow group-hover:scale-110 transition-transform">
                   <FiArrowRight size={20} />
                 </div>
-                <span className="font-extrabold text-sm sm:text-base text-purple-900">
+                <span className="font-extrabold text-sm sm:text-base text-green-900">
                   View More
                 </span>
-                <span className="text-[11px] text-purple-600 font-semibold mt-0.5">
+                <span className="text-[11px] text-green-600 font-semibold mt-0.5">
                   All Deals
                 </span>
               </Link>

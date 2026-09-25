@@ -76,7 +76,7 @@ export default function MyOrders() {
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all ${
                 activeTab === tab
-                  ? "bg-white text-purple-600 shadow-xs"
+                  ? "bg-white text-green-600 shadow-xs"
                   : "text-gray-500 hover:text-gray-800"
               }`}
             >
@@ -106,7 +106,7 @@ export default function MyOrders() {
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="bg-white rounded-[24px] p-8 text-center border border-gray-100 shadow-xs mt-2">
-            <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+            <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-green-50 flex items-center justify-center text-green-600">
               <DeliveryTruckIcon className="w-7 h-7" />
             </div>
             <h4 className="font-extrabold text-gray-900 text-base mb-1">
@@ -118,7 +118,7 @@ export default function MyOrders() {
             <button
               type="button"
               onClick={() => navigate("/shop")}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-full text-xs font-bold shadow"
+              className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-full text-xs font-bold shadow"
             >
               Explore Products
             </button>

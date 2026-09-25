@@ -37,18 +37,18 @@ export default function CouponsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 via-white to-white px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-white px-4 py-6">
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-purple-600">Savings</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-green-600">Savings</p>
             <h1 className="mt-2 text-2xl font-extrabold text-gray-900">Coupons</h1>
           </div>
 
           <button
             type="button"
             onClick={fetchCoupons}
-            className="inline-flex items-center gap-2 rounded-full border border-purple-200 bg-white px-3 py-2 text-sm font-semibold text-purple-700 shadow-sm transition hover:bg-purple-50"
+            className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-white px-3 py-2 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50"
           >
             <FiRefreshCw className={loading ? "animate-spin" : ""} size={16} />
             Refresh
@@ -81,7 +81,7 @@ export default function CouponsPage() {
                 key={coupon._id || coupon.code}
                 className="overflow-hidden rounded-[24px] border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
-                <div className="flex items-center justify-between border-b border-dashed border-gray-200 bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-3 text-white">
+                <div className="flex items-center justify-between border-b border-dashed border-gray-200 bg-gradient-to-r from-green-600 to-emerald-500 px-4 py-3 text-white">
                   <div className="flex items-center gap-2">
                     <FiTag size={16} />
                     <span className="text-xs font-bold uppercase tracking-[0.18em]">VIP Offer</span>
@@ -101,14 +101,14 @@ export default function CouponsPage() {
                     <button
                       type="button"
                       onClick={() => handleCopy(coupon.code)}
-                      className="inline-flex items-center gap-2 rounded-full bg-purple-50 px-3 py-2 text-xs font-bold text-purple-700 transition hover:bg-purple-100"
+                      className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-2 text-xs font-bold text-green-700 transition hover:bg-green-100"
                     >
                       <FiCopy size={14} />
                       {copiedCode === coupon.code ? "Copied" : "Copy"}
                     </button>
                   </div>
 
-                  <div className="rounded-2xl bg-purple-50 p-3 text-purple-800">
+                  <div className="rounded-2xl bg-green-50 p-3 text-green-800">
                     <div className="flex items-center gap-2 text-sm font-bold">
                       <FiPercent size={16} />
                       {coupon.discount}% OFF

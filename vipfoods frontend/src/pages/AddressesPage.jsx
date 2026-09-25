@@ -78,7 +78,7 @@ export default function AddressesPage() {
     <div className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="mx-auto max-w-5xl">
         <div className="mb-6">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-purple-600">Account</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-green-600">Account</p>
           <h1 className="mt-2 text-3xl font-black text-gray-900">Addresses</h1>
         </div>
 
@@ -116,19 +116,19 @@ export default function AddressesPage() {
             </div>
 
             <div className="space-y-3">
-              <input name="name" value={form.name} onChange={handleChange} placeholder="Label (Home / Office)" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-purple-500 focus:bg-white" />
-              <input name="line1" value={form.line1} onChange={handleChange} placeholder="Street address" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-purple-500 focus:bg-white" />
+              <input name="name" value={form.name} onChange={handleChange} placeholder="Label (Home / Office)" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:bg-white" />
+              <input name="line1" value={form.line1} onChange={handleChange} placeholder="Street address" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:bg-white" />
               <div className="grid gap-3 sm:grid-cols-2">
-                <input name="city" value={form.city} onChange={handleChange} placeholder="City" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-purple-500 focus:bg-white" />
-                <input name="state" value={form.state} onChange={handleChange} placeholder="State" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-purple-500 focus:bg-white" />
+                <input name="city" value={form.city} onChange={handleChange} placeholder="City" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:bg-white" />
+                <input name="state" value={form.state} onChange={handleChange} placeholder="State" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:bg-white" />
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <input name="pincode" value={form.pincode} onChange={handleChange} placeholder="Pincode" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-purple-500 focus:bg-white" />
-                <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-purple-500 focus:bg-white" />
+                <input name="pincode" value={form.pincode} onChange={handleChange} placeholder="Pincode" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:bg-white" />
+                <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:bg-white" />
               </div>
             </div>
 
-            <button type="submit" className="mt-4 w-full rounded-full bg-purple-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-purple-700">
+            <button type="submit" className="mt-4 w-full rounded-full bg-green-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-green-700">
               Save address
             </button>
           </form>

@@ -87,15 +87,17 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Auto-generate referral code before saving if not set
+// Auto-generate a unique referral code before saving if not set
 userSchema.pre("save", function (next) {
   if (!this.referralCode) {
-    this.referralCode =
-      this.name
-        .replace(/\s+/g, "")
-        .toUpperCase()
-        .slice(0, 4) +
-      crypto.randomBytes(3).toString("hex").toUpperCase();
+    const baseName = (this.name || "VIP")
+      .trim()
+      .replace(/[^a-zA-Z]/g, "")
+      .toUpperCase()
+      .slice(0, 4);
+
+    const randomPart = crypto.randomBytes(3).toString("hex").toUpperCase();
+    this.referralCode = `${baseName || "VIP"}${randomPart}`;
   }
   next();
 });

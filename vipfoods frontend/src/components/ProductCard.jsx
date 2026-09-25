@@ -13,12 +13,17 @@ export default function ProductCard({
   onToggleWishlist,
 }) {
   const weightOptions = getWeightOptions(product);
-  const [selectedWeight] = useState(getDefaultWeight(product));
+  const [selectedWeight, setSelectedWeight] = useState(getDefaultWeight(product));
   const [quantity, setQuantity] = useState(initialQuantity || 0);
 
   useEffect(() => {
     setQuantity(initialQuantity || 0);
   }, [initialQuantity]);
+
+  // Re-sync default weight if product changes
+  useEffect(() => {
+    setSelectedWeight(getDefaultWeight(product));
+  }, [product]);
 
   const selectedPrice = getProductPrice(product, selectedWeight);
   const mrp = product.price;
@@ -27,14 +32,20 @@ export default function ProductCard({
   const handleAdd = () => {
     const nextQuantity = quantity + 1;
     setQuantity(nextQuantity);
-    onAddToCart && onAddToCart(product);
-    onQuantityChange && onQuantityChange(product.id, product.weight || "default", nextQuantity);
+    // Pass weight + correct price so cart always gets the right variant
+    onAddToCart && onAddToCart({
+      ...product,
+      weight: selectedWeight,
+      price: selectedPrice ?? product.price,
+      offerPrice: selectedPrice ?? product.price,
+    });
+    onQuantityChange && onQuantityChange(product.id, selectedWeight, nextQuantity);
   };
 
   const handleRemove = () => {
     setQuantity((current) => {
       const nextQuantity = Math.max(0, current - 1);
-      onQuantityChange && onQuantityChange(product.id, product.weight || "default", nextQuantity);
+      onQuantityChange && onQuantityChange(product.id, selectedWeight, nextQuantity);
       return nextQuantity;
     });
   };
@@ -61,10 +72,25 @@ export default function ProductCard({
 
         <h3 className="vip-title">{product.name}</h3>
 
+        {/* Sliding variant weight chips */}
         {weightOptions.length > 0 && (
-          <p className="vip-weight">
-            {String(weightOptions[0]?.label || selectedWeight || "1 Litre")}
-          </p>
+          <div className="vip-variant-scroll">
+            {weightOptions.map((option) => (
+              <button
+                key={option.label}
+                type="button"
+                className={`vip-variant-chip ${selectedWeight === option.label ? "active" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedWeight(option.label);
+                  // Reset qty when switching variant
+                  setQuantity(0);
+                }}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         )}
 
         {quantity > 0 ? (

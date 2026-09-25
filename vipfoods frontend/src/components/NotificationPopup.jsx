@@ -50,16 +50,16 @@ export default function NotificationPopup() {
 
   return (
     <div className="fixed bottom-20 md:bottom-8 right-4 left-4 md:left-auto md:w-96 z-50 animate-in slide-in-from-bottom-5 duration-300">
-      <div className="bg-white rounded-2xl p-4 shadow-2xl border border-purple-200 flex items-start gap-3 relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-600 to-rose-500" />
+      <div className="bg-white rounded-2xl p-4 shadow-2xl border border-green-200 flex items-start gap-3 relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-green-600 to-rose-500" />
 
-        <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+        <div className="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center shrink-0 mt-0.5">
           <FiBell size={20} className="animate-pulse" />
         </div>
 
         <div className="flex-1 min-w-0 pr-6">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">
+            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-green-50 text-green-700">
               {currentNotification.type || "Update"}
             </span>
           </div>
@@ -72,7 +72,7 @@ export default function NotificationPopup() {
 
           <button
             onClick={handleDismiss}
-            className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors"
+            className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg transition-colors"
           >
             <FiCheckCircle size={14} />
             Got it, thanks!

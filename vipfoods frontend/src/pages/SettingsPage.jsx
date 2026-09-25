@@ -136,7 +136,7 @@ export default function SettingsPage() {
               className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left group"
             >
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <FiMapPin size={18} />
                 </div>
                 <span className="font-extrabold text-sm text-gray-900">
@@ -153,7 +153,7 @@ export default function SettingsPage() {
               className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left group"
             >
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <FiCreditCard size={18} />
                 </div>
                 <span className="font-extrabold text-sm text-gray-900">
@@ -170,7 +170,7 @@ export default function SettingsPage() {
               className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left group"
             >
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <FiBell size={18} />
                 </div>
                 <span className="font-extrabold text-sm text-gray-900">
@@ -198,7 +198,7 @@ export default function SettingsPage() {
               className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left group"
             >
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <FiInfo size={18} />
                 </div>
                 <span className="font-extrabold text-sm text-gray-900">
@@ -215,7 +215,7 @@ export default function SettingsPage() {
               className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left group"
             >
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <FiFileText size={18} />
                 </div>
                 <span className="font-extrabold text-sm text-gray-900">
@@ -232,7 +232,7 @@ export default function SettingsPage() {
               className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left group"
             >
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <FiShield size={18} />
                 </div>
                 <span className="font-extrabold text-sm text-gray-900">
@@ -267,7 +267,7 @@ export default function SettingsPage() {
                   type="text"
                   value={profileForm.name}
                   onChange={(e) => setProfileForm((p) => ({ ...p, name: e.target.value }))}
-                  className="w-full text-sm font-semibold p-3 border border-gray-200 rounded-xl outline-none focus:border-purple-600"
+                  className="w-full text-sm font-semibold p-3 border border-gray-200 rounded-xl outline-none focus:border-green-600"
                   required
                 />
               </div>
@@ -277,7 +277,7 @@ export default function SettingsPage() {
                   type="email"
                   value={profileForm.email}
                   onChange={(e) => setProfileForm((p) => ({ ...p, email: e.target.value }))}
-                  className="w-full text-sm font-semibold p-3 border border-gray-200 rounded-xl outline-none focus:border-purple-600"
+                  className="w-full text-sm font-semibold p-3 border border-gray-200 rounded-xl outline-none focus:border-green-600"
                   required
                 />
               </div>
@@ -287,7 +287,7 @@ export default function SettingsPage() {
                   type="tel"
                   value={profileForm.phone}
                   onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))}
-                  className="w-full text-sm font-semibold p-3 border border-gray-200 rounded-xl outline-none focus:border-purple-600"
+                  className="w-full text-sm font-semibold p-3 border border-gray-200 rounded-xl outline-none focus:border-green-600"
                 />
               </div>
               <button
@@ -324,7 +324,7 @@ export default function SettingsPage() {
                   type="checkbox"
                   checked={notificationPrefs.orderUpdates}
                   onChange={() => handleToggleNotification("orderUpdates")}
-                  className="w-5 h-5 accent-purple-600 rounded"
+                  className="w-5 h-5 accent-green-600 rounded"
                 />
               </label>
 
@@ -337,7 +337,7 @@ export default function SettingsPage() {
                   type="checkbox"
                   checked={notificationPrefs.promoOffers}
                   onChange={() => handleToggleNotification("promoOffers")}
-                  className="w-5 h-5 accent-purple-600 rounded"
+                  className="w-5 h-5 accent-green-600 rounded"
                 />
               </label>
 
@@ -350,7 +350,7 @@ export default function SettingsPage() {
                   type="checkbox"
                   checked={notificationPrefs.deliveryAlerts}
                   onChange={() => handleToggleNotification("deliveryAlerts")}
-                  className="w-5 h-5 accent-purple-600 rounded"
+                  className="w-5 h-5 accent-green-600 rounded"
                 />
               </label>
 
@@ -363,7 +363,7 @@ export default function SettingsPage() {
                   type="checkbox"
                   checked={notificationPrefs.smsAlerts}
                   onChange={() => handleToggleNotification("smsAlerts")}
-                  className="w-5 h-5 accent-purple-600 rounded"
+                  className="w-5 h-5 accent-green-600 rounded"
                 />
               </label>
             </div>
@@ -374,7 +374,7 @@ export default function SettingsPage() {
                 setToastMsg("Notification preferences saved!");
                 setTimeout(() => setToastMsg(""), 2000);
               }}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-2xl font-bold text-sm"
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-2xl font-bold text-sm"
             >
               Done
             </button>
@@ -392,7 +392,7 @@ export default function SettingsPage() {
             >
               <FiX size={20} />
             </button>
-            <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-1">
+            <div className="w-12 h-12 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center mb-1">
               <FiInfo size={24} />
             </div>
             <h3 className="font-extrabold text-xl text-gray-900">About VIP Foods</h3>
@@ -406,7 +406,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => setActiveModal(null)}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-2xl font-bold text-sm"
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-2xl font-bold text-sm"
             >
               Close
             </button>
@@ -424,7 +424,7 @@ export default function SettingsPage() {
             >
               <FiX size={20} />
             </button>
-            <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-1">
+            <div className="w-12 h-12 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center mb-1">
               <FiFileText size={24} />
             </div>
             <h3 className="font-extrabold text-xl text-gray-900">Terms & Conditions</h3>
@@ -436,7 +436,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => setActiveModal(null)}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-2xl font-bold text-sm"
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-2xl font-bold text-sm"
             >
               I Understand
             </button>
@@ -454,7 +454,7 @@ export default function SettingsPage() {
             >
               <FiX size={20} />
             </button>
-            <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-1">
+            <div className="w-12 h-12 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center mb-1">
               <FiShield size={24} />
             </div>
             <h3 className="font-extrabold text-xl text-gray-900">Privacy Policy</h3>
@@ -465,7 +465,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => setActiveModal(null)}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-2xl font-bold text-sm"
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-2xl font-bold text-sm"
             >
               Close
             </button>

@@ -167,7 +167,7 @@ export default function WalletPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-28 font-sans">
       {/* Header */}
-      <div className="bg-gradient-to-br from-purple-700 via-indigo-600 to-blue-500 pt-6 pb-20 px-4">
+      <div className="bg-gradient-to-br from-green-700 via-emerald-500 to-lime-500 pt-6 pb-20 px-4">
         <div className="max-w-2xl mx-auto">
           <button
             onClick={() => navigate(-1)}
@@ -176,7 +176,7 @@ export default function WalletPage() {
             <FiArrowLeft size={18} />
           </button>
           <h1 className="text-white text-xl font-bold">VIP Foods Wallet</h1>
-          <p className="text-purple-200 text-sm mt-0.5">
+          <p className="text-green-200 text-sm mt-0.5">
             Use wallet balance for instant online payments
           </p>
         </div>
@@ -199,7 +199,7 @@ export default function WalletPage() {
                   : "Add funds via Razorpay or earn via referrals"}
               </p>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-md text-white">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow-md text-white">
               <FiCreditCard size={26} />
             </div>
           </div>
@@ -226,7 +226,7 @@ export default function WalletPage() {
         {/* Add Money Form (Razorpay integration) */}
         <div className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-xs mb-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
+            <div className="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center text-green-600">
               <FiPlus size={18} />
             </div>
             <h3 className="font-extrabold text-base text-gray-900">
@@ -248,7 +248,7 @@ export default function WalletPage() {
                   onClick={() => setAmount(val)}
                   className={`py-2 rounded-xl text-xs font-bold border transition-all ${
                     amount === val
-                      ? "border-purple-600 bg-purple-50 text-purple-700 shadow-xs"
+                      ? "border-green-600 bg-green-50 text-green-700 shadow-xs"
                       : "border-gray-200 text-gray-700 hover:bg-gray-50"
                   }`}
                 >
@@ -268,14 +268,14 @@ export default function WalletPage() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="Enter amount"
-                className="w-full pl-8 pr-4 py-3 bg-gray-50 rounded-2xl border border-gray-200 font-extrabold text-gray-900 text-base outline-none focus:border-purple-600 focus:bg-white transition-all"
+                className="w-full pl-8 pr-4 py-3 bg-gray-50 rounded-2xl border border-gray-200 font-extrabold text-gray-900 text-base outline-none focus:border-green-600 focus:bg-white transition-all"
               />
             </div>
 
             <button
               type="submit"
               disabled={topupLoading}
-              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-2xl font-bold text-sm shadow-md shadow-purple-200 flex items-center justify-center gap-2 transition-all active:scale-[0.99] disabled:opacity-60"
+              className="w-full py-3.5 bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white rounded-2xl font-bold text-sm shadow-md shadow-green-200 flex items-center justify-center gap-2 transition-all active:scale-[0.99] disabled:opacity-60"
             >
               <FiCreditCard size={18} />
               {topupLoading ? "Opening Razorpay..." : `Pay ₹${amount || 0} via Razorpay`}

@@ -110,17 +110,17 @@ export default function Profile() {
       case "pending":
         return "text-amber-600 bg-amber-50";
       default:
-        return "text-purple-600 bg-purple-50";
+        return "text-green-600 bg-green-50";
     }
   };
 
   return (
     <div className="bg-gray-50 min-h-screen pb-28 font-sans">
       {/* Header gradient */}
-      <div className="bg-gradient-to-br from-purple-700 via-indigo-600 to-blue-500 pt-6 pb-20 px-4">
+      <div className="bg-gradient-to-br from-green-700 via-emerald-500 to-lime-500 pt-6 pb-20 px-4">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-white text-xl font-bold">My Profile</h1>
-          <p className="text-purple-200 text-sm mt-0.5">
+          <p className="text-green-200 text-sm mt-0.5">
             Manage your account & orders
           </p>
         </div>
@@ -131,7 +131,7 @@ export default function Profile() {
         <div className="bg-white rounded-[24px] p-4 sm:p-5 border border-gray-100 shadow-md flex items-center justify-between mb-4">
           <div className="flex items-center gap-3.5 min-w-0">
             {/* Avatar circle with initials */}
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shrink-0 shadow-sm">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xl shrink-0 shadow-sm">
               {userName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
@@ -163,8 +163,8 @@ export default function Profile() {
             onClick={() => navigate("/wallet")}
             className="bg-white rounded-[22px] p-4 text-center border border-gray-100 shadow-xs flex flex-col items-center justify-center cursor-pointer hover:shadow-sm transition-shadow"
           >
-            <div className="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center mb-2">
-              <FiCreditCard className="text-purple-600" size={18} />
+            <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center mb-2">
+              <FiCreditCard className="text-green-600" size={18} />
             </div>
             <span className="font-extrabold text-base text-gray-900 block leading-tight">
               ₹{walletBalance.toFixed(2)}
@@ -179,8 +179,8 @@ export default function Profile() {
             onClick={() => navigate("/my-orders")}
             className="bg-white rounded-[22px] p-4 text-center border border-gray-100 shadow-xs flex flex-col items-center justify-center cursor-pointer hover:shadow-sm transition-shadow"
           >
-            <div className="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center mb-2">
-              <FiShoppingBag className="text-purple-600" size={18} />
+            <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center mb-2">
+              <FiShoppingBag className="text-green-600" size={18} />
             </div>
             <span className="font-extrabold text-base text-gray-900 block leading-tight">
               {ordersLoading ? "…" : orderCount}
@@ -195,8 +195,8 @@ export default function Profile() {
             onClick={() => navigate("/coupons")}
             className="bg-white rounded-[22px] p-4 text-center border border-gray-100 shadow-xs flex flex-col items-center justify-center cursor-pointer hover:shadow-sm transition-shadow"
           >
-            <div className="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center mb-2">
-              <CouponTicketIcon className="w-4.5 h-4.5 text-purple-600" />
+            <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center mb-2">
+              <CouponTicketIcon className="w-4.5 h-4.5 text-green-600" />
             </div>
             <span className="font-extrabold text-base text-gray-900 block leading-tight">
               {couponCount}
@@ -207,27 +207,27 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Referral Card (Earn ₹50 per friend) */}
+        {/* Referral Card (Earn ₹25 per friend) */}
         {isLoggedIn && referralCode && (
-          <div className="bg-gradient-to-r from-purple-700 via-indigo-600 to-rose-600 rounded-[24px] p-5 text-white mb-5 shadow-lg relative overflow-hidden">
+          <div className="bg-gradient-to-r from-green-700 via-emerald-500 to-teal-500 rounded-[24px] p-5 text-white mb-5 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
             <div className="flex items-start justify-between gap-3">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full text-white inline-block mb-2">
-                  Refer & Earn ₹50
+                  Refer & Earn ₹25
                 </span>
                 <h3 className="font-extrabold text-base leading-snug">
-                  Invite friends & earn ₹50!
+                  Invite friends & earn ₹25!
                 </h3>
-                <p className="text-xs text-purple-100 mt-1 max-w-xs">
-                  Whenever a friend signs up using your code, ₹50 gets credited directly to your wallet!
+                <p className="text-xs text-green-100 mt-1 max-w-xs">
+                  When a friend joins using your code, both of you get ₹25 credited to your wallets.
                 </p>
               </div>
             </div>
 
             <div className="mt-4 flex items-center gap-2 bg-white/15 backdrop-blur-md rounded-2xl p-2 border border-white/20">
               <div className="flex-1 px-2">
-                <p className="text-[10px] uppercase font-bold text-purple-200">Your Code</p>
+                <p className="text-[10px] uppercase font-bold text-green-200">Your Code</p>
                 <p className="font-black text-sm tracking-wider">{referralCode}</p>
               </div>
               <button
@@ -237,7 +237,7 @@ export default function Profile() {
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }}
-                className="px-3 py-2 bg-white text-purple-700 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-purple-50 active:scale-95 transition-all"
+                className="px-3 py-2 bg-white text-green-700 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-green-50 active:scale-95 transition-all"
               >
                 {copied ? <FiCheck size={14} /> : <FiCopy size={14} />}
                 {copied ? "Copied!" : "Copy"}
@@ -271,7 +271,7 @@ export default function Profile() {
               </h4>
               <button
                 onClick={() => navigate("/my-orders")}
-                className="text-[11px] font-bold text-purple-600 uppercase tracking-wider"
+                className="text-[11px] font-bold text-green-600 uppercase tracking-wider"
               >
                 View All
               </button>
@@ -293,7 +293,7 @@ export default function Profile() {
                   </p>
                   <button
                     onClick={() => navigate("/")}
-                    className="mt-3 text-xs font-bold text-purple-600 bg-purple-50 px-4 py-1.5 rounded-full"
+                    className="mt-3 text-xs font-bold text-green-600 bg-green-50 px-4 py-1.5 rounded-full"
                   >
                     Shop Now
                   </button>
@@ -306,8 +306,8 @@ export default function Profile() {
                     className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
-                        <FiShoppingBag className="text-purple-500" size={16} />
+                      <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+                        <FiShoppingBag className="text-green-500" size={16} />
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-gray-900 truncate">
@@ -426,7 +426,7 @@ export default function Profile() {
             <button
               type="button"
               onClick={() => navigate("/login")}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-[20px] py-3.5 px-4 font-bold text-sm flex items-center justify-center gap-2 shadow transition-opacity hover:opacity-90"
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-500 text-white rounded-[20px] py-3.5 px-4 font-bold text-sm flex items-center justify-center gap-2 shadow transition-opacity hover:opacity-90"
             >
               <FiLogIn size={16} />
               Login to Your Account

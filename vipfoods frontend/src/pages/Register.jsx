@@ -114,7 +114,7 @@ export default function Register() {
         <h1 className="text-white text-2xl sm:text-3xl font-extrabold tracking-tight">
           Shop Fresh, Shop Fast
         </h1>
-        <p className="text-purple-200 text-sm mt-1 font-medium">
+        <p className="text-green-200 text-sm mt-1 font-medium">
           Groceries delivered in 10 minutes.
         </p>
       </div>
@@ -131,7 +131,7 @@ export default function Register() {
           </Link>
           <button
             type="button"
-            className="flex-1 py-2.5 text-sm font-bold rounded-xl bg-white text-purple-700 shadow-xs transition-all"
+            className="flex-1 py-2.5 text-sm font-bold rounded-xl bg-white text-green-700 shadow-xs transition-all"
           >
             Sign Up
           </button>
@@ -139,7 +139,7 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} className="space-y-3.5">
           {/* Full Name */}
-          <div className="border border-gray-200 rounded-2xl p-2.5 focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-100 transition-all">
+          <div className="border border-gray-200 rounded-2xl p-2.5 focus-within:border-green-600 focus-within:ring-2 focus-within:ring-green-100 transition-all">
             <label
               htmlFor="register-name"
               className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5"
@@ -161,7 +161,7 @@ export default function Register() {
           </div>
 
           {/* Email */}
-          <div className="border border-gray-200 rounded-2xl p-2.5 focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-100 transition-all">
+          <div className="border border-gray-200 rounded-2xl p-2.5 focus-within:border-green-600 focus-within:ring-2 focus-within:ring-green-100 transition-all">
             <label
               htmlFor="register-email"
               className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5"
@@ -183,7 +183,7 @@ export default function Register() {
           </div>
 
           {/* Mobile Number */}
-          <div className="border border-gray-200 rounded-2xl p-2.5 focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-100 transition-all">
+          <div className="border border-gray-200 rounded-2xl p-2.5 focus-within:border-green-600 focus-within:ring-2 focus-within:ring-green-100 transition-all">
             <label
               htmlFor="register-mobile"
               className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5"
@@ -210,7 +210,7 @@ export default function Register() {
           </div>
 
           {/* Password */}
-          <div className="border border-gray-200 rounded-2xl p-2.5 flex items-center justify-between focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-100 transition-all">
+          <div className="border border-gray-200 rounded-2xl p-2.5 flex items-center justify-between focus-within:border-green-600 focus-within:ring-2 focus-within:ring-green-100 transition-all">
             <div className="flex-1">
               <label
                 htmlFor="register-password"
@@ -243,7 +243,7 @@ export default function Register() {
           </div>
 
           {/* Confirm Password */}
-          <div className="border border-gray-200 rounded-2xl p-2.5 flex items-center justify-between focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-100 transition-all">
+          <div className="border border-gray-200 rounded-2xl p-2.5 flex items-center justify-between focus-within:border-green-600 focus-within:ring-2 focus-within:ring-green-100 transition-all">
             <div className="flex-1">
               <label
                 htmlFor="register-confirm-password"
@@ -276,11 +276,11 @@ export default function Register() {
           </div>
 
           {/* Referral Code (Optional) */}
-          <div className="border border-purple-200 bg-purple-50/50 rounded-2xl p-2.5 focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-100 transition-all">
+          <div className="border border-green-200 bg-green-50/50 rounded-2xl p-2.5 focus-within:border-green-600 focus-within:ring-2 focus-within:ring-green-100 transition-all">
             <div className="flex items-center justify-between mb-0.5">
               <label
                 htmlFor="register-referral"
-                className="block text-[10px] font-bold text-purple-700 uppercase tracking-wider"
+                className="block text-[10px] font-bold text-green-700 uppercase tracking-wider"
               >
                 Referral Code (Optional)
               </label>
@@ -301,7 +301,7 @@ export default function Register() {
               }
               placeholder="e.g. VIPF2026"
               disabled={loading}
-              className="w-full text-sm font-bold uppercase tracking-wider text-purple-950 bg-transparent outline-none placeholder-purple-300"
+              className="w-full text-sm font-bold uppercase tracking-wider text-green-950 bg-transparent outline-none placeholder-green-300"
             />
           </div>
 

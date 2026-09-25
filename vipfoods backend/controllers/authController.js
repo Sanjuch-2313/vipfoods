@@ -108,15 +108,25 @@ const registerUser = async (req, res) => {
       referredBy: referrer ? referrer._id : null,
     });
 
-    // Credit ₹50 to referrer's wallet
+    // Split referral reward between the referrer and the new user
     if (referrer) {
-      referrer.walletBalance = (referrer.walletBalance || 0) + 50;
+      const referralBonus = 25;
+
+      referrer.walletBalance = (referrer.walletBalance || 0) + referralBonus;
       referrer.walletTransactions.push({
         type: "credit",
-        amount: 50,
+        amount: referralBonus,
         description: `Referral bonus — ${normalizedName} joined`,
       });
       await referrer.save();
+
+      user.walletBalance = (user.walletBalance || 0) + referralBonus;
+      user.walletTransactions.push({
+        type: "credit",
+        amount: referralBonus,
+        description: "Referral signup bonus — joined with a referral code",
+      });
+      await user.save();
     }
 
     return res.status(201).json({

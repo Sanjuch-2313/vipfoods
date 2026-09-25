@@ -155,3 +155,45 @@
     font-size: 1rem;
   }
 }
+
+/* ── Variant weight chip slider ── */
+.vip-variant-scroll {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0 0;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.vip-variant-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.vip-variant-chip {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  border: 1.5px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.vip-variant-chip.active {
+  background: #fff0f6;
+  border-color: #f43f5e;
+  color: #e11d48;
+}
+
+.vip-variant-chip:hover:not(.active) {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}

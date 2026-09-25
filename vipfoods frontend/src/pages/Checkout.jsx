@@ -533,7 +533,7 @@ export default function Checkout() {
               <div className="p-4 sm:p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-purple-600 text-white font-extrabold text-xs flex items-center justify-center">
+                    <span className="w-6 h-6 rounded-full bg-green-600 text-white font-extrabold text-xs flex items-center justify-center">
                       1
                     </span>
                     <h3 className="font-extrabold text-sm sm:text-base text-gray-900">
@@ -576,7 +576,7 @@ export default function Checkout() {
                       type="button"
                       onClick={handleUseCurrentLocation}
                       disabled={locationLoading}
-                      className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-purple-50 text-purple-700 text-xs font-bold hover:bg-purple-100 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-green-50 text-green-700 text-xs font-bold hover:bg-green-100 transition-colors"
                     >
                       <FiMapPin size={14} />
                       {locationLoading ? "Detecting location..." : "Use Current Location"}
@@ -592,7 +592,7 @@ export default function Checkout() {
                           placeholder="Full Name *"
                           value={customer.name}
                           onChange={(e) => updateCustomer("name", e.target.value)}
-                          className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                          className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-green-500"
                         />
                         {fieldErrors.name && (
                           <span className="text-[10px] text-red-500">{fieldErrors.name}</span>
@@ -604,7 +604,7 @@ export default function Checkout() {
                           placeholder="Phone Number *"
                           value={customer.phone}
                           onChange={(e) => updateCustomer("phone", e.target.value)}
-                          className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                          className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-green-500"
                         />
                         {fieldErrors.phone && (
                           <span className="text-[10px] text-red-500">{fieldErrors.phone}</span>
@@ -617,7 +617,7 @@ export default function Checkout() {
                       placeholder="Address Line 1 (Street, Building) *"
                       value={customer.address1}
                       onChange={(e) => updateCustomer("address1", e.target.value)}
-                      className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                      className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-green-500"
                     />
                     {fieldErrors.address1 && (
                       <span className="text-[10px] text-red-500">{fieldErrors.address1}</span>
@@ -629,21 +629,21 @@ export default function Checkout() {
                         placeholder="City *"
                         value={customer.city}
                         onChange={(e) => updateCustomer("city", e.target.value)}
-                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-green-500"
                       />
                       <input
                         type="text"
                         placeholder="State *"
                         value={customer.state}
                         onChange={(e) => updateCustomer("state", e.target.value)}
-                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-green-500"
                       />
                       <input
                         type="text"
                         placeholder="Pincode *"
                         value={customer.pincode}
                         onChange={(e) => updateCustomer("pincode", e.target.value)}
-                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-500"
+                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-green-500"
                       />
                     </div>
                   </div>
@@ -656,7 +656,7 @@ export default function Checkout() {
               <div className="p-4 sm:p-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-purple-600 text-white font-extrabold text-xs flex items-center justify-center">
+                    <span className="w-6 h-6 rounded-full bg-green-600 text-white font-extrabold text-xs flex items-center justify-center">
                       2
                     </span>
                     <h3 className="font-extrabold text-sm sm:text-base text-gray-900">
@@ -711,7 +711,7 @@ export default function Checkout() {
               <div className="p-4 sm:p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-purple-600 text-white font-extrabold text-xs flex items-center justify-center">
+                    <span className="w-6 h-6 rounded-full bg-green-600 text-white font-extrabold text-xs flex items-center justify-center">
                       3
                     </span>
                     <h3 className="font-extrabold text-sm sm:text-base text-gray-900">
@@ -750,12 +750,12 @@ export default function Checkout() {
                       onClick={() => setPaymentMethod("COD")}
                       className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all ${
                         paymentMethod === "COD"
-                          ? "border-purple-600 bg-purple-50/50"
+                          ? "border-green-600 bg-green-50/50"
                           : "border-gray-200 hover:bg-gray-50"
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <FiDollarSign size={18} className="text-purple-600" />
+                        <FiDollarSign size={18} className="text-green-600" />
                         <div>
                           <p className="font-bold text-xs sm:text-sm text-gray-900">Cash on Delivery</p>
                           <p className="text-[11px] text-gray-500">Pay cash when package arrives</p>
@@ -767,7 +767,7 @@ export default function Checkout() {
                         value="COD"
                         checked={paymentMethod === "COD"}
                         onChange={() => setPaymentMethod("COD")}
-                        className="accent-purple-600"
+                        className="accent-green-600"
                       />
                     </label>
 
@@ -775,12 +775,12 @@ export default function Checkout() {
                       onClick={() => setPaymentMethod("ONLINE")}
                       className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all ${
                         paymentMethod === "ONLINE"
-                          ? "border-purple-600 bg-purple-50/50"
+                          ? "border-green-600 bg-green-50/50"
                           : "border-gray-200 hover:bg-gray-50"
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <FiCreditCard size={18} className="text-purple-600" />
+                        <FiCreditCard size={18} className="text-green-600" />
                         <div>
                           <p className="font-bold text-xs sm:text-sm text-gray-900">Online Payment</p>
                           <p className="text-[11px] text-gray-500">UPI, Credit/Debit Cards, Netbanking</p>
@@ -792,13 +792,13 @@ export default function Checkout() {
                         value="ONLINE"
                         checked={paymentMethod === "ONLINE"}
                         onChange={() => setPaymentMethod("ONLINE")}
-                        className="accent-purple-600"
+                        className="accent-green-600"
                       />
                     </label>
 
                     {/* Wallet Option for Online Payment */}
                     {paymentMethod === "ONLINE" && (
-                      <div className="mt-2 p-3 rounded-2xl bg-purple-50/70 border border-purple-200">
+                      <div className="mt-2 p-3 rounded-2xl bg-green-50/70 border border-green-200">
                         <label className="flex items-center justify-between cursor-pointer">
                           <div className="flex items-center gap-2.5">
                             <input
@@ -806,7 +806,7 @@ export default function Checkout() {
                               checked={useWallet}
                               onChange={(e) => setUseWallet(e.target.checked)}
                               disabled={walletBalance <= 0}
-                              className="w-4 h-4 accent-purple-600 rounded cursor-pointer"
+                              className="w-4 h-4 accent-green-600 rounded cursor-pointer"
                             />
                             <div>
                               <p className="text-xs font-bold text-gray-900">
@@ -818,7 +818,7 @@ export default function Checkout() {
                             </div>
                           </div>
                           {useWallet && walletDeduction > 0 && (
-                            <span className="text-xs font-black text-purple-700 bg-white px-2 py-0.5 rounded-md shadow-2xs">
+                            <span className="text-xs font-black text-green-700 bg-white px-2 py-0.5 rounded-md shadow-2xs">
                               -₹{walletDeduction.toFixed(2)}
                             </span>
                           )}
@@ -849,7 +849,7 @@ export default function Checkout() {
           <div className="lg:col-span-5 space-y-4">
             {/* Promo Code Box */}
             <div className="bg-white rounded-[22px] p-3 sm:p-4 border border-gray-100 shadow-xs">
-              <div className="flex items-center border border-gray-200 rounded-2xl p-1 focus-within:border-purple-500 transition-all">
+              <div className="flex items-center border border-gray-200 rounded-2xl p-1 focus-within:border-green-500 transition-all">
                 <div className="pl-3 pr-2 text-gray-500">
                   <CouponIcon className="w-5 h-5" />
                 </div>
@@ -900,8 +900,8 @@ export default function Checkout() {
                   <span className="font-extrabold text-gray-900">₹{subtotal.toFixed(2)}</span>
                 </div>
                 {codCharge > 0 && paymentMethod === "COD" && (
-                  <div className="p-2.5 rounded-xl bg-purple-50/70 border border-purple-200/80 space-y-1">
-                    <div className="flex justify-between text-purple-900 font-bold text-xs">
+                  <div className="p-2.5 rounded-xl bg-green-50/70 border border-green-200/80 space-y-1">
+                    <div className="flex justify-between text-green-900 font-bold text-xs">
                       <span>Pay Now via Razorpay (COD Advance)</span>
                       <span className="font-extrabold text-sm">₹{codCharge.toFixed(2)}</span>
                     </div>
@@ -911,7 +911,7 @@ export default function Checkout() {
                         ₹{Math.max(0, subtotal - discount - codCharge).toFixed(2)}
                       </span>
                     </div>
-                    <p className="text-[10px] text-purple-700/80 italic mt-0.5">
+                    <p className="text-[10px] text-green-700/80 italic mt-0.5">
                       ({customer.state && (customer.state.toLowerCase().includes("andhra") || customer.state.toLowerCase() === "ap") ? "Andhra Pradesh: ₹50" : "Other States: ₹75"} advance deducted from total)
                     </p>
                   </div>
@@ -923,7 +923,7 @@ export default function Checkout() {
                   </span>
                 </div>
                 {walletDeduction > 0 && (
-                  <div className="flex justify-between text-purple-700 font-semibold bg-purple-50 p-1.5 rounded-lg">
+                  <div className="flex justify-between text-green-700 font-semibold bg-green-50 p-1.5 rounded-lg">
                     <span>Wallet Applied</span>
                     <span className="font-extrabold">
                       -₹{walletDeduction.toFixed(2)}

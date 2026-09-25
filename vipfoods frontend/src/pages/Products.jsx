@@ -14,10 +14,145 @@ const PLACEHOLDER_IMG =
     </svg>`
   );
 
+/* ── Per-card component with its own variant state ── */
+function ProductsCard({ rawProduct, onNavigate }) {
+  const { cartItems, addToCart, updateCartQuantity, removeFromCart } = useCart();
+
+  // Build variants from raw backend data
+  const variants = (rawProduct.variants || []).map((v) => ({
+    label: v.weight ? `${v.weight}g` : (v.unit || "1 kg"),
+    price: Number(v.sellingPrice || v.price || 0),
+    mrp: Number(v.mrp || 0),
+  }));
+
+  const [selectedIdx, setSelectedIdx] = useState(0);
+
+  const selected = variants[selectedIdx] || {
+    label: rawProduct.weight || "1 kg",
+    price: Number(rawProduct.offerPrice || rawProduct.price || 0),
+    mrp: Number(rawProduct.price || 0),
+  };
+
+  const id = rawProduct._id || rawProduct.id;
+  const name = rawProduct.name;
+  const image = rawProduct.images?.[0] || rawProduct.image || PLACEHOLDER_IMG;
+  const tag = rawProduct.category?.name || "Groceries";
+
+  // Cart quantity for this specific variant
+  const cartItem = cartItems.find(
+    (c) => c.id === id && c.weight === selected.label
+  );
+  const qty = cartItem ? cartItem.quantity : 0;
+
+  const handleAdd = (e) => {
+    e.stopPropagation();
+    addToCart({ id, name, image, price: selected.price, offerPrice: selected.price, weight: selected.label, tag });
+  };
+
+  const handleIncrease = (e) => {
+    e.stopPropagation();
+    updateCartQuantity(id, selected.label, qty + 1);
+  };
+
+  const handleDecrease = (e) => {
+    e.stopPropagation();
+    if (qty === 1) {
+      removeFromCart(id, selected.label);
+    } else {
+      updateCartQuantity(id, selected.label, qty - 1);
+    }
+  };
+
+  return (
+    <div
+      className="bg-white rounded-[24px] border border-gray-100 p-3 sm:p-3.5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+    >
+      {/* Image */}
+      <div className="relative w-full aspect-square rounded-2xl bg-gray-50 overflow-hidden mb-2.5">
+        <img
+          src={image}
+          alt={name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = PLACEHOLDER_IMG;
+          }}
+        />
+      </div>
+
+      {/* Price, Name */}
+      <div>
+        <span className="font-extrabold text-base sm:text-lg text-gray-900 block leading-tight">
+          ₹{selected.price}
+        </span>
+        {selected.mrp > selected.price && (
+          <span className="text-xs text-gray-400 line-through">₹{selected.mrp}</span>
+        )}
+        <h3 className="font-extrabold text-sm text-gray-900 truncate mt-1">{name}</h3>
+
+        {/* Sliding variant chips */}
+        {variants.length > 0 ? (
+          <div
+            className="flex gap-1.5 mt-1.5 overflow-x-auto pb-0.5"
+            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+          >
+            {variants.map((v, i) => (
+              <button
+                key={`${v.label}-${i}`}
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setSelectedIdx(i); }}
+                className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all whitespace-nowrap ${
+                  selectedIdx === i
+                    ? "bg-rose-50 border-rose-400 text-rose-600"
+                    : "bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300"
+                }`}
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[11px] text-gray-400 font-medium mb-1">{selected.label}</p>
+        )}
+      </div>
+
+      {/* Add to Cart / Stepper */}
+      <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+        {qty === 0 ? (
+          <button
+            type="button"
+            onClick={handleAdd}
+            className="w-full bg-[#f43f5e] hover:bg-[#e11d48] text-white py-2.5 rounded-2xl font-extrabold text-xs sm:text-sm text-center shadow-xs active:scale-[0.98] transition-transform focus:outline-none"
+          >
+            Add to Cart
+          </button>
+        ) : (
+          <div className="flex items-center justify-between gap-2 bg-gray-50 border border-pink-100 rounded-2xl p-1">
+            <button
+              type="button"
+              onClick={handleDecrease}
+              className="w-9 h-9 rounded-xl bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center font-extrabold active:scale-90 transition-transform shadow-xs"
+            >
+              <FiMinus size={15} strokeWidth={2.5} />
+            </button>
+            <span className="font-extrabold text-sm text-gray-900 text-center flex-1">{qty}</span>
+            <button
+              type="button"
+              onClick={handleIncrease}
+              className="w-9 h-9 rounded-xl bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center font-extrabold active:scale-90 transition-transform shadow-xs"
+            >
+              <FiPlus size={15} strokeWidth={2.5} />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { cartItems, addToCart, updateCartQuantity, removeFromCart } = useCart();
 
   const category = searchParams.get("category") || "all";
   const search = searchParams.get("search") || "";
@@ -58,7 +193,9 @@ export default function Products() {
         // Category filter
         if (category !== "all") {
           products = products.filter(
-            (p) => p.category?.slug === category || p.category?.name?.toLowerCase() === category.toLowerCase()
+            (p) =>
+              p.category?.slug === category ||
+              p.category?.name?.toLowerCase() === category.toLowerCase()
           );
         }
 
@@ -69,7 +206,7 @@ export default function Products() {
           );
         }
 
-        // Sort
+        // Sort (compare first variant price)
         if (sortBy === "price-asc") {
           products = [...products].sort(
             (a, b) =>
@@ -84,24 +221,8 @@ export default function Products() {
           );
         }
 
-        const formatted = products.map((p) => {
-          const firstVariant = p.variants?.[0];
-          const price = firstVariant?.sellingPrice || firstVariant?.price || p.offerPrice || p.price || 4.99;
-          const mrp = firstVariant?.mrp || p.price || (price * 1.2).toFixed(2);
-          const weight = firstVariant?.weight ? `${firstVariant.weight}g` : firstVariant?.unit || p.weight || "1 kg";
-
-          return {
-            id: p._id || p.id,
-            name: p.name,
-            image: p.images?.[0] || p.image || PLACEHOLDER_IMG,
-            tag: p.category?.name || "Groceries",
-            price: Number(price),
-            mrp: Number(mrp),
-            weight,
-          };
-        });
-
-        setFilteredProducts(formatted);
+        // Keep raw products – variant selection happens inside ProductsCard
+        setFilteredProducts(products);
       } catch (err) {
         console.error("Products fetch error:", err);
         setFilteredProducts([]);
@@ -131,24 +252,6 @@ export default function Products() {
     setSearchParams(next);
   };
 
-  const handleAddToCart = (e, product) => {
-    e.stopPropagation();
-    addToCart({
-      id: product.id,
-      name: product.name,
-      image: product.image,
-      price: product.price,
-      offerPrice: product.price,
-      weight: product.weight,
-      tag: product.tag,
-    });
-  };
-
-  const getCartQuantity = (productId) => {
-    const item = cartItems.find((c) => c.id === productId);
-    return item ? item.quantity : 0;
-  };
-
   const selectedCategory = categories.find((c) => c.slug === category);
   const displayLabel = search
     ? `"${search}"`
@@ -158,12 +261,9 @@ export default function Products() {
 
   return (
     <div className="bg-gray-50 min-h-screen pb-24 font-sans">
-      {/* ============================================================ */}
-      {/* 1. TOP HEADER (Back button + Search Pill + Filter Icon - Image 1) */}
-      {/* ============================================================ */}
+      {/* TOP HEADER */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100 px-4 py-3 shadow-xs">
         <div className="max-w-4xl mx-auto flex items-center gap-2.5">
-          {/* Back Button */}
           <button
             type="button"
             onClick={() => navigate(-1)}
@@ -173,7 +273,6 @@ export default function Products() {
             <FiArrowLeft size={20} />
           </button>
 
-          {/* Search Pill Input with Clear ✕ */}
           <form
             onSubmit={handleSearchSubmit}
             className="flex-1 bg-gray-100 rounded-full px-4 py-2 flex items-center justify-between"
@@ -196,12 +295,11 @@ export default function Products() {
             )}
           </form>
 
-          {/* Filter Sliders Icon Button */}
           <button
             type="button"
             onClick={() => setFilterOpen((prev) => !prev)}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0 focus:outline-none ${
-              filterOpen ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+              filterOpen ? "bg-green-600 text-white" : "bg-gray-100 text-gray-800 hover:bg-gray-200"
             }`}
             aria-label="Filter"
           >
@@ -209,7 +307,6 @@ export default function Products() {
           </button>
         </div>
 
-        {/* Filter Popup / Drawer */}
         {filterOpen && (
           <div className="max-w-4xl mx-auto mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-2 animate-fade-in">
             <button
@@ -220,7 +317,7 @@ export default function Products() {
                 setFilterOpen(false);
               }}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                category === "all" ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                category === "all" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
               All
@@ -235,7 +332,7 @@ export default function Products() {
                   setFilterOpen(false);
                 }}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  category === c.slug ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  category === c.slug ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
                 {c.name}
@@ -245,9 +342,7 @@ export default function Products() {
         )}
       </div>
 
-      {/* ============================================================ */}
-      {/* 2. RESULTS SUBTITLE: Showing X results for "..." */}
-      {/* ============================================================ */}
+      {/* RESULTS COUNT */}
       <div className="max-w-4xl mx-auto px-4 pt-3.5 pb-2">
         <p className="text-xs sm:text-sm text-gray-500 font-medium">
           Showing <span className="font-extrabold text-gray-900">{filteredProducts.length} results</span> for{" "}
@@ -255,9 +350,7 @@ export default function Products() {
         </p>
       </div>
 
-      {/* ============================================================ */}
-      {/* 3. 2-COLUMN PRODUCT GRID (Matching Image 1 Screenshot) */}
-      {/* ============================================================ */}
+      {/* PRODUCT GRID */}
       <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-2">
         {loading ? (
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -276,93 +369,20 @@ export default function Products() {
             <p className="text-gray-500 text-xs mb-4">Try clearing filters or search query.</p>
             <button
               onClick={clearSearch}
-              className="bg-purple-600 text-white px-5 py-2 rounded-full text-xs font-bold"
+              className="bg-green-600 text-white px-5 py-2 rounded-full text-xs font-bold"
             >
               Clear Search
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            {filteredProducts.map((product) => {
-              const qty = getCartQuantity(product.id);
-
-              return (
-                <div
-                  key={product.id}
-                  className="bg-white rounded-[24px] border border-gray-100 p-3 sm:p-3.5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
-                >
-                  {/* Image */}
-                  <div className="relative w-full aspect-square rounded-2xl bg-gray-50 overflow-hidden mb-2.5">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = PLACEHOLDER_IMG;
-                      }}
-                    />
-                  </div>
-
-                  {/* Price, Name, Unit (Matching Image 1 hierarchy) */}
-                  <div>
-                    <span className="font-extrabold text-base sm:text-lg text-gray-900 block leading-tight">
-                      ₹{product.price}
-                    </span>
-                    <h3 className="font-extrabold text-sm text-gray-900 truncate mt-1">
-                      {product.name}
-                    </h3>
-                    <p className="text-[11px] text-gray-400 font-medium mb-3">
-                      {product.weight}
-                    </p>
-                  </div>
-
-                  {/* Full-width Pink Button or Stepper (Matching Image 1) */}
-                  <div onClick={(e) => e.stopPropagation()}>
-                    {qty === 0 ? (
-                      <button
-                        type="button"
-                        onClick={(e) => handleAddToCart(e, product)}
-                        className="w-full bg-[#f43f5e] hover:bg-[#e11d48] text-white py-2.5 rounded-2xl font-extrabold text-xs sm:text-sm text-center shadow-xs active:scale-[0.98] transition-transform focus:outline-none"
-                      >
-                        Add to Cart
-                      </button>
-                    ) : (
-                      /* Quantity Stepper with Pink Buttons (Matching Image 1) */
-                      <div className="flex items-center justify-between gap-2 bg-gray-50 border border-pink-100 rounded-2xl p-1">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (qty === 1) {
-                              removeFromCart(product.id, product.weight);
-                            } else {
-                              updateCartQuantity(product.id, product.weight, qty - 1);
-                            }
-                          }}
-                          className="w-9 h-9 rounded-xl bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center font-extrabold active:scale-90 transition-transform shadow-xs"
-                        >
-                          <FiMinus size={15} strokeWidth={2.5} />
-                        </button>
-
-                        <span className="font-extrabold text-sm text-gray-900 text-center flex-1">
-                          {qty}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateCartQuantity(product.id, product.weight, qty + 1)
-                          }
-                          className="w-9 h-9 rounded-xl bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center font-extrabold active:scale-90 transition-transform shadow-xs"
-                        >
-                          <FiPlus size={15} strokeWidth={2.5} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {filteredProducts.map((product) => (
+              <ProductsCard
+                key={product._id || product.id}
+                rawProduct={product}
+                onNavigate={navigate}
+              />
+            ))}
           </div>
         )}
       </div>

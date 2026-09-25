@@ -82,7 +82,7 @@ export default function NotificationsPage() {
       case "alert":
         return <FiAlertCircle size={18} className="text-amber-600" />;
       default:
-        return <FiInfo size={18} className="text-purple-600" />;
+        return <FiInfo size={18} className="text-green-600" />;
     }
   };
 
@@ -95,7 +95,7 @@ export default function NotificationsPage() {
       case "alert":
         return "bg-amber-100/80";
       default:
-        return "bg-purple-100/80";
+        return "bg-green-100/80";
     }
   };
 
@@ -111,7 +111,7 @@ export default function NotificationsPage() {
   return (
     <div className="bg-gray-50 min-h-screen pb-32 font-sans">
       {/* 1. TOP HEADER (Deep Purple Gradient) */}
-      <div className="bg-gradient-to-r from-purple-800 via-indigo-900 to-purple-900 text-white px-4 pt-6 pb-8 rounded-b-[28px] shadow-lg">
+      <div className="bg-gradient-to-r from-green-800 via-emerald-800 to-green-900 text-white px-4 pt-6 pb-8 rounded-b-[28px] shadow-lg">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -131,7 +131,7 @@ export default function NotificationsPage() {
                   </span>
                 )}
               </h1>
-              <p className="text-xs text-purple-200 mt-0.5">
+              <p className="text-xs text-green-200 mt-0.5">
                 Stay updated on deals, orders & alerts
               </p>
             </div>
@@ -142,7 +142,7 @@ export default function NotificationsPage() {
               type="button"
               onClick={handleMarkAllAsRead}
               disabled={actionLoading}
-              className="text-xs font-bold text-purple-200 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 disabled:opacity-50"
+              className="text-xs font-bold text-green-200 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 disabled:opacity-50"
             >
               <FiCheck size={14} />
               Mark all read
@@ -159,7 +159,7 @@ export default function NotificationsPage() {
             onClick={() => setFilter("all")}
             className={`flex-1 py-2 rounded-xl text-center transition-all ${
               filter === "all"
-                ? "bg-purple-600 text-white shadow-xs"
+                ? "bg-green-600 text-white shadow-xs"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
@@ -170,7 +170,7 @@ export default function NotificationsPage() {
             onClick={() => setFilter("unread")}
             className={`flex-1 py-2 rounded-xl text-center transition-all ${
               filter === "unread"
-                ? "bg-purple-600 text-white shadow-xs"
+                ? "bg-green-600 text-white shadow-xs"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
@@ -181,7 +181,7 @@ export default function NotificationsPage() {
             onClick={() => setFilter("promo")}
             className={`flex-1 py-2 rounded-xl text-center transition-all ${
               filter === "promo"
-                ? "bg-purple-600 text-white shadow-xs"
+                ? "bg-green-600 text-white shadow-xs"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
@@ -192,7 +192,7 @@ export default function NotificationsPage() {
             onClick={() => setFilter("order")}
             className={`flex-1 py-2 rounded-xl text-center transition-all ${
               filter === "order"
-                ? "bg-purple-600 text-white shadow-xs"
+                ? "bg-green-600 text-white shadow-xs"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
@@ -221,7 +221,7 @@ export default function NotificationsPage() {
           </div>
         ) : filteredNotifications.length === 0 ? (
           <div className="bg-white rounded-[24px] p-8 text-center border border-gray-100 shadow-xs mt-6">
-            <div className="w-16 h-16 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center mx-auto mb-3">
+            <div className="w-16 h-16 rounded-full bg-green-50 text-green-600 flex items-center justify-center mx-auto mb-3">
               <FiBell size={28} />
             </div>
             <h3 className="font-black text-gray-900 text-base">
@@ -241,12 +241,12 @@ export default function NotificationsPage() {
               className={`rounded-[22px] p-4 sm:p-5 border transition-all cursor-pointer relative overflow-hidden flex items-start gap-3.5 ${
                 item.isRead
                   ? "bg-white border-gray-100 shadow-2xs hover:bg-gray-50/80"
-                  : "bg-white border-purple-200/90 shadow-sm ring-1 ring-purple-100"
+                  : "bg-white border-green-200/90 shadow-sm ring-1 ring-green-100"
               }`}
             >
               {/* Left Accent indicator for unread */}
               {!item.isRead && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-600 to-rose-500" />
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-green-600 to-rose-500" />
               )}
 
               {/* Icon */}
@@ -261,7 +261,7 @@ export default function NotificationsPage() {
               {/* Content */}
               <div className="flex-1 min-w-0 pr-2">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
                     {item.type || "update"}
                   </span>
                   <span className="text-[11px] text-gray-400">
@@ -300,7 +300,7 @@ export default function NotificationsPage() {
                         e.stopPropagation();
                         handleMarkAsRead(item._id);
                       }}
-                      className="text-[11px] font-bold text-purple-700 hover:text-purple-900 flex items-center gap-1 hover:underline"
+                      className="text-[11px] font-bold text-green-700 hover:text-green-900 flex items-center gap-1 hover:underline"
                     >
                       <FiCheck size={13} />
                       Mark as read

@@ -169,7 +169,7 @@ export default function Navbar() {
       {/* ============================================================ */}
       {isHome ? (
         /* HOME PAGE HEADER: Purple to Blue Gradient */
-        <header className="sticky top-0 z-40 w-full bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-600 text-white rounded-b-[28px] shadow-md px-4 pt-4 pb-5 transition-all">
+        <header className="sticky top-0 z-40 w-full bg-gradient-to-r from-green-700 via-emerald-500 to-lime-500 text-white rounded-b-[28px] shadow-md px-4 pt-4 pb-5 transition-all">
           <div className="max-w-6xl mx-auto">
             {/* Top Bar: Hamburger, Location, Cart, Bell */}
             <div className="flex items-center justify-between mb-4">
@@ -193,7 +193,7 @@ export default function Navbar() {
                       <span className="font-bold text-xs sm:text-sm tracking-wide text-white leading-tight">
                         Delivery in 8 minutes
                       </span>
-                      <span className="text-[11px] sm:text-xs text-purple-100 flex items-center gap-1 mt-0.5 opacity-90 max-w-[150px] sm:max-w-[240px] truncate">
+                      <span className="text-[11px] sm:text-xs text-green-100 flex items-center gap-1 mt-0.5 opacity-90 max-w-[150px] sm:max-w-[240px] truncate">
                         <FiMapPin className="text-red-400 shrink-0" size={12} />
                         <span className="truncate">{userLocation || "123 Main St, New York"}</span>
                         <FiChevronDown className="ml-0.5 shrink-0 opacity-80" size={13} />
@@ -242,7 +242,7 @@ export default function Navbar() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for vegetables, fruits..."
-                className="w-full bg-white text-gray-800 rounded-full py-3 pl-11 pr-4 shadow-sm outline-none text-sm font-medium placeholder-gray-400 focus:ring-2 focus:ring-purple-300 transition-all"
+                className="w-full bg-white text-gray-800 rounded-full py-3 pl-11 pr-4 shadow-sm outline-none text-sm font-medium placeholder-gray-400 focus:ring-2 focus:ring-green-300 transition-all"
               />
             </form>
           </div>
@@ -344,7 +344,7 @@ export default function Navbar() {
 
           <aside className="relative z-50 w-[84%] max-w-[320px] bg-white h-full shadow-2xl flex flex-col overflow-y-auto transform transition-transform duration-300 ease-out">
             {/* Profile Header */}
-            <div className="bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-600 text-white p-5 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-green-700 via-emerald-500 to-lime-500 text-white p-5 flex items-center justify-between">
               <div className="flex items-center gap-3 overflow-hidden">
                 <img
                   src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80"
@@ -355,7 +355,7 @@ export default function Navbar() {
                   <h3 className="font-bold text-base leading-tight text-white truncate">
                     {userName}
                   </h3>
-                  <p className="text-xs text-purple-100 opacity-90 truncate mt-0.5">
+                  <p className="text-xs text-green-100 opacity-90 truncate mt-0.5">
                     {userEmail}
                   </p>
                 </div>
@@ -385,12 +385,12 @@ export default function Navbar() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-5 py-2.5 transition-colors ${
                     isActive
-                      ? "bg-purple-50 text-purple-700 font-bold border-l-4 border-purple-600"
+                      ? "bg-green-50 text-green-700 font-bold border-l-4 border-green-600"
                       : "text-gray-700 hover:bg-gray-50"
                   }`
                 }
               >
-                <FiHome size={18} className="shrink-0 text-purple-600" />
+                <FiHome size={18} className="shrink-0 text-green-600" />
                 <span>Homepage</span>
               </NavLink>
 
@@ -400,7 +400,7 @@ export default function Navbar() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-5 py-2.5 transition-colors ${
                     isActive
-                      ? "bg-purple-50 text-purple-700 font-bold border-l-4 border-purple-600"
+                      ? "bg-green-50 text-green-700 font-bold border-l-4 border-green-600"
                       : "text-gray-700 hover:bg-gray-50"
                   }`
                 }
@@ -415,12 +415,12 @@ export default function Navbar() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-5 py-2.5 transition-colors ${
                     isActive
-                      ? "bg-purple-50 text-purple-700 font-bold border-l-4 border-purple-600"
+                      ? "bg-green-50 text-green-700 font-bold border-l-4 border-green-600"
                       : "text-gray-700 hover:bg-gray-50"
                   }`
                 }
               >
-                <FiSearch size={18} className="shrink-0 text-purple-600" />
+                <FiSearch size={18} className="shrink-0 text-green-600" />
                 <span>Search Products</span>
               </NavLink>
 
@@ -435,7 +435,7 @@ export default function Navbar() {
                 className={({ isActive }) =>
                   `flex items-center justify-between px-5 py-2.5 transition-colors ${
                     isActive
-                      ? "bg-purple-50 text-purple-700 font-bold border-l-4 border-purple-600"
+                      ? "bg-green-50 text-green-700 font-bold border-l-4 border-green-600"
                       : "text-gray-700 hover:bg-gray-50"
                   }`
                 }
@@ -445,7 +445,7 @@ export default function Navbar() {
                   <span>My Cart</span>
                 </div>
                 {cartCount > 0 && (
-                  <span className="bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                  <span className="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">
                     {cartCount}
                   </span>
                 )}
@@ -497,7 +497,7 @@ export default function Navbar() {
                 onClick={() => setDrawerOpen(false)}
                 className="flex items-center gap-3 px-5 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                <FiPercent size={18} className="shrink-0 text-purple-600" />
+                <FiPercent size={18} className="shrink-0 text-green-600" />
                 <span>Coupons</span>
               </NavLink>
 
@@ -593,13 +593,13 @@ export default function Navbar() {
               <NavLink
                 to="/settings"
                 onClick={() => setDrawerOpen(false)}
-                className="w-full flex items-center justify-between px-5 py-2.5 text-purple-700 font-bold bg-purple-50/60 transition-colors text-left border-l-4 border-purple-600"
+                className="w-full flex items-center justify-between px-5 py-2.5 text-green-700 font-bold bg-green-50/60 transition-colors text-left border-l-4 border-green-600"
               >
                 <div className="flex items-center gap-3">
-                  <FiSettings size={18} className="shrink-0 text-purple-600" />
+                  <FiSettings size={18} className="shrink-0 text-green-600" />
                   <span>Settings</span>
                 </div>
-                <FiChevronRight size={16} className="text-purple-400" />
+                <FiChevronRight size={16} className="text-green-400" />
               </NavLink>
 
               <NavLink
@@ -608,7 +608,7 @@ export default function Navbar() {
                 className={({ isActive }) =>
                   `flex items-center justify-between px-5 py-2.5 transition-colors text-left ${
                     isActive
-                      ? "text-purple-600 bg-purple-50 font-bold"
+                      ? "text-green-600 bg-green-50 font-bold"
                       : "text-gray-700 hover:bg-gray-50"
                   }`
                 }
@@ -689,7 +689,7 @@ export default function Navbar() {
                   <NavLink
                     to="/login"
                     onClick={() => setDrawerOpen(false)}
-                    className="flex items-center gap-3 px-5 py-3 text-purple-700 hover:bg-purple-50 font-bold transition-colors"
+                    className="flex items-center gap-3 px-5 py-3 text-green-700 hover:bg-green-50 font-bold transition-colors"
                   >
                     <FiLogIn size={18} className="shrink-0" />
                     <span>Login / Register</span>
@@ -711,7 +711,7 @@ export default function Navbar() {
           end
           className={({ isActive }) =>
             `flex flex-col items-center justify-center transition-colors min-w-[54px] py-1 ${
-              isActive ? "text-purple-600 font-bold" : "text-gray-500 hover:text-gray-800"
+              isActive ? "text-green-600 font-bold" : "text-gray-500 hover:text-gray-800"
             }`
           }
         >
@@ -724,7 +724,7 @@ export default function Navbar() {
           to="/shop"
           className={({ isActive }) =>
             `flex flex-col items-center justify-center transition-colors min-w-[54px] py-1 ${
-              isActive ? "text-purple-600 font-bold" : "text-gray-500 hover:text-gray-800"
+              isActive ? "text-green-600 font-bold" : "text-gray-500 hover:text-gray-800"
             }`
           }
         >
@@ -737,7 +737,7 @@ export default function Navbar() {
           to="/cart"
           className={({ isActive }) =>
             `flex flex-col items-center justify-center transition-colors min-w-[54px] py-1 relative ${
-              isActive ? "text-purple-600 font-bold" : "text-gray-500 hover:text-gray-800"
+              isActive ? "text-green-600 font-bold" : "text-gray-500 hover:text-gray-800"
             }`
           }
         >
@@ -757,7 +757,7 @@ export default function Navbar() {
           to="/my-orders"
           className={({ isActive }) =>
             `flex flex-col items-center justify-center transition-colors min-w-[54px] py-1 ${
-              isActive ? "text-purple-600 font-bold" : "text-gray-500 hover:text-gray-800"
+              isActive ? "text-green-600 font-bold" : "text-gray-500 hover:text-gray-800"
             }`
           }
         >
@@ -770,7 +770,7 @@ export default function Navbar() {
           to="/profile"
           className={({ isActive }) =>
             `flex flex-col items-center justify-center transition-colors min-w-[54px] py-1 ${
-              isActive ? "text-purple-600 font-bold" : "text-gray-500 hover:text-gray-800"
+              isActive ? "text-green-600 font-bold" : "text-gray-500 hover:text-gray-800"
             }`
           }
         >

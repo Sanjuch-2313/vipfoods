@@ -87,7 +87,7 @@ export default function Login() {
         <h1 className="text-white text-2xl sm:text-3xl font-extrabold tracking-tight">
           Shop Fresh, Shop Fast
         </h1>
-        <p className="text-purple-200 text-sm mt-1.5 font-medium">
+        <p className="text-green-200 text-sm mt-1.5 font-medium">
           Groceries delivered in 10 minutes.
         </p>
       </div>
@@ -98,7 +98,7 @@ export default function Login() {
         <div className="bg-gray-100 p-1 rounded-2xl flex max-w-sm mx-auto mb-6">
           <button
             type="button"
-            className="flex-1 py-2.5 text-sm font-bold rounded-xl bg-white text-purple-700 shadow-xs transition-all"
+            className="flex-1 py-2.5 text-sm font-bold rounded-xl bg-white text-green-700 shadow-xs transition-all"
           >
             Login
           </button>
@@ -112,7 +112,7 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email Field */}
-          <div className="border border-gray-200 rounded-2xl p-3 focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-100 transition-all">
+          <div className="border border-gray-200 rounded-2xl p-3 focus-within:border-green-600 focus-within:ring-2 focus-within:ring-green-100 transition-all">
             <label
               htmlFor="login-email"
               className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5"
@@ -134,7 +134,7 @@ export default function Login() {
           </div>
 
           {/* Password Field */}
-          <div className="border border-gray-200 rounded-2xl p-3 flex items-center justify-between focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-100 transition-all">
+          <div className="border border-gray-200 rounded-2xl p-3 flex items-center justify-between focus-within:border-green-600 focus-within:ring-2 focus-within:ring-green-100 transition-all">
             <div className="flex-1">
               <label
                 htmlFor="login-password"
@@ -172,7 +172,7 @@ export default function Login() {
                 type="checkbox"
                 checked={staySignedIn}
                 onChange={(e) => setStaySignedIn(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 accent-purple-600"
+                className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 accent-green-600"
               />
               <span className="text-xs font-semibold text-gray-700">Stay signed in</span>
             </label>
