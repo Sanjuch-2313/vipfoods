@@ -68,28 +68,6 @@ const createReferralCode = async (name) => {
   return `VIP${Date.now().toString().slice(-8)}`;
 };
 
-const normalizeSavedArray = (value) => {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.filter((item) => item !== null && item !== undefined).slice(0, 200);
-};
-
-const formatUserProfile = (user) => ({
-  id: user._id,
-  name: user.name,
-  email: user.email,
-  mobile: user.mobile,
-  walletBalance: user.walletBalance || 0,
-  referralCode: user.referralCode,
-  walletTransactions: user.walletTransactions || [],
-  savedAddresses: user.savedAddresses || [],
-  savedCards: user.savedCards || [],
-  cart: user.cart || [],
-  wishlist: user.wishlist || [],
-});
-
 // ======================================================
 // REGISTER USER
 // ======================================================
@@ -303,7 +281,13 @@ const registerUser = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Registration successful. Please login.",
-      user: formatUserProfile(user),
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        mobile: user.mobile,
+        referralCode: user.referralCode,
+      },
     });
   } catch (error) {
     // --------------------------------------------------
@@ -415,7 +399,14 @@ const loginUser = async (req, res) => {
       success: true,
       message: "Login successful",
       token,
-      user: formatUserProfile(user),
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        mobile: user.mobile,
+        walletBalance: user.walletBalance || 0,
+        referralCode: user.referralCode,
+      },
     });
   } catch (error) {
     console.error("LOGIN ERROR:", error);
@@ -446,7 +437,15 @@ const getMe = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      user: formatUserProfile(user),
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        mobile: user.mobile,
+        walletBalance: user.walletBalance || 0,
+        referralCode: user.referralCode,
+        walletTransactions: user.walletTransactions || [],
+      },
     });
   } catch (error) {
     console.error("GET ME ERROR:", error);
@@ -454,49 +453,6 @@ const getMe = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error.",
-    });
-  }
-};
-
-const syncProfile = async (req, res) => {
-  try {
-    const {
-      savedAddresses,
-      savedCards,
-      cart,
-      wishlist,
-    } = req.body || {};
-
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      {
-        $set: {
-          savedAddresses: normalizeSavedArray(savedAddresses),
-          savedCards: normalizeSavedArray(savedCards),
-          cart: normalizeSavedArray(cart),
-          wishlist: normalizeSavedArray(wishlist),
-        },
-      },
-      { new: true }
-    ).select("-password -otp -otpExpires");
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found.",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      user: formatUserProfile(user),
-    });
-  } catch (error) {
-    console.error("SYNC PROFILE ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Unable to sync profile data.",
     });
   }
 };
@@ -707,7 +663,6 @@ export {
   registerUser,
   loginUser,
   getMe,
-  syncProfile,
   createWalletOrder,
   verifyWalletPayment,
   useWalletBalance,

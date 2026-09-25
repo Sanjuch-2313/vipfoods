@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import { FiMapPin, FiPlus, FiTrash2 } from "react-icons/fi";
 
-import api from "../services/api";
-import { useAuth } from "../context/AuthContext";
-
 const STORAGE_KEY = "vipfoods_user_addresses";
 
 const defaultAddresses = [
@@ -19,7 +16,6 @@ const defaultAddresses = [
 ];
 
 export default function AddressesPage() {
-  const { user, isLoggedIn, updateUserProfile } = useAuth();
   const [addresses, setAddresses] = useState(defaultAddresses);
   const [form, setForm] = useState({
     name: "Home",
@@ -31,11 +27,6 @@ export default function AddressesPage() {
   });
 
   useEffect(() => {
-    if (isLoggedIn && Array.isArray(user?.savedAddresses)) {
-      setAddresses(user.savedAddresses);
-      return;
-    }
-
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -44,29 +35,11 @@ export default function AddressesPage() {
         console.error("Address parse failed", error);
       }
     }
-  }, [isLoggedIn, user?.savedAddresses]);
+  }, []);
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(addresses));
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      api
-        .put("/auth/profile", { savedAddresses: addresses })
-        .then(({ data }) => {
-          if (data?.user) {
-            updateUserProfile(data.user);
-          }
-        })
-        .catch((error) => {
-          console.error("Address sync failed", error);
-        });
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, [addresses, isLoggedIn, updateUserProfile]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(addresses));
+  }, [addresses]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;

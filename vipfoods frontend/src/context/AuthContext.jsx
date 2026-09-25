@@ -119,23 +119,6 @@ export function AuthProvider({ children }) {
     };
   };
 
-  const updateUserProfile = (profileFields = {}) => {
-    setUser((currentUser) => {
-      if (!currentUser) {
-        return currentUser;
-      }
-
-      const nextUser = {
-        ...currentUser,
-        ...profileFields,
-      };
-
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(nextUser));
-
-      return nextUser;
-    });
-  };
-
   const value = useMemo(
     () => ({
       user,
@@ -149,8 +132,6 @@ export function AuthProvider({ children }) {
       login,
 
       logout,
-
-      updateUserProfile,
 
       getAuthHeaders,
     }),

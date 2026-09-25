@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import { FiCreditCard, FiPlus, FiTrash2 } from "react-icons/fi";
 
-import api from "../services/api";
-import { useAuth } from "../context/AuthContext";
-
 const STORAGE_KEY = "vipfoods_payment_methods";
 
 const defaultCards = [
@@ -71,17 +68,11 @@ const isEligibleCard = ({ label, number, expiry }) => {
 };
 
 export default function PaymentMethodsPage() {
-  const { user, isLoggedIn, updateUserProfile } = useAuth();
   const [cards, setCards] = useState(defaultCards);
   const [form, setForm] = useState({ label: "", number: "", expiry: "" });
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (isLoggedIn && Array.isArray(user?.savedCards)) {
-      setCards(user.savedCards);
-      return;
-    }
-
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -90,29 +81,11 @@ export default function PaymentMethodsPage() {
         console.error("Payment methods parse failed", error);
       }
     }
-  }, [isLoggedIn, user?.savedCards]);
+  }, []);
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      api
-        .put("/auth/profile", { savedCards: cards })
-        .then(({ data }) => {
-          if (data?.user) {
-            updateUserProfile(data.user);
-          }
-        })
-        .catch((error) => {
-          console.error("Card sync failed", error);
-        });
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, [cards, isLoggedIn, updateUserProfile]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+  }, [cards]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;

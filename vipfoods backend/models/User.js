@@ -64,27 +64,6 @@ const userSchema = new mongoose.Schema(
       },
     ],
 
-    // Saved synced account data for cross-device login
-    savedAddresses: {
-      type: [mongoose.Schema.Types.Mixed],
-      default: [],
-    },
-
-    savedCards: {
-      type: [mongoose.Schema.Types.Mixed],
-      default: [],
-    },
-
-    cart: {
-      type: [mongoose.Schema.Types.Mixed],
-      default: [],
-    },
-
-    wishlist: {
-      type: [mongoose.Schema.Types.Mixed],
-      default: [],
-    },
-
     // Referral
     referralCode: {
       type: String,
