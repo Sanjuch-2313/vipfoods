@@ -3,7 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { FiPlus, FiArrowRight, FiAward, FiTruck, FiMinus } from "react-icons/fi";
 import { getCategories } from "../services/categoryService";
 import { getProducts } from "../services/productService";
+import { getAllHomeBanners } from "../services/homeBannerService";
+import api from "../services/api";
 import { useCart } from "../context/CartContext";
+import logo from "../assets/logo.png";
+import bannerImage from "../assets/banner.png";
 
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml;utf8," +
@@ -13,6 +17,17 @@ const PLACEHOLDER_IMAGE =
       <text x='50%' y='50%' font-family='sans-serif' font-size='22' fill='#9ca3af' text-anchor='middle' dominant-baseline='middle'>VIP Foods</text>
     </svg>`
   );
+
+const defaultHeroSlides = [
+  {
+    id: "vip-brand",
+    image: logo,
+    title: "VIP Foods",
+    subtitle: "Natural & Healthy",
+    buttonText: "Shop Now",
+    buttonLink: "/products",
+  },
+];
 
 /* ── Per-deal card with variant state ── */
 function DealCard({ deal, idx, onToast }) {
@@ -153,6 +168,14 @@ export default function Home() {
 
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [heroSlides, setHeroSlides] = useState([]);
+  const [promoItems, setPromoItems] = useState([
+    "Free Delivery on orders above ₹499",
+    "Fresh farm picks every day",
+    "VIP offers updated weekly",
+    "Extra savings on organic essentials",
+  ]);
+  const [activeHeroSlide, setActiveHeroSlide] = useState(0);
   const [loading, setLoading] = useState(true);
   const [toastMsg, setToastMsg] = useState("");
 
@@ -161,9 +184,10 @@ export default function Home() {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [catData, prodData] = await Promise.all([
+        const [catData, prodData, bannerData] = await Promise.all([
           getCategories().catch(() => []),
           getProducts().catch(() => []),
+          getAllHomeBanners().catch(() => ({ banners: [] })),
         ]);
 
         if (!isMounted) return;
@@ -179,16 +203,75 @@ export default function Home() {
         setProducts(
           prodList.filter((p) => p.active !== false && p.published !== false)
         );
+
+        const banners = Array.isArray(bannerData?.banners)
+          ? bannerData.banners
+          : Array.isArray(bannerData)
+            ? bannerData
+            : [];
+
+        const filteredBanners = banners.filter(
+          (banner) => banner && banner.active !== false && (banner.image || banner.title)
+        );
+
+        const adminSlides = filteredBanners.map((banner) => ({
+          id: banner._id || banner.id || banner.title,
+          image: banner.image,
+          title: banner.title || "VIP Foods",
+          subtitle: banner.subtitle || "Fresh groceries delivered fast",
+          buttonText: banner.buttonText || "Shop Now",
+          buttonLink: banner.buttonLink || "/products",
+          coupon: banner.coupon,
+        }));
+
+        const combinedSlides = [...defaultHeroSlides, ...adminSlides];
+        setHeroSlides(combinedSlides);
       } catch (err) {
         console.error("Home data error:", err);
+        setHeroSlides([]);
       } finally {
         if (isMounted) setLoading(false);
       }
     };
 
     loadData();
+
+    const fetchCoupons = async () => {
+      try {
+        const { data } = await api.get("/coupons");
+        const fetchedCoupons = Array.isArray(data?.coupons) ? data.coupons : [];
+
+        if (!fetchedCoupons.length) return;
+
+        const couponOffers = fetchedCoupons.slice(0, 5).map((coupon) => {
+          const discount = coupon.discount || coupon.discountValue || 0;
+          return `${coupon.code || "VIP OFFER"} • ${discount}% OFF`;
+        });
+
+        setPromoItems((prev) => [
+          "Free Delivery on orders above ₹499",
+          ...couponOffers,
+          "Fresh farm picks every day",
+          ...prev.filter((item) => !couponOffers.includes(item) && item !== "Free Delivery on orders above ₹499"),
+        ]);
+      } catch (err) {
+        console.error("Coupon ticker fetch failed:", err);
+      }
+    };
+
+    fetchCoupons();
     return () => { isMounted = false; };
   }, []);
+
+  useEffect(() => {
+    if (heroSlides.length <= 1) return undefined;
+
+    const interval = setInterval(() => {
+      setActiveHeroSlide((current) => (current + 1) % heroSlides.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [heroSlides]);
 
   const displayedDeals = products.slice(0, 20);
 
@@ -196,6 +279,16 @@ export default function Home() {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(""), 2000);
   };
+
+  const activeSlide = heroSlides[activeHeroSlide] || null;
+  const couponLabel = activeSlide?.coupon
+    ? activeSlide.coupon.discountText ||
+      (activeSlide.coupon.discountType === "percentage"
+        ? `${activeSlide.coupon.code} • ${activeSlide.coupon.discountValue}% OFF`
+        : activeSlide.coupon.discountType === "flat"
+          ? `${activeSlide.coupon.code} • ₹${activeSlide.coupon.discountValue} OFF`
+          : activeSlide.coupon.code)
+    : null;
 
 
   return (
@@ -207,7 +300,45 @@ export default function Home() {
         </div>
       )}
 
-      <div className="max-w-5xl xl:max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
+        <section className="px-1 sm:px-2 pt-4 sm:pt-5">
+          <Link
+            to="/products"
+            className="block overflow-hidden rounded-[32px] sm:rounded-[42px] shadow-lg shadow-black/10 bg-[#021b2f]"
+          >
+            <img
+              src={bannerImage}
+              alt="VIP Foods banner"
+              className="block w-full h-[180px] sm:h-[220px] md:h-[280px] lg:h-[320px] object-cover"
+            />
+          </Link>
+        </section>
+
+        <section className="px-1 sm:px-2 pt-3 sm:pt-4">
+          <div className="overflow-hidden rounded-full border border-sky-400/30 bg-[#021b2f] shadow-[0_0_20px_rgba(56,189,248,0.15)]">
+            <div className="ticker-track flex items-center whitespace-nowrap py-2.5 sm:py-3 text-[11px] sm:text-xs md:text-sm font-semibold tracking-[0.12em] text-sky-100 uppercase">
+              {[...promoItems, ...promoItems].map((item, index) => (
+                <div key={`${item}-${index}`} className="flex items-center shrink-0 px-3 sm:px-4">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-sky-300 shadow-[0_0_10px_rgba(125,211,252,0.9)] mr-3" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <style>{`
+          @keyframes scrollTicker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+
+          .ticker-track {
+            width: max-content;
+            animation: scrollTicker 24s linear infinite;
+          }
+        `}</style>
+
         {/* ============================================================ */}
         {/* 1. SHOP BY CATEGORY (Circular Avatars Horizontal Scroll) */}
         {/* ============================================================ */}

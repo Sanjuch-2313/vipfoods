@@ -24,9 +24,9 @@ export default function Footer() {
           <Link to="/about">About us</Link>
           <Link to="/contact">Contact us</Link>
           <Link to="/blog">Blog</Link>
-          <Link to="/account">My account</Link>
+          <Link to="/profile">My account</Link>
           <Link to="/shop">Shop</Link>
-          <Link to="/orders">Orders</Link>
+          <Link to="/my-orders">Orders</Link>
           <Link to="/lost-password">Lost password</Link>
         </div>
 
@@ -41,7 +41,7 @@ export default function Footer() {
         <div>
           <h4>Categories</h4>
           <Link to="/products?category=dairy">VIP Dairy</Link>
-          <Link to="/products?category=pickle">VIP Pickle</Link>
+          <Link to="/products?category=pickles">VIP Pickle</Link>
           <Link to="/products?category=fresh">VIP Fresh</Link>
           <Link to="/products?category=fruits">Fruits & Vegetables</Link>
           <Link to="/products?category=non-veg-pickle">Non Veg Pickle</Link>

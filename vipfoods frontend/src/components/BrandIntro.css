@@ -303,7 +303,25 @@
 
   letter-spacing: -0.075em;
 
-  color: #17130f;
+  color: transparent;
+
+  background:
+    linear-gradient(
+      90deg,
+      #1ea25b 0%,
+      #64d97d 18%,
+      #1ea25b 38%,
+      #14a15a 100%
+    );
+
+  background-clip: text;
+  -webkit-background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+
+  -webkit-text-stroke: 2px rgba(25, 123, 64, 0.9);
+  text-stroke: 2px rgba(25, 123, 64, 0.9);
 
   text-align: center;
 

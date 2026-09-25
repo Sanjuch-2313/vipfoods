@@ -14,6 +14,42 @@ const PLACEHOLDER_IMG =
     </svg>`
   );
 
+const normalizeCategoryValue = (value = "") =>
+  String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const matchesCategory = (productCategory, selectedCategory) => {
+  if (!selectedCategory || selectedCategory === "all") return true;
+
+  const normalizedQuery = normalizeCategoryValue(selectedCategory);
+  if (!normalizedQuery) return true;
+
+  const categoryName = normalizeCategoryValue(productCategory?.name || "");
+  const categorySlug = normalizeCategoryValue(productCategory?.slug || "");
+  const aliasSet = new Set([
+    categoryName,
+    categorySlug,
+    categoryName.replace(/^vip-/, ""),
+    categorySlug.replace(/^vip-/, ""),
+  ]);
+
+  if ([...aliasSet].some((value) => value === normalizedQuery)) {
+    return true;
+  }
+
+  if ([...aliasSet].some((value) => value.includes(normalizedQuery))) {
+    return true;
+  }
+
+  return [...aliasSet].some(
+    (value) => normalizedQuery.includes(value) && value.length > 2
+  );
+};
+
 /* ── Per-card component with its own variant state ── */
 function ProductsCard({ rawProduct, onNavigate }) {
   const { cartItems, addToCart, updateCartQuantity, removeFromCart } = useCart();
@@ -192,11 +228,7 @@ export default function Products() {
 
         // Category filter
         if (category !== "all") {
-          products = products.filter(
-            (p) =>
-              p.category?.slug === category ||
-              p.category?.name?.toLowerCase() === category.toLowerCase()
-          );
+          products = products.filter((p) => matchesCategory(p.category, category));
         }
 
         // Search filter

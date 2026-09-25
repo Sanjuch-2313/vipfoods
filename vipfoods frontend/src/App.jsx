@@ -2,6 +2,7 @@ import {
   BrowserRouter,
   Routes,
   Route,
+  Navigate,
   useLocation,
 } from "react-router-dom";
 
@@ -32,6 +33,8 @@ import AddressesPage from "./pages/AddressesPage";
 import PaymentMethodsPage from "./pages/PaymentMethodsPage";
 import SupportPage from "./pages/SupportPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import InfoPage from "./pages/InfoPage";
+import LostPasswordPage from "./pages/LostPasswordPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -118,11 +121,21 @@ function AppRoutes() {
         <Route path="/addresses" element={<AddressesPage />} />
         <Route path="/payment-methods" element={<PaymentMethodsPage />} />
         <Route path="/support" element={<SupportPage />} />
+        <Route path="/contact" element={<SupportPage />} />
+        <Route path="/about" element={<InfoPage page="about" />} />
+        <Route path="/blog" element={<InfoPage page="blog" />} />
+        <Route path="/terms" element={<InfoPage page="terms" />} />
+        <Route path="/privacy" element={<InfoPage page="privacy" />} />
+        <Route path="/refund" element={<InfoPage page="refund" />} />
+        <Route path="/shipping" element={<InfoPage page="shipping" />} />
+        <Route path="/account" element={<Navigate to="/profile" replace />} />
+        <Route path="/orders" element={<Navigate to="/my-orders" replace />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="*" element={<NotFound />} />
+        <Route path="/lost-password" element={<LostPasswordPage />} />
         <Route path="/shop" element={<Shop />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
       {/* FOOTER */}
