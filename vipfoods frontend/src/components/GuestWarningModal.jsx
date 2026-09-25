@@ -61,7 +61,7 @@ export default function GuestWarningModal() {
           Welcome to VIP Foods! 🛒
         </h3>
         <p className="text-sm text-gray-500 mt-2 mb-4 leading-relaxed">
-          Sign in or create an account to unlock exclusive deals, earn ₹25 on every referral, and enjoy fast checkout!
+          Sign in or create an account to unlock exclusive deals, earn ₹50 on every referral, and enjoy fast checkout!
         </p>
 
         {/* Highlight Banner */}
@@ -71,10 +71,10 @@ export default function GuestWarningModal() {
           </div>
           <div>
             <p className="text-xs font-bold text-green-900">
-              Refer & Earn ₹25
+              Refer & Earn ₹50
             </p>
             <p className="text-[11px] text-green-700">
-              Invite friends with your referral code and both of you get ₹25 in your wallet.
+              Invite friends with your referral code and both of you get ₹50 in your wallet.
             </p>
           </div>
         </div>

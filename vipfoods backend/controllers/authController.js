@@ -228,7 +228,7 @@ const registerUser = async (req, res) => {
       referrer._id &&
       referrer._id.toString() !== user._id.toString()
     ) {
-      const referralBonus = 25;
+      const referralBonus = 50;
 
       // Give bonus to referrer
       await User.findByIdAndUpdate(

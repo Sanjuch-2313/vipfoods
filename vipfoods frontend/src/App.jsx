@@ -77,6 +77,13 @@ function AppRoutes() {
     }
   }, [location]);
 
+  useEffect(() => {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
+  }, []);
+
   return (
     <>
       {/* BRAND INTRO */}

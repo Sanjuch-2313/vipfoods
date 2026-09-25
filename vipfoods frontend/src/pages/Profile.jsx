@@ -214,13 +214,13 @@ export default function Profile() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full text-white inline-block mb-2">
-                  Refer & Earn ₹25
+                  Refer & Earn ₹50
                 </span>
                 <h3 className="font-extrabold text-base leading-snug">
-                  Invite friends & earn ₹25!
+                  Invite friends & earn ₹50!
                 </h3>
                 <p className="text-xs text-green-100 mt-1 max-w-xs">
-                  When a friend joins using your code, both of you get ₹25 credited to your wallets.
+                  When a friend joins using your code, both of you get ₹50 credited to your wallets.
                 </p>
               </div>
             </div>
