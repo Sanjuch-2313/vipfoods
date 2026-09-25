@@ -102,6 +102,32 @@ userSchema.pre("save", function (next) {
   next();
 });
 
+userSchema.statics.generateUniqueReferralCode = async function (name) {
+  const baseName = (name || "VIP")
+    .trim()
+    .replace(/[^a-zA-Z]/g, "")
+    .toUpperCase()
+    .slice(0, 4) || "VIP";
+
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const randomPart = crypto.randomBytes(3).toString("hex").toUpperCase();
+    const candidate = `${baseName}${randomPart}`;
+
+    const exists = await this.exists({ referralCode: candidate });
+    if (!exists) {
+      return candidate;
+    }
+  }
+
+  const fallback = `${baseName}${Date.now().toString().slice(-6)}`.toUpperCase();
+  const fallbackExists = await this.exists({ referralCode: fallback });
+  if (fallbackExists) {
+    return `${baseName}${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+  }
+
+  return fallback;
+};
+
 const User = mongoose.model("User", userSchema);
 
 export default User;

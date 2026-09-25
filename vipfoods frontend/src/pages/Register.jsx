@@ -73,12 +73,15 @@ export default function Register() {
     }
 
     const userData = {
-      name,
-      email,
-      mobile,
-      password,
-      referralCode: form.referralCode?.trim() || undefined,
-    };
+  name,
+  email,
+  mobile,
+  password,
+};
+
+if (form.referralCode.trim()) {
+  userData.referralCode = form.referralCode.trim().toUpperCase();
+}
 
     try {
       setLoading(true);
