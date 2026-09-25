@@ -88,7 +88,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Auto-generate a unique referral code before saving if not set
-userSchema.pre("save", function (next) {
+userSchema.pre("save", function () {
   if (!this.referralCode) {
     const baseName = (this.name || "VIP")
       .trim()
@@ -99,7 +99,6 @@ userSchema.pre("save", function (next) {
     const randomPart = crypto.randomBytes(3).toString("hex").toUpperCase();
     this.referralCode = `${baseName || "VIP"}${randomPart}`;
   }
-  next();
 });
 
 userSchema.statics.generateUniqueReferralCode = async function (name) {
