@@ -4,6 +4,7 @@ import {
   registerUser,
   loginUser,
   getMe,
+  syncProfile,
   createWalletOrder,
   verifyWalletPayment,
   useWalletBalance,
@@ -18,6 +19,7 @@ router.post("/login", loginUser);
 
 // Protected routes
 router.get("/me", protect, getMe);
+router.put("/profile", protect, syncProfile);
 router.post("/wallet/create-order", protect, createWalletOrder);
 router.post("/wallet/verify", protect, verifyWalletPayment);
 router.post("/wallet/use", protect, useWalletBalance);
