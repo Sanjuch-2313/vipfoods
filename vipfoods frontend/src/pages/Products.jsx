@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FiArrowLeft, FiX, FiSliders, FiMinus, FiPlus } from "react-icons/fi";
-import { getProducts } from "../services/productService";
+import { getShopProducts } from "../services/productService";
 import { getCategories } from "../services/categoryService";
 import { useCart } from "../context/CartContext";
 
@@ -56,7 +56,8 @@ function ProductsCard({ rawProduct, onNavigate }) {
 
   // Build variants from raw backend data
   const variants = (rawProduct.variants || []).map((v) => ({
-    label: v.weight ? `${v.weight}g` : (v.unit || "1 kg"),
+    label: v.weight ? (/\d$/.test(String(v.weight).trim()) ? `${v.weight} g` : String(v.weight)) : (v.unit || "1 kg"),
+    sku: v.sku,
     price: Number(v.sellingPrice || v.price || 0),
     mrp: Number(v.mrp || 0),
   }));
@@ -82,7 +83,7 @@ function ProductsCard({ rawProduct, onNavigate }) {
 
   const handleAdd = (e) => {
     e.stopPropagation();
-    addToCart({ id, name, image, price: selected.price, offerPrice: selected.price, weight: selected.label, tag });
+    addToCart({ id, name, image, price: selected.price, offerPrice: selected.price, weight: selected.label, sku: selected.sku, tag });
   };
 
   const handleIncrease = (e) => {
@@ -191,6 +192,7 @@ export default function Products() {
   const navigate = useNavigate();
 
   const category = searchParams.get("category") || "all";
+  const subcategory = searchParams.get("subcategory") || "";
   const search = searchParams.get("search") || "";
   const sortBy = searchParams.get("sort") || "";
   const isDeals = searchParams.get("deals") === "true";
@@ -210,7 +212,7 @@ export default function Products() {
     const loadCategories = async () => {
       try {
         const data = await getCategories();
-        setCategories(Array.isArray(data) ? data : []);
+        setCategories(Array.isArray(data) ? data.filter((item) => item.active !== false) : []);
       } catch (err) {
         console.error(err);
       }
@@ -220,15 +222,24 @@ export default function Products() {
 
   // ---------- LOAD + FILTER PRODUCTS ----------
   useEffect(() => {
+    let active = true;
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const raw = await getProducts();
-        let products = Array.isArray(raw) ? raw : [];
+        const raw = await getShopProducts();
+        let products = Array.isArray(raw) ? raw.filter((item) => item.active !== false && item.published !== false) : [];
+
+        if (isDeals) products = products.filter((product) => product.bestDeal === true);
 
         // Category filter
         if (category !== "all") {
           products = products.filter((p) => matchesCategory(p.category, category));
+        }
+
+        if (category !== "all" && subcategory) {
+          products = products.filter((product) =>
+            normalizeCategoryValue(product.subCategory) === normalizeCategoryValue(subcategory)
+          );
         }
 
         // Search filter
@@ -254,17 +265,18 @@ export default function Products() {
         }
 
         // Keep raw products – variant selection happens inside ProductsCard
-        setFilteredProducts(products);
+        if (active) setFilteredProducts(products);
       } catch (err) {
         console.error("Products fetch error:", err);
-        setFilteredProducts([]);
+        if (active) setFilteredProducts([]);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     fetchProducts();
-  }, [category, search, sortBy, isDeals]);
+    return () => { active = false; };
+  }, [category, subcategory, search, sortBy, isDeals]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -285,6 +297,7 @@ export default function Products() {
   };
 
   const selectedCategory = categories.find((c) => c.slug === category);
+  const subcategories = (selectedCategory?.subCategories || []).filter((item) => item.active !== false);
   const displayLabel = search
     ? `"${search}"`
     : isDeals
@@ -345,6 +358,7 @@ export default function Products() {
               onClick={() => {
                 const next = new URLSearchParams(searchParams);
                 next.delete("category");
+                next.delete("subcategory");
                 setSearchParams(next);
                 setFilterOpen(false);
               }}
@@ -360,8 +374,9 @@ export default function Products() {
                 onClick={() => {
                   const next = new URLSearchParams(searchParams);
                   next.set("category", c.slug);
+                  next.delete("subcategory");
                   setSearchParams(next);
-                  setFilterOpen(false);
+                  setFilterOpen(true);
                 }}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                   category === c.slug ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -370,6 +385,40 @@ export default function Products() {
                 {c.name}
               </button>
             ))}
+            {subcategories.length > 0 && (
+              <div className="w-full border-t border-gray-100 pt-3 mt-1">
+                <p className="text-xs font-bold text-gray-500 mb-2">{selectedCategory.name} subcategories</p>
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Subcategories">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = new URLSearchParams(searchParams);
+                      next.delete("subcategory");
+                      setSearchParams(next);
+                    }}
+                    aria-pressed={!subcategory}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${!subcategory ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                  >
+                    All subcategories
+                  </button>
+                  {subcategories.map((item) => (
+                    <button
+                      key={item.slug || item.name}
+                      type="button"
+                      onClick={() => {
+                        const next = new URLSearchParams(searchParams);
+                        next.set("subcategory", item.name);
+                        setSearchParams(next);
+                      }}
+                      aria-pressed={normalizeCategoryValue(subcategory) === normalizeCategoryValue(item.name)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${normalizeCategoryValue(subcategory) === normalizeCategoryValue(item.name) ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -378,7 +427,7 @@ export default function Products() {
       <div className="max-w-4xl mx-auto px-4 pt-3.5 pb-2">
         <p className="text-xs sm:text-sm text-gray-500 font-medium">
           Showing <span className="font-extrabold text-gray-900">{filteredProducts.length} results</span> for{" "}
-          <span className="font-bold text-gray-900">{displayLabel}</span>
+          <span className="font-bold text-gray-900">{displayLabel}{subcategory && category !== "all" ? ` · ${subcategory}` : ""}</span>
         </p>
       </div>
 

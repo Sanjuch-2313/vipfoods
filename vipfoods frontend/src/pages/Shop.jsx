@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { FiHeart, FiPlus, FiMinus } from "react-icons/fi";
 import { getCategories } from "../services/categoryService";
-import { getProducts } from "../services/productService";
+import { getShopProducts } from "../services/productService";
 import { useCart } from "../context/CartContext";
 
 const PLACEHOLDER_IMG =
@@ -16,8 +16,10 @@ const PLACEHOLDER_IMG =
 
 const PAGE_SIZE = 8;
 
+import { filterAndSortProducts } from "../utils/shopFilters";
+
 /* ── Per-card component – manages its own selected variant ── */
-function ShopProductCard({ product, idx, isWishlisted, onToggleWishlist, onToast }) {
+function ShopProductCard({ product, isWishlisted, onToggleWishlist, onToast }) {
   const { addToCart, cartItems, updateCartQuantity } = useCart();
 
   // Build a clean variants list from whatever the backend sends
@@ -46,10 +48,12 @@ function ShopProductCard({ product, idx, isWishlisted, onToggleWishlist, onToast
   );
   const quantity = cartItem ? cartItem.quantity : 0;
 
-  let badge = null;
-  if (idx % 3 === 0) badge = { text: "SALE", bg: "bg-red-500 text-white" };
-  else if (idx % 3 === 1) badge = { text: "50% OFF", bg: "bg-red-500 text-white" };
-  else if (idx % 4 === 0) badge = { text: "NEW", bg: "bg-amber-400 text-gray-900" };
+  const mrp = Number(selectedVariant.mrp);
+  const price = Number(selectedVariant.price);
+  const hasDiscount = Number.isFinite(mrp) && Number.isFinite(price) && mrp > 0 && price >= 0 && price < mrp;
+  const badge = hasDiscount
+    ? { text: `${Math.round(((mrp - price) / mrp) * 100)}% OFF`, bg: "bg-red-500 text-white" }
+    : null;
 
   const wish = isWishlisted(product._id || product.id);
 
@@ -204,12 +208,28 @@ function ShopProductCard({ product, idx, isWishlisted, onToggleWishlist, onToast
 
 /* ── Main Shop page ── */
 export default function Shop() {
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { wishlistItems, toggleWishlist } = useCart();
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const selectedCategory = searchParams.get("category") || "all";
+  const selectedSubcategory = searchParams.get("subcategory") || "";
+  const sort = searchParams.get("sort") || "default";
+  const panel = searchParams.get("panel");
+  const [loadError, setLoadError] = useState("");
+  const [reload, setReload] = useState(0);
+  const updateParams = (changes) => {
+    setSearchParams((previous) => {
+      const next = new URLSearchParams(previous);
+      for (const [key, value] of Object.entries(changes)) {
+        if (!value || value === "all" || value === "default") next.delete(key);
+        else next.set(key, value);
+      }
+      return next;
+    }, { replace: true });
+  };
+  const setSelectedCategory = (category) => updateParams({ category, subcategory: "" });
   const [loading, setLoading] = useState(true);
   const [toastMsg, setToastMsg] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -220,9 +240,10 @@ export default function Shop() {
     const fetchShopProducts = async () => {
       try {
         setLoading(true);
+        setLoadError("");
         const [categoryData, productData] = await Promise.all([
-          getCategories().catch(() => []),
-          getProducts().catch(() => []),
+          getCategories(),
+          getShopProducts(),
         ]);
 
         if (!isMounted) return;
@@ -238,6 +259,7 @@ export default function Shop() {
         setProducts(list.filter((p) => p.active !== false && p.published !== false));
       } catch (err) {
         console.error("Failed to load shop data:", err);
+        if (isMounted) setLoadError("Could not load store products and filters. Please try again.");
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -248,7 +270,9 @@ export default function Shop() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [reload]);
+
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [selectedCategory, selectedSubcategory, sort]);
 
   const isWishlisted = (productId) =>
     wishlistItems.some((item) => item.id === productId || item._id === productId);
@@ -258,14 +282,10 @@ export default function Shop() {
     setTimeout(() => setToastMsg(""), 2000);
   };
 
-  const filteredProducts =
-    selectedCategory === "all"
-      ? products
-      : products.filter(
-          (product) =>
-            product.category?.slug === selectedCategory ||
-            product.category?.name?.toLowerCase() === selectedCategory.toLowerCase()
-        );
+  const category = categories.find((item) => (item.slug || item.name) === selectedCategory);
+  const subcategories = (category?.subCategories || []).filter((item) => item.active !== false);
+  const subcategory = subcategories.find((item) => (item.slug || item.name) === selectedSubcategory);
+  const filteredProducts = filterAndSortProducts(products, category, subcategory, sort);
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = visibleCount < filteredProducts.length;
@@ -279,6 +299,41 @@ export default function Shop() {
       )}
 
       <div className="max-w-6xl mx-auto px-3 sm:px-4 pt-3 sm:pt-4">
+        {panel === "sort" && (
+          <section aria-label="Sort products" className="mb-4 rounded-2xl bg-white border border-gray-200 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <label htmlFor="shop-sort" className="font-bold">Sort products</label>
+              <button type="button" onClick={() => updateParams({ panel: "" })} className="text-sm font-bold text-green-700">Done</button>
+            </div>
+            <select id="shop-sort" value={sort} onChange={(event) => updateParams({ sort: event.target.value })} className="w-full rounded-xl border border-gray-200 p-3 text-sm">
+              <option value="default">Recommended</option>
+              <option value="price-asc">Price: Low to high</option>
+              <option value="price-desc">Price: High to low</option>
+              <option value="newest">Newest first</option>
+              <option value="name-asc">Name: A to Z</option>
+            </select>
+          </section>
+        )}
+        {panel === "filters" && (
+          <section aria-label="Filter products" className="mb-4 rounded-2xl bg-white border border-gray-200 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold">Filter products</h3>
+              <button type="button" onClick={() => updateParams({ panel: "" })} className="text-sm font-bold text-green-700">Done</button>
+            </div>
+            <label htmlFor="shop-category" className="block text-sm font-semibold">Category</label>
+            <select id="shop-category" value={selectedCategory} disabled={loading} onChange={(event) => setSelectedCategory(event.target.value)} className="w-full rounded-xl border border-gray-200 p-3 text-sm">
+              <option value="all">All categories</option>
+              {categories.map((item) => <option key={item._id || item.slug} value={item.slug || item.name}>{item.name}</option>)}
+            </select>
+            <label htmlFor="shop-subcategory" className="block text-sm font-semibold">Subcategory</label>
+            <select id="shop-subcategory" value={selectedSubcategory} disabled={loading || !subcategories.length} onChange={(event) => updateParams({ subcategory: event.target.value })} className="w-full rounded-xl border border-gray-200 p-3 text-sm disabled:bg-gray-50">
+              <option value="">{!category ? "Choose a category first" : "All subcategories"}</option>
+              {subcategories.map((item) => <option key={item.slug || item.name} value={item.slug || item.name}>{item.name}</option>)}
+            </select>
+            <button type="button" onClick={() => setSelectedCategory("all")} className="text-sm font-bold text-green-700">Clear filters</button>
+          </section>
+        )}
+        {loadError && <div role="alert" className="mb-4 text-sm text-red-600">{loadError} <button type="button" onClick={() => setReload((value) => value + 1)} className="font-bold underline">Retry</button></div>}
         <section className="pt-2 pb-4">
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-extrabold text-gray-900 text-base sm:text-lg">Shop by Category</h3>
@@ -387,14 +442,14 @@ export default function Shop() {
           <>
             <p className="text-xs text-gray-500 font-medium mb-3 px-0.5">
               Showing 1–{visibleProducts.length} of {filteredProducts.length} results
+              {subcategory && ` · ${subcategory.name}`}
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-              {visibleProducts.map((product, idx) => (
+              {visibleProducts.map((product) => (
                 <ShopProductCard
                   key={product._id || product.id}
                   product={product}
-                  idx={idx}
                   isWishlisted={isWishlisted}
                   onToggleWishlist={toggleWishlist}
                   onToast={handleToast}

@@ -1,18 +1,8 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import Razorpay from "razorpay";
-import crypto from "crypto";
+import { getRazorpay, toPaise, verifyRazorpayPayment } from "../utils/razorpayPayment.js";
 
 import User from "../models/User.js";
-
-// ======================================================
-// RAZORPAY
-// ======================================================
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
 
 // ======================================================
 // GENERATE JWT TOKEN
@@ -424,6 +414,7 @@ const loginUser = async (req, res) => {
 
 const getMe = async (req, res) => {
   try {
+    res.set("Cache-Control", "no-store");
     const user = await User.findById(req.user._id).select(
       "-password -otp -otpExpires"
     );
@@ -445,6 +436,7 @@ const getMe = async (req, res) => {
         walletBalance: user.walletBalance || 0,
         referralCode: user.referralCode,
         walletTransactions: user.walletTransactions || [],
+        walletPaymentsEnabled: true,
       },
     });
   } catch (error) {
@@ -467,24 +459,26 @@ const createWalletOrder = async (req, res) => {
 
     const numericAmount = Number(amount);
 
-    if (!numericAmount || numericAmount < 1) {
+    if (!Number.isFinite(numericAmount) || numericAmount < 1) {
       return res.status(400).json({
         success: false,
         message: "Minimum ₹1 required.",
       });
     }
 
-    const amountInPaise = Math.round(numericAmount * 100);
+    const amountInPaise = toPaise(numericAmount);
 
-    const order = await razorpay.orders.create({
+    const order = await getRazorpay().orders.create({
       amount: amountInPaise,
       currency: "INR",
       receipt: `wallet_${Date.now()}`,
+      notes: { userId: String(req.user._id), purpose: "wallet_topup" },
     });
 
     return res.status(200).json({
       success: true,
       order,
+      key: process.env.RAZORPAY_KEY_ID,
     });
   } catch (error) {
     console.error("WALLET ORDER ERROR:", error);
@@ -502,90 +496,34 @@ const createWalletOrder = async (req, res) => {
 
 const verifyWalletPayment = async (req, res) => {
   try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      amount,
-    } = req.body || {};
-
-    if (
-      !razorpay_order_id ||
-      !razorpay_payment_id ||
-      !razorpay_signature
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing payment details.",
-      });
-    }
-
-    if (!process.env.RAZORPAY_KEY_SECRET) {
-      throw new Error("RAZORPAY_KEY_SECRET is missing");
-    }
-
-    const generated = crypto
-      .createHmac(
-        "sha256",
-        process.env.RAZORPAY_KEY_SECRET
-      )
-      .update(
-        `${razorpay_order_id}|${razorpay_payment_id}`
-      )
-      .digest("hex");
-
-    if (generated !== razorpay_signature) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid payment signature.",
-      });
-    }
-
-    const user = await User.findById(req.user._id);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found.",
-      });
-    }
-
-    const creditAmount = Number(amount) || 0;
-
-    if (creditAmount <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid wallet amount.",
-      });
-    }
-
-    user.walletBalance =
-      (user.walletBalance || 0) + creditAmount;
-
-    if (!Array.isArray(user.walletTransactions)) {
-      user.walletTransactions = [];
-    }
-
-    user.walletTransactions.push({
-      type: "credit",
-      amount: creditAmount,
-      description: "Wallet top-up via Razorpay",
-      createdAt: new Date(),
-    });
-
-    await user.save();
-
-    return res.status(200).json({
+    const payment = await verifyRazorpayPayment(req.body || {}, req.user._id, "wallet_topup");
+    const creditAmount = Number(payment.amount) / 100;
+    const paymentReference = `topup:${payment.order_id}`;
+    const creditedUser = await User.findOneAndUpdate(
+      { _id: req.user._id, "walletTransactions.paymentReference": { $ne: paymentReference } },
+      {
+        $inc: { walletBalance: creditAmount },
+        $push: { walletTransactions: {
+          type: "credit", amount: creditAmount, paymentReference,
+          description: "Wallet top-up via Razorpay", createdAt: new Date(),
+        } },
+      },
+      { new: true }
+    );
+    const user = creditedUser || await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+    return res.json({
       success: true,
-      message: `₹${creditAmount} added to wallet`,
+      message: creditedUser ? `₹${creditAmount} added to wallet` : "Payment already credited to wallet",
       walletBalance: user.walletBalance,
+      creditedAmount: creditAmount,
     });
   } catch (error) {
     console.error("VERIFY WALLET ERROR:", error);
 
-    return res.status(500).json({
+    return res.status(error.statusCode || 500).json({
       success: false,
-      message: "Server error.",
+      message: error.message || "Payment verification failed.",
     });
   }
 };
@@ -595,64 +533,10 @@ const verifyWalletPayment = async (req, res) => {
 // ======================================================
 
 const useWalletBalance = async (req, res) => {
-  try {
-    const { amount, description } = req.body || {};
-
-    const deduct = Number(amount);
-
-    if (!deduct || deduct <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid amount.",
-      });
-    }
-
-    const user = await User.findById(req.user._id);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found.",
-      });
-    }
-
-    const currentBalance = Number(user.walletBalance || 0);
-
-    if (currentBalance < deduct) {
-      return res.status(400).json({
-        success: false,
-        message: "Insufficient wallet balance.",
-      });
-    }
-
-    user.walletBalance = currentBalance - deduct;
-
-    if (!Array.isArray(user.walletTransactions)) {
-      user.walletTransactions = [];
-    }
-
-    user.walletTransactions.push({
-      type: "debit",
-      amount: deduct,
-      description: description || "Order payment",
-      createdAt: new Date(),
-    });
-
-    await user.save();
-
-    return res.status(200).json({
-      success: true,
-      message: `₹${deduct} deducted from wallet`,
-      walletBalance: user.walletBalance,
-    });
-  } catch (error) {
-    console.error("USE WALLET ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Server error.",
-    });
-  }
+  return res.status(400).json({
+    success: false,
+    message: "Apply wallet balance when placing an online order.",
+  });
 };
 
 // ======================================================

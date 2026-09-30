@@ -13,17 +13,18 @@ export const createOrder = async (orderPayload) => {
     return data;
   } catch (error) {
     console.error("CREATE ORDER ERROR:", error);
-    throw new Error(getErrorMessage(error, "Failed to place order"));
+    throw Object.assign(new Error(getErrorMessage(error, "Failed to place order")), { status: error.response?.status });
   }
 };
 
 /* ===========================
    CREATE RAZORPAY ORDER
 =========================== */
-export const createRazorpayOrder = async (amount) => {
+export const createRazorpayOrder = async (amount, checkout) => {
   try {
     const { data } = await api.post("/payment/create-order", {
       amount,
+      checkout,
     });
 
     return data;

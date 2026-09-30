@@ -1,11 +1,26 @@
 /* eslint-disable react/only-export-components */
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
-  const [wishlistItems, setWishlistItems] = useState([]);
+  const [wishlistItems, setWishlistItems] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("vipfoods_wishlist") || "[]");
+      return Array.isArray(saved) ? saved.filter((item) => item?.id) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("vipfoods_wishlist", JSON.stringify(wishlistItems));
+    } catch {
+      // Keep the wishlist usable if browser storage is unavailable.
+    }
+  }, [wishlistItems]);
 
   // Create unique key for cart items based on product id and weight
   const getCartItemKey = (product) => `${product.id}-${product.weight || 'default'}`;
@@ -44,12 +59,24 @@ export function CartProvider({ children }) {
   };
 
   const toggleWishlist = (product) => {
+    const id = product._id || product.id;
+    if (!id) return;
     setWishlistItems((current) => {
-      const exists = current.find((item) => item.id === product.id);
+      const exists = current.find((item) => item.id === id);
       if (exists) {
-        return current.filter((item) => item.id !== product.id);
+        return current.filter((item) => item.id !== id);
       }
-      return [...current, product];
+      const variant = product.variants?.find((item) => String(item.weight) === String(product.weight)) || product.variants?.[0];
+      const price = variant?.sellingPrice ?? product.offerPrice ?? product.price ?? 0;
+      return [...current, {
+        ...product,
+        id,
+        image: product.image || product.images?.[0] || "",
+        weight: variant?.weight ?? product.weight ?? Object.keys(product.weights || {})[0] ?? "",
+        sku: variant?.sku || product.sku || "",
+        price,
+        offerPrice: price,
+      }];
     });
   };
 

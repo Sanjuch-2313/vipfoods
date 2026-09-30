@@ -57,6 +57,7 @@ const userSchema = new mongoose.Schema(
         },
         amount: Number,
         description: String,
+        paymentReference: String,
         createdAt: {
           type: Date,
           default: Date.now,

@@ -184,6 +184,11 @@ const productSchema = new mongoose.Schema(
       default: "2-4 Days",
     },
 
+    bestDeal: {
+      type: Boolean,
+      default: false,
+    },
+
     featured: {
       type: Boolean,
       default: false,

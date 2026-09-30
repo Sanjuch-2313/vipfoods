@@ -5,8 +5,16 @@ const orderItemSchema = new mongoose.Schema(
     product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
-      required: true,
+      required: function () { return !this.comboOffer; },
     },
+    comboOffer: { type: mongoose.Schema.Types.ObjectId, ref: "ComboOffer" },
+    comboSelections: [{
+      product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+      variantId: mongoose.Schema.Types.ObjectId,
+      productName: String,
+      size: String,
+      quantity: Number,
+    }],
     productName: {
       type: String,
       required: true,
@@ -172,6 +180,9 @@ razorpaySignature: {
       default: 0,
     },
 
+    walletAmountUsed: { type: Number, default: 0, min: 0 },
+    paymentReference: { type: String },
+
     remainingAmount: {
       type: Number,
       default: 0,
@@ -203,5 +214,7 @@ razorpaySignature: {
     versionKey: false,
   }
 );
+
+orderSchema.index({ paymentReference: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model("Order", orderSchema);

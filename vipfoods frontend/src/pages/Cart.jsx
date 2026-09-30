@@ -58,6 +58,7 @@ export default function Cart() {
                     <h4 className="font-extrabold text-sm text-gray-900 truncate">
                       {item.name} {item.weight && <span className="font-semibold text-gray-400">• {item.weight}</span>}
                     </h4>
+                    {item.comboSummary && <p className="mt-1 text-xs text-gray-500">{item.comboSummary}</p>}
                     <div className="flex items-center gap-2 mt-1">
                       <span className="font-bold text-sm text-gray-900">
                         ₹{item.offerPrice || item.price}

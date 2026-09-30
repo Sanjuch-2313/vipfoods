@@ -10,7 +10,11 @@ import {
 import { protect } from "../middleware/authMiddleware.js";
 import { adminAuth } from "../middleware/adminAuth.js";
 
+import { getBill } from "../controllers/billController.js";
+
 const router = express.Router();
+router.get("/admin/:reference/bill", adminAuth, getBill);
+router.get("/customer/:reference/bill", protect, getBill);
 
 // ✅ Create new order (Customer)
 router.post("/", protect, createOrder);

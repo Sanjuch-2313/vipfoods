@@ -9,6 +9,12 @@ export default function GuestWarningModal() {
   const { isLoggedIn, authLoading } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [tourEnded, setTourEnded] = useState(false);
+  useEffect(() => {
+    const onTourEnd = () => setTourEnded(true);
+    window.addEventListener("vipfoods:tour-ended", onTourEnd);
+    return () => window.removeEventListener("vipfoods:tour-ended", onTourEnd);
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -18,11 +24,11 @@ export default function GuestWarningModal() {
     if (!isLoggedIn && !alreadyWarned) {
       // Small timeout to allow home page / brand intro to stabilize
       const timer = setTimeout(() => {
-        setIsOpen(true);
+        if (!document.querySelector(".vip-tour-dialog[open]")) setIsOpen(true);
       }, 1200);
       return () => clearTimeout(timer);
     }
-  }, [isLoggedIn, authLoading]);
+  }, [isLoggedIn, authLoading, tourEnded]);
 
   const handleDismiss = () => {
     sessionStorage.setItem(GUEST_WARNED_KEY, "true");

@@ -1,3 +1,4 @@
+import DashboardCharts from "../../components/DashboardCharts";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import StatsCard from "../../components/StatsCard";
@@ -30,6 +31,7 @@ export default function Dashboard() {
     totalCustomers: 0,
     totalProducts: 0,
   });
+  const [analytics, setAnalytics] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
   const [lowStockProducts, setLowStockProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +45,7 @@ export default function Dashboard() {
         const data = await getDashboardStats();
 
         setStats(data.stats);
+        setAnalytics(data.analytics);
         setRecentOrders(data.recentOrders || []);
         setLowStockProducts(data.lowStockProducts || []);
       } catch (err) {
@@ -66,7 +69,7 @@ export default function Dashboard() {
 
       <div className="stats-grid">
         <StatsCard
-          title="Revenue"
+          title="Collected revenue"
           value={loading ? "..." : `₹${stats.totalRevenue.toLocaleString("en-IN")}`}
           color="#2ecc71"
           icon={<DollarSign />}
@@ -93,6 +96,8 @@ export default function Dashboard() {
           icon={<Package />}
         />
       </div>
+
+      {!loading && <DashboardCharts analytics={analytics} />}
 
       <div className="dashboard-grid">
         <div className="recent-orders">

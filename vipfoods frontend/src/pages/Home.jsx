@@ -1,13 +1,25 @@
-import { useEffect, useState } from "react";
+import FirstVisitTour from "../components/FirstVisitTour";
+import "../components/FirstVisitTour.css";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiPlus, FiArrowRight, FiAward, FiTruck, FiMinus } from "react-icons/fi";
+import { FiHeart, FiPlus, FiArrowRight, FiAward, FiTruck, FiMinus } from "react-icons/fi";
 import { getCategories } from "../services/categoryService";
-import { getProducts } from "../services/productService";
-import { getAllHomeBanners } from "../services/homeBannerService";
+import { getShopProducts } from "../services/productService";
 import api from "../services/api";
 import { useCart } from "../context/CartContext";
-import logo from "../assets/logo.png";
-import bannerImage from "../assets/banner.png";
+import { Swiper, SwiperSlide, useSwiper, useSwiperSlide } from "swiper/react";
+import { A11y, Autoplay, Navigation, Pagination } from "swiper/modules";
+import vipFreshVideo from "../assets/vipfresh.mp4";
+import vipDairyVideo from "../assets/vipdairy.mp4";
+import vipSnacksVideo from "../assets/vipsnacks.mp4";
+import vipPicklesVideo from "../assets/vippickles.mp4";
+import vipSpicesVideo from "../assets/vipspices.mp4";
+//import vipOrganicVideo from "../assets/viporganic.mp4";
+
+
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml;utf8," +
@@ -19,19 +31,56 @@ const PLACEHOLDER_IMAGE =
   );
 
 const defaultHeroSlides = [
-  {
-    id: "vip-brand",
-    image: logo,
-    title: "VIP Foods",
-    subtitle: "Natural & Healthy",
-    buttonText: "Shop Now",
-    buttonLink: "/products",
-  },
+  { id: "brand-video", title: "", video: vipFreshVideo },
+  { id: "kitchen-video", title: "From our kitchen", video: vipFreshVideo },
+  { id: "food-video", title: "Discover VIP Foods", video: vipDairyVideo },
+  { id: "food-video-2", title: "Discover VIP Foods", video: vipSnacksVideo },
+  { id: "food-video-3", title: "Discover VIP Foods", video: vipPicklesVideo },
+  { id: "food-video-4", title: "Discover VIP Foods", video: vipSpicesVideo },
+  //{ id: "food-video-5", title: "Discover VIP Foods", video: vipOrganicVideo },
 ];
 
+function HeroVideo({ slide }) {
+  const videoRef = useRef(null);
+  const swiper = useSwiper();
+  const { isActive } = useSwiperSlide();
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !slide.video) return;
+    if (isActive && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      video.play().catch(() => {
+        // Leave the banner still if the browser blocks muted playback.
+      });
+    } else {
+      video.pause();
+    }
+  }, [isActive, slide.video]);
+
+  return (
+    <video
+      ref={videoRef}
+      className="pointer-events-none block h-full w-full object-cover"
+      src={slide.video || undefined}
+      controls={false}
+      disablePictureInPicture
+      disableRemotePlayback
+      preload={slide.video ? "metadata" : "none"}
+      muted
+      playsInline
+      aria-label={slide.title || "VIP Foods video"}
+      onPlay={() => swiper.autoplay?.stop()}
+      onEnded={() => {
+        swiper.slideNext();
+        if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) swiper.autoplay?.start();
+      }}
+    />
+  );
+}
+
 /* ── Per-deal card with variant state ── */
-function DealCard({ deal, idx, onToast }) {
-  const { addToCart, cartItems, updateCartQuantity } = useCart();
+function DealCard({ deal, onToast }) {
+  const { addToCart, cartItems, updateCartQuantity, wishlistItems, toggleWishlist } = useCart();
 
   const normalizeWeightLabel = (value, fallback = "1 kg") => {
     if (value === null || value === undefined || value === "") return fallback;
@@ -39,15 +88,12 @@ function DealCard({ deal, idx, onToast }) {
     const text = String(value).trim();
     if (!text) return fallback;
 
-    const lower = text.toLowerCase();
-    if (lower.endsWith("kg") || lower.endsWith("g")) return text;
-
-    return `${text}g`;
+    return /^\d+(?:\.\d+)?$/.test(text) ? `${text} g` : text;
   };
 
   const variants = (deal.variants || []).map((v) => ({
     label: normalizeWeightLabel(v.weight, v.unit || "1 kg"),
-    price: Number(v.sellingPrice || v.price || 0),
+    price: Number(v.sellingPrice ?? v.price ?? 0),
     mrp: Number(v.mrp || 0),
   }));
 
@@ -61,7 +107,9 @@ function DealCard({ deal, idx, onToast }) {
 
   const id = deal._id || deal.id;
   const thumbnail = deal.images?.[0] || deal.image || PLACEHOLDER_IMAGE;
-  const badge = deal.badges?.[0] || (idx % 2 === 0 ? "15% OFF" : idx % 3 === 0 ? "50% OFF" : "SALE");
+  const hasDiscount = selected.mrp > selected.price;
+  const badge = hasDiscount ? `${Math.round((selected.mrp - selected.price) / selected.mrp * 100)}% OFF` : "Best Deal";
+  const wishlisted = wishlistItems.some((item) => (item._id || item.id) === id);
 
   const cartItem = cartItems.find((c) => c.id === id && c.weight === selected.label);
   const qty = cartItem ? cartItem.quantity : 0;
@@ -90,6 +138,15 @@ function DealCard({ deal, idx, onToast }) {
         <span className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs">
           {badge}
         </span>
+        <button
+          type="button"
+          onClick={() => toggleWishlist(deal)}
+          aria-label={wishlisted ? `Remove ${deal.name} from wishlist` : `Add ${deal.name} to wishlist`}
+          aria-pressed={wishlisted}
+          className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-rose-500 shadow-sm"
+        >
+          <FiHeart size={17} fill={wishlisted ? "currentColor" : "none"} />
+        </button>
         <img
           src={thumbnail}
           alt={deal.name}
@@ -130,7 +187,10 @@ function DealCard({ deal, idx, onToast }) {
 
       {/* Price + Add/Stepper */}
       <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-gray-50">
-        <span className="font-extrabold text-sm sm:text-base text-gray-900">₹{selected.price}</span>
+        <div>
+          <span className="font-extrabold text-sm sm:text-base text-gray-900">₹{selected.price}</span>
+          {hasDiscount && <del className="block text-xs text-gray-400">₹{selected.mrp}</del>}
+        </div>
 
         {qty > 0 ? (
           <div className="flex items-center gap-1">
@@ -168,14 +228,13 @@ export default function Home() {
 
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
-  const [heroSlides, setHeroSlides] = useState([]);
+  const heroSlides = defaultHeroSlides;
   const [promoItems, setPromoItems] = useState([
     "Free Delivery on orders above ₹499",
     "Fresh farm picks every day",
     "VIP offers updated weekly",
     "Extra savings on organic essentials",
   ]);
-  const [activeHeroSlide, setActiveHeroSlide] = useState(0);
   const [loading, setLoading] = useState(true);
   const [toastMsg, setToastMsg] = useState("");
 
@@ -184,10 +243,9 @@ export default function Home() {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [catData, prodData, bannerData] = await Promise.all([
+        const [catData, prodData] = await Promise.all([
           getCategories().catch(() => []),
-          getProducts().catch(() => []),
-          getAllHomeBanners().catch(() => ({ banners: [] })),
+          getShopProducts().catch(() => []),
         ]);
 
         if (!isMounted) return;
@@ -204,28 +262,6 @@ export default function Home() {
           prodList.filter((p) => p.active !== false && p.published !== false)
         );
 
-        const banners = Array.isArray(bannerData?.banners)
-          ? bannerData.banners
-          : Array.isArray(bannerData)
-            ? bannerData
-            : [];
-
-        const filteredBanners = banners.filter(
-          (banner) => banner && banner.active !== false && (banner.image || banner.title)
-        );
-
-        const adminSlides = filteredBanners.map((banner) => ({
-          id: banner._id || banner.id || banner.title,
-          image: banner.image,
-          title: banner.title || "VIP Foods",
-          subtitle: banner.subtitle || "Fresh groceries delivered fast",
-          buttonText: banner.buttonText || "Shop Now",
-          buttonLink: banner.buttonLink || "/products",
-          coupon: banner.coupon,
-        }));
-
-        const combinedSlides = [...defaultHeroSlides, ...adminSlides];
-        setHeroSlides(combinedSlides);
       } catch (err) {
         console.error("Home data error:", err);
         setHeroSlides([]);
@@ -263,33 +299,21 @@ export default function Home() {
     return () => { isMounted = false; };
   }, []);
 
-  useEffect(() => {
-    if (heroSlides.length <= 1) return undefined;
+  const freshCategory = categories.find((item) => /^(vip[ -]?)?fresh$/i.test(item.slug || item.name));
+  const freshLink = (kind) => {
+    const sub = freshCategory?.subCategories?.find((item) => item.active !== false &&
+      new RegExp(kind, "i").test(`${item.name} ${item.slug}`));
+    return `/products?${new URLSearchParams({ category: freshCategory?.slug || "vip-fresh", subcategory: sub?.name || kind })}`;
+  };
 
-    const interval = setInterval(() => {
-      setActiveHeroSlide((current) => (current + 1) % heroSlides.length);
-    }, 5000);
+  const displayedDeals = products.filter((product) => product.bestDeal === true).slice(0, 20);
 
-    return () => clearInterval(interval);
-  }, [heroSlides]);
 
-  const displayedDeals = products.slice(0, 20);
 
   const handleToast = (msg) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(""), 2000);
   };
-
-  const activeSlide = heroSlides[activeHeroSlide] || null;
-  const couponLabel = activeSlide?.coupon
-    ? activeSlide.coupon.discountText ||
-      (activeSlide.coupon.discountType === "percentage"
-        ? `${activeSlide.coupon.code} • ${activeSlide.coupon.discountValue}% OFF`
-        : activeSlide.coupon.discountType === "flat"
-          ? `${activeSlide.coupon.code} • ₹${activeSlide.coupon.discountValue} OFF`
-          : activeSlide.coupon.code)
-    : null;
-
 
   return (
     <main className="bg-gray-50 min-h-screen pb-28 font-sans w-full overflow-x-hidden">
@@ -301,17 +325,34 @@ export default function Home() {
       )}
 
       <div className="max-w-7xl mx-auto">
-        <section className="px-1 sm:px-2 pt-4 sm:pt-5">
-          <Link
-            to="/products"
-            className="block overflow-hidden rounded-[32px] sm:rounded-[42px] shadow-lg shadow-black/10 bg-[#021b2f]"
+        <section className="px-1 sm:px-2 pt-4 sm:pt-5" aria-label="VIP Foods featured banners">
+          <Swiper
+            modules={[A11y, Autoplay, Navigation, Pagination]}
+            slidesPerView={1}
+            initialSlide={Math.max(0, heroSlides.findIndex((slide) => slide.video))}
+            speed={650}
+            loop
+            navigation
+            pagination={{ clickable: true }}
+            autoplay={window.matchMedia("(prefers-reduced-motion: reduce)").matches ? false : { delay: 3000, disableOnInteraction: false }}
+            style={{ "--swiper-navigation-color": "#fff", "--swiper-navigation-size": "22px", "--swiper-pagination-color": "#fff", "--swiper-pagination-bullet-inactive-color": "#fff" }}
+            className="overflow-hidden rounded-[32px] sm:rounded-[42px] shadow-lg shadow-black/10 bg-[#021b2f]"
           >
-            <img
-              src={bannerImage}
-              alt="VIP Foods banner"
-              className="block w-full h-[180px] sm:h-[220px] md:h-[280px] lg:h-[320px] object-cover"
-            />
-          </Link>
+            {heroSlides.map((slide) => (
+              <SwiperSlide key={slide.id}>
+                <div className="relative h-[200px] sm:h-[260px] md:h-[300px] lg:h-[340px] bg-[#021b2f]">
+                  <HeroVideo slide={slide} />
+                  {!slide.video && (
+                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 text-white">
+                      <span aria-hidden="true" className="flex h-14 w-14 items-center justify-center rounded-full border border-white/40 bg-white/10 text-2xl">▶</span>
+                      <p className="text-lg sm:text-2xl font-bold">{slide.title}</p>
+                      <p className="text-xs sm:text-sm text-white/70">Video coming soon</p>
+                    </div>
+                  )}
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </section>
 
         <section className="px-1 sm:px-2 pt-3 sm:pt-4">
@@ -328,6 +369,30 @@ export default function Home() {
         </section>
 
         <style>{`
+          @keyframes homeCategoryZoom {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+          }
+
+          .home-category-image {
+            animation: homeCategoryZoom 3s ease-in-out infinite;
+          }
+
+          @keyframes homeCategoryGlow {
+            0%, 100% { box-shadow: 0 0 6px rgba(22, 163, 74, 0.3), 0 0 12px rgba(34, 197, 94, 0.18); }
+            50% { box-shadow: 0 0 10px rgba(22, 163, 74, 0.55), 0 0 20px rgba(34, 197, 94, 0.35); }
+          }
+
+          .home-category-glow {
+            border-color: #86efac;
+            box-shadow: 0 0 10px rgba(22, 163, 74, 0.35);
+            animation: homeCategoryGlow 3s ease-in-out infinite;
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .home-category-image, .home-category-glow { animation: none; }
+          }
+
           @keyframes scrollTicker {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
@@ -342,7 +407,8 @@ export default function Home() {
         {/* ============================================================ */}
         {/* 1. SHOP BY CATEGORY (Circular Avatars Horizontal Scroll) */}
         {/* ============================================================ */}
-        <section className="px-4 pt-4 sm:pt-6">
+        <FirstVisitTour />
+        <section data-tour="categories" className="px-4 pt-4 sm:pt-6">
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-extrabold text-gray-900 text-base sm:text-lg">
               Shop by Category
@@ -355,7 +421,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x">
+          <div className="flex gap-4 overflow-x-auto px-3 py-3 -mx-3 scrollbar-hide">
             {loading ? (
               <div className="flex gap-4">
                 {[1, 2, 3, 4, 5].map((i) => (
@@ -372,13 +438,13 @@ export default function Home() {
                 <Link
                   key={cat._id || cat.slug}
                   to={`/products?category=${cat.slug || cat.name}`}
-                  className="flex flex-col items-center min-w-[76px] sm:min-w-[88px] snap-start group"
+                  className="flex shrink-0 flex-col items-center w-[76px] sm:w-[88px] group"
                 >
-                  <div className="w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] rounded-full bg-white overflow-hidden shadow-xs mb-2 border-2 border-white group-hover:border-pink-200 transition-colors">
+                  <div className="home-category-glow w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] rounded-full bg-white overflow-hidden mb-2 border-2 group-hover:border-green-500 transition-colors">
                     <img
                       src={cat.image || PLACEHOLDER_IMAGE}
                       alt={cat.name}
-                      className="w-full h-full object-cover"
+                      className="home-category-image w-full h-full object-cover"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = PLACEHOLDER_IMAGE;
@@ -397,7 +463,7 @@ export default function Home() {
         {/* ============================================================ */}
         {/* 2. BEST DEALS TODAY (Fetched directly from backend/admin) */}
         {/* ============================================================ */}
-        <section className="px-4 mt-6">
+        <section data-tour="deals" className="px-4 mt-6">
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-extrabold text-gray-900 text-base sm:text-lg">
               Best Deals Today
@@ -484,7 +550,7 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
             {/* Fresh Fruits */}
             <Link
-              to="/products?category=fruits"
+              to={freshLink("fruits")}
               className="relative rounded-[24px] bg-gradient-to-br from-emerald-50 via-teal-50/70 to-emerald-100/90 border border-emerald-200/70 overflow-hidden p-3.5 sm:p-5 flex flex-col justify-between h-36 sm:h-44 md:h-48 shadow-xs hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group"
             >
               {/* Right-side food image with smooth blend mask */}
@@ -522,7 +588,7 @@ export default function Home() {
 
             {/* Fresh Vegetables */}
             <Link
-              to="/products?category=vegetables"
+              to={freshLink("vegetables")}
               className="relative rounded-[24px] bg-gradient-to-br from-green-50 via-emerald-50/70 to-green-100/90 border border-green-200/70 overflow-hidden p-3.5 sm:p-5 flex flex-col justify-between h-36 sm:h-44 md:h-48 shadow-xs hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group"
             >
               {/* Right-side food image with smooth blend mask */}
@@ -597,16 +663,17 @@ export default function Home() {
               </div>
             </Link>
 
-            {/* Organic & Residue Free */}
+            {/* VIP Combo Packs */}
             <Link
-              to="/products?category=organic"
-              className="relative rounded-[22px] bg-gradient-to-br from-lime-50 via-emerald-50/60 to-lime-100/80 border border-lime-200/70 overflow-hidden p-2.5 sm:p-4 flex flex-col justify-between h-32 sm:h-38 md:h-44 shadow-xs hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group"
+              to="/combo-packs"
+              data-tour="combos"
+              className="vip-combo-highlight relative rounded-[22px] bg-gradient-to-br from-lime-50 via-emerald-50/60 to-lime-100/80 border border-lime-200/70 overflow-hidden p-2.5 sm:p-4 flex flex-col justify-between h-32 sm:h-38 md:h-44 shadow-xs hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group"
             >
               <div className="absolute right-0 top-0 bottom-0 w-1/2 overflow-hidden pointer-events-none">
                 <div className="absolute inset-0 bg-gradient-to-r from-lime-50 via-lime-50/20 to-transparent z-10" />
                 <img
                   src="https://images.unsplash.com/photo-1550989460-0adc9554f529?auto=format&fit=crop&w=400&q=80"
-                  alt="Organic & Residue Free"
+                  alt="VIP Combo Packs"
                   className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out"
                   loading="lazy"
                 />
@@ -615,13 +682,13 @@ export default function Home() {
               <div className="relative z-20 max-w-[62%] sm:max-w-[65%] flex flex-col justify-between h-full">
                 <div>
                   <span className="hidden sm:inline-block text-[9px] font-black uppercase tracking-wider text-lime-800 bg-lime-100/90 px-1.5 py-0.5 rounded-full mb-1">
-                    Pure
+                    Your choice
                   </span>
                   <h5 className="font-black text-gray-900 text-[11px] sm:text-base md:text-lg leading-tight">
-                    Organic &<br />Residue Free
+                    VIP Combo<br />Packs
                   </h5>
                   <p className="text-[10px] text-gray-500 font-medium mt-0.5 hidden md:block line-clamp-1">
-                    Zero chemical sprays
+                    Build your own combo
                   </p>
                 </div>
 

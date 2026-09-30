@@ -1,3 +1,4 @@
+import OrderBill from "../../components/OrderBill";
 import { useState, useEffect } from "react";
 import { getOrders, deleteOrder, updateOrderStatus } from "../../services/orderService.js";
 import "../../styles/Orders.css";
@@ -156,11 +157,48 @@ export default function Orders() {
                   </td>
                   <td>{new Date(o.createdAt).toLocaleDateString()}</td>
                   <td onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => handleStatusUpdate(o._id, "Accepted")}>Accept</button>
-                    <button onClick={() => handleStatusUpdate(o._id, "Packing")}>Pack</button>
-                    <button onClick={() => handleStatusUpdate(o._id, "Shipped")}>Ship</button>
-                    <button onClick={() => handleStatusUpdate(o._id, "Delivered")}>Deliver</button>
-                    <button className="delete-btn" onClick={() => handleDelete(o._id)}>Delete</button>
+                    <div className="order-action-btns">
+                      <button
+                        type="button"
+                        className={`action-btn btn-accept ${o.orderStatus === "Accepted" ? "active" : ""}`}
+                        title="Accept Order"
+                        onClick={() => handleStatusUpdate(o._id, "Accepted")}
+                      >
+                        Accept
+                      </button>
+                      <button
+                        type="button"
+                        className={`action-btn btn-pack ${o.orderStatus === "Packing" ? "active" : ""}`}
+                        title="Pack Order"
+                        onClick={() => handleStatusUpdate(o._id, "Packing")}
+                      >
+                        Pack
+                      </button>
+                      <button
+                        type="button"
+                        className={`action-btn btn-ship ${o.orderStatus === "Shipped" ? "active" : ""}`}
+                        title="Ship Order"
+                        onClick={() => handleStatusUpdate(o._id, "Shipped")}
+                      >
+                        Ship
+                      </button>
+                      <button
+                        type="button"
+                        className={`action-btn btn-deliver ${o.orderStatus === "Delivered" ? "active" : ""}`}
+                        title="Deliver Order"
+                        onClick={() => handleStatusUpdate(o._id, "Delivered")}
+                      >
+                        Deliver
+                      </button>
+                      <button
+                        type="button"
+                        className="action-btn btn-delete"
+                        title="Delete Order"
+                        onClick={() => handleDelete(o._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
 
@@ -177,6 +215,7 @@ export default function Orders() {
                               )}
                               <div className="order-expand-item-info">
                                 <strong>{item.productName}</strong>
+                                {item.comboSelections?.length > 0 && <p>{item.comboSelections.map((selection) => `${selection.quantity} × ${selection.productName} (${selection.size})`).join(", ")}</p>}
                                 <span>
                                   {item.variant?.weight && `${item.variant.weight} · `}
                                   Qty: {item.quantity}
@@ -190,6 +229,7 @@ export default function Orders() {
                         </div>
 
                         <div className="order-expand-shipping">
+                          <OrderBill reference={o._id} />
                           <h4>Shipping Address</h4>
                           {o.shippingAddress ? (
                             <>

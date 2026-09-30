@@ -55,15 +55,46 @@ export default function OrderDetails() {
       <div className="order-section">
         <h3>Status</h3>
         <p>
-          <span className={`status-badge ${order.status.toLowerCase()}`}>
-            {order.status}
+          <span className={`status-badge ${(order.orderStatus || order.status || "Pending").toLowerCase()}`}>
+            {order.orderStatus || order.status || "Pending"}
           </span>
         </p>
         <div className="order-actions">
-          <button onClick={() => handleStatusUpdate("Processing")}>Process</button>
-          <button onClick={() => handleStatusUpdate("Shipped")}>Ship</button>
-          <button onClick={() => handleStatusUpdate("Delivered")}>Deliver</button>
-          <button onClick={() => handleStatusUpdate("Cancelled")}>Cancel</button>
+          <button
+            type="button"
+            className={`action-btn btn-accept ${(order.orderStatus || order.status) === "Accepted" ? "active" : ""}`}
+            onClick={() => handleStatusUpdate("Accepted")}
+          >
+            Accept
+          </button>
+          <button
+            type="button"
+            className={`action-btn btn-pack ${(order.orderStatus || order.status) === "Packing" ? "active" : ""}`}
+            onClick={() => handleStatusUpdate("Packing")}
+          >
+            Pack
+          </button>
+          <button
+            type="button"
+            className={`action-btn btn-ship ${(order.orderStatus || order.status) === "Shipped" ? "active" : ""}`}
+            onClick={() => handleStatusUpdate("Shipped")}
+          >
+            Ship
+          </button>
+          <button
+            type="button"
+            className={`action-btn btn-deliver ${(order.orderStatus || order.status) === "Delivered" ? "active" : ""}`}
+            onClick={() => handleStatusUpdate("Delivered")}
+          >
+            Deliver
+          </button>
+          <button
+            type="button"
+            className={`action-btn btn-delete ${(order.orderStatus || order.status) === "Cancelled" ? "active" : ""}`}
+            onClick={() => handleStatusUpdate("Cancelled")}
+          >
+            Cancel
+          </button>
         </div>
       </div>
 

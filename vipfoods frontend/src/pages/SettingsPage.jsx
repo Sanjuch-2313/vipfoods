@@ -17,7 +17,7 @@ import api from "../services/api";
 export default function SettingsPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, isLoggedIn } = useAuth();
 
   const [activeModal, setActiveModal] = useState(null); // 'about' | 'terms' | 'privacy' | 'notifications' | 'editProfile' | null
 
@@ -37,9 +37,9 @@ export default function SettingsPage() {
   });
 
   const [profileForm, setProfileForm] = useState({
-    name: user?.name || "John Doe",
-    email: user?.email || "john.doe@example.com",
-    phone: user?.mobile || user?.phone || "+91 98765 43210",
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.mobile || user?.phone || "",
   });
 
   const [toastMsg, setToastMsg] = useState("");
@@ -103,20 +103,20 @@ export default function SettingsPage() {
             />
             <div className="truncate">
               <h2 className="font-extrabold text-base sm:text-lg text-gray-900 truncate leading-snug">
-                {userName}
+                {isLoggedIn ? userName : <Link to="/login">Login now</Link>}
               </h2>
-              <p className="text-xs text-gray-400 font-medium truncate mt-0.5">
+              {isLoggedIn && userEmail && <p className="text-xs text-gray-400 font-medium truncate mt-0.5">
                 {userEmail}
-              </p>
+              </p>}
             </div>
           </div>
 
           <button
             type="button"
-            onClick={() => setActiveModal("editProfile")}
+            onClick={() => isLoggedIn ? setActiveModal("editProfile") : navigate("/login")}
             className="border border-[#f43f5e] text-[#f43f5e] hover:bg-pink-50 font-bold px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm transition-colors shrink-0 shadow-xs"
           >
-            Edit Profile
+            {isLoggedIn ? "Edit Profile" : "Login now"}
           </button>
         </div>
 

@@ -1,22 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FiMapPin, FiPlus, FiTrash2 } from "react-icons/fi";
 
-const STORAGE_KEY = "vipfoods_user_addresses";
-
-const defaultAddresses = [
-  {
-    id: 1,
-    name: "Home",
-    line1: "12 Green Park Lane",
-    city: "Bengaluru",
-    state: "Karnataka",
-    pincode: "560001",
-    phone: "+91 98765 43210",
-  },
-];
+import useSavedAddresses, { readAddresses, writeAddresses } from "../hooks/useSavedAddresses";
 
 export default function AddressesPage() {
-  const [addresses, setAddresses] = useState(defaultAddresses);
+  const addresses = useSavedAddresses();
+  const [saveError, setSaveError] = useState("");
   const [form, setForm] = useState({
     name: "Home",
     line1: "",
@@ -25,21 +14,6 @@ export default function AddressesPage() {
     pincode: "",
     phone: "",
   });
-
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        setAddresses(JSON.parse(saved));
-      } catch (error) {
-        console.error("Address parse failed", error);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(addresses));
-  }, [addresses]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -52,13 +26,19 @@ export default function AddressesPage() {
 
     if (emptyFields) return;
 
-    setAddresses((prev) => [
-      {
-        id: Date.now(),
-        ...form,
-      },
-      ...prev,
-    ]);
+    try {
+      writeAddresses([
+        {
+          id: crypto.randomUUID(),
+          ...form,
+        },
+        ...readAddresses(),
+      ]);
+      setSaveError("");
+    } catch {
+      setSaveError("Could not save your address. Please try again.");
+      return;
+    }
 
     setForm({
       name: "Home",
@@ -71,7 +51,12 @@ export default function AddressesPage() {
   };
 
   const handleDelete = (id) => {
-    setAddresses((prev) => prev.filter((address) => address.id !== id));
+    try {
+      writeAddresses(readAddresses().filter((address) => address.id !== id));
+      setSaveError("");
+    } catch {
+      setSaveError("Could not delete your address. Please try again.");
+    }
   };
 
   return (
@@ -82,8 +67,11 @@ export default function AddressesPage() {
           <h1 className="mt-2 text-3xl font-black text-gray-900">Addresses</h1>
         </div>
 
+        {saveError && <p role="alert" className="mb-4 text-sm text-red-600">{saveError}</p>}
+
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-4">
+            {addresses.length === 0 && <p className="text-sm text-gray-500">No saved addresses yet. Add one here or save one during checkout.</p>}
             {addresses.map((address) => (
               <div key={address.id} className="rounded-[24px] border border-gray-200 bg-white p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between gap-3">
@@ -102,7 +90,7 @@ export default function AddressesPage() {
                   </button>
                 </div>
 
-                <p className="text-sm text-gray-700">{address.line1}</p>
+                <p className="text-sm text-gray-700">{address.line1}{address.line2 ? `, ${address.line2}` : ""}</p>
                 <p className="text-sm text-gray-700">{address.city}, {address.state} - {address.pincode}</p>
                 <p className="mt-2 text-sm text-gray-700">{address.phone}</p>
               </div>

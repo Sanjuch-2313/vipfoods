@@ -1,6 +1,9 @@
+import OrderBill from "../components/OrderBill";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMyOrders } from "../services/orderService";
+import ComboOrderDetails from "../components/ComboOrderDetails";
+import WalletPaymentDetails from "../components/WalletPaymentDetails";
 
 // Truck icon matching Image 3
 function DeliveryTruckIcon({ className = "w-6 h-6" }) {
@@ -30,9 +33,9 @@ export default function MyOrders() {
 
   useEffect(() => {
     let isMounted = true;
-    const fetchOrders = async () => {
+    const fetchOrders = async (silent = false) => {
       try {
-        setLoading(true);
+        if (!silent) setLoading(true);
         const res = await getMyOrders();
         if (isMounted) {
           setOrders(res.orders || []);
@@ -40,12 +43,24 @@ export default function MyOrders() {
       } catch (err) {
         console.error("Failed to fetch orders:", err);
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted && !silent) setLoading(false);
       }
     };
+
     fetchOrders();
+
+    // Re-check orders every 8 seconds in the background
+    const interval = setInterval(() => fetchOrders(true), 8000);
+
+    const handleFocus = () => fetchOrders(true);
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+
     return () => {
       isMounted = false;
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
     };
   }, []);
 
@@ -126,18 +141,35 @@ export default function MyOrders() {
         ) : (
           <div className="space-y-3">
             {filteredOrders.map((order) => {
-              const status = order.orderStatus || "Processing";
-              const isDelivered = status.toLowerCase() === "delivered";
-              const isCancelled = status.toLowerCase() === "cancelled";
-
+              const rawStatus = (order.orderStatus || "Pending").toLowerCase();
               let statusBadgeClass = "bg-amber-100 text-amber-800";
-              let statusText = "On its way";
-              if (isDelivered) {
-                statusBadgeClass = "bg-emerald-100 text-emerald-800";
+              let statusText = order.orderStatus || "Pending";
+              let iconBg = "bg-amber-50 text-amber-500";
+
+              if (rawStatus === "pending") {
+                statusBadgeClass = "bg-amber-100 text-amber-800";
+                statusText = "Order Placed";
+                iconBg = "bg-amber-50 text-amber-500";
+              } else if (rawStatus === "accepted") {
+                statusBadgeClass = "bg-blue-100 text-blue-700 font-extrabold border border-blue-200";
+                statusText = "Order Accepted";
+                iconBg = "bg-blue-50 text-blue-600";
+              } else if (rawStatus === "packing") {
+                statusBadgeClass = "bg-purple-100 text-purple-700 font-extrabold border border-purple-200";
+                statusText = "Packing";
+                iconBg = "bg-purple-50 text-purple-600";
+              } else if (rawStatus === "shipped") {
+                statusBadgeClass = "bg-cyan-100 text-cyan-800 font-extrabold border border-cyan-200";
+                statusText = "Shipped · On the way";
+                iconBg = "bg-cyan-50 text-cyan-600";
+              } else if (rawStatus === "delivered") {
+                statusBadgeClass = "bg-emerald-100 text-emerald-800 font-extrabold border border-emerald-200";
                 statusText = "Delivered";
-              } else if (isCancelled) {
-                statusBadgeClass = "bg-red-100 text-red-800";
+                iconBg = "bg-emerald-50 text-emerald-600";
+              } else if (rawStatus === "cancelled") {
+                statusBadgeClass = "bg-red-100 text-red-800 font-extrabold border border-red-200";
                 statusText = "Cancelled";
+                iconBg = "bg-red-50 text-red-500";
               }
 
               const formattedDate = order.createdAt
@@ -156,7 +188,7 @@ export default function MyOrders() {
                   {/* Top Row: Icon, Order #, Status */}
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-11 h-11 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
+                      <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${iconBg}`}>
                         <DeliveryTruckIcon className="w-5 h-5" />
                       </div>
                       <div className="min-w-0">
@@ -202,11 +234,14 @@ export default function MyOrders() {
                     </div>
                   </div>
 
+                  <OrderBill reference={order._id || order.orderNumber} />
+                  <WalletPaymentDetails order={order} />
+        <ComboOrderDetails order={order} />
                   {/* Bottom Row: View Details & Track Order Buttons (Matching Image 3) */}
                   <div className="flex items-center gap-2.5 pt-1">
                     <button
                       type="button"
-                      onClick={() => navigate(`/order-success/${order.orderNumber}`)}
+                      onClick={() => navigate(`/order-success/${order.orderNumber}`, { state: { order } })}
                       className="flex-1 py-2.5 px-3 rounded-xl border border-pink-200 bg-pink-50/50 hover:bg-pink-100 text-[#f43f5e] font-extrabold text-xs sm:text-sm text-center transition-colors focus:outline-none"
                     >
                       View Details

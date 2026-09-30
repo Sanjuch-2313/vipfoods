@@ -1,20 +1,21 @@
 import {
-  BrowserRouter,
+  createBrowserRouter,
+  RouterProvider,
   Routes,
   Route,
   Navigate,
   useLocation,
 } from "react-router-dom";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import BrandIntro from "./components/BrandIntro";
 import GuestWarningModal from "./components/GuestWarningModal";
 import NotificationPopup from "./components/NotificationPopup";
 
 import Home from "./pages/Home";
+import ComboPacks from "./pages/ComboPacks";
 import Products from "./pages/Products";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
@@ -44,7 +45,6 @@ import { LocationProvider } from "./context/LocationContext";
 import ScrollToTop from "./components/ScrollToTop";
 import Shop from "./pages/Shop";
 
-const INTRO_SESSION_KEY = "vipfoods-intro-shown";
 
 function AppRoutes() {
   const location = useLocation();
@@ -55,31 +55,6 @@ function AppRoutes() {
     "/otp-verify",
   ].includes(location.pathname);
 
-  const [showIntro, setShowIntro] = useState(() => {
-    if (location.state?.showBrandIntro) {
-      return true;
-    }
-
-    const introAlreadyShown = sessionStorage.getItem(INTRO_SESSION_KEY);
-    if (!introAlreadyShown) {
-      sessionStorage.setItem(INTRO_SESSION_KEY, "true");
-      return true;
-    }
-
-    return false;
-  });
-
-  useEffect(() => {
-    if (location.state?.showBrandIntro) {
-      setShowIntro(true);
-      window.history.replaceState(
-        {},
-        document.title,
-        location.pathname + location.search + location.hash
-      );
-    }
-  }, [location]);
-
   useEffect(() => {
     if (!("Notification" in window)) return;
     if (Notification.permission === "default") {
@@ -89,11 +64,6 @@ function AppRoutes() {
 
   return (
     <>
-      {/* BRAND INTRO */}
-      {showIntro && (
-        <BrandIntro onComplete={() => setShowIntro(false)} />
-      )}
-
       <ScrollToTop />
 
       {/* GUEST WARNING & NOTIFICATION POPUP */}
@@ -106,6 +76,7 @@ function AppRoutes() {
       {/* ROUTES */}
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/combo-packs" element={<ComboPacks />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:productId" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
@@ -144,9 +115,9 @@ function AppRoutes() {
   );
 }
 
-export default function App() {
+function AppProviders() {
   return (
-    <BrowserRouter>
+    <>
       <AuthProvider>
         <CartProvider>
           <LocationProvider>
@@ -154,6 +125,9 @@ export default function App() {
           </LocationProvider>
         </CartProvider>
       </AuthProvider>
-    </BrowserRouter>
+    </>
   );
 }
+
+const router = createBrowserRouter([{ path: "*", element: <AppProviders /> }]);
+export default function App() { return <RouterProvider router={router} />; }

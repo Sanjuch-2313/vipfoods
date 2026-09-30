@@ -7,6 +7,18 @@ export const getProducts = async () => {
   const response = await api.get("/products");
   return response.data.products || [];
 };
+
+export const getShopProducts = async () => {
+  const products = [];
+  let page = 1;
+  while (true) {
+    const { data } = await api.get("/products", { params: { page, active: true } });
+    const batch = data.products || [];
+    products.push(...batch);
+    if (batch.length < (data.resultPerPage || 12)) return products;
+    page += 1;
+  }
+};
 // ============================
 // GET SINGLE PRODUCT
 // ============================

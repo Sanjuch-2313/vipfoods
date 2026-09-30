@@ -1,7 +1,10 @@
-import { useState } from "react";
-import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
+import OrderBill from "../components/OrderBill";
+import { useEffect, useRef, useState } from "react";
+import { useParams, Link, useLocation, useNavigate, useBlocker } from "react-router-dom";
 import { FiCheck, FiStar } from "react-icons/fi";
 import api from "../services/api";
+import ComboOrderDetails from "../components/ComboOrderDetails";
+import WalletPaymentDetails from "../components/WalletPaymentDetails";
 
 const RATING_LABELS = {
   1: "Poor",
@@ -31,6 +34,31 @@ export default function OrderSuccess() {
   const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const reviewRef = useRef(null);
+  const [reviewSeen, setReviewSeen] = useState(false);
+  const [reviewReminder, setReviewReminder] = useState(false);
+  const blocker = useBlocker(!reviewSeen && !submitted);
+  const showReview = () => {
+    setReviewReminder(true);
+    reviewRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+    reviewRef.current?.focus({ preventScroll: true });
+  };
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setReviewSeen(true);
+    }, { threshold: 0.25 });
+    if (reviewRef.current) observer.observe(reviewRef.current);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    if (blocker.state === "blocked") showReview();
+  }, [blocker.state]);
+  const leaveReview = () => {
+    setReviewSeen(true);
+    if (blocker.state === "blocked") blocker.proceed();
+    else navigate("/");
+  };
 
   const displayedRating = hoveredRating || rating;
 
@@ -118,6 +146,9 @@ export default function OrderSuccess() {
           </p>
         </div>
 
+        <button type="button" onClick={showReview} className="w-full mb-5 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-emerald-800 text-sm font-semibold">
+          Swipe down to rate your experience ↓<span className="block text-xs font-normal mt-1">Reviewing is optional — you can skip.</span>
+        </button>
         {/* Dashed Order Number Box */}
         <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/70 p-4 text-center mb-6">
           <span className="text-xs sm:text-sm font-medium text-gray-400 block">
@@ -132,7 +163,7 @@ export default function OrderSuccess() {
               <div>
                 <span className="text-gray-400 block text-[11px]">Paid Now</span>
                 <span className="font-extrabold text-emerald-600 text-sm">
-                  ₹{(order.onlinePaidAmount || (order.paymentMethod === "COD" ? (order.codCharge || 50) : order.grandTotal) || 0).toFixed(2)}
+                  ₹{(Number(order.walletAmountUsed || 0) + Number(order.onlinePaidAmount ?? (order.paymentMethod === "COD" ? order.codCharge : order.grandTotal) ?? 0)).toFixed(2)}
                 </span>
               </div>
               {order.paymentMethod === "COD" && (
@@ -148,6 +179,9 @@ export default function OrderSuccess() {
         </div>
 
         {/* Primary Action Buttons (Matching Image 2) */}
+        <OrderBill reference={order?._id || orderNumber} animated />
+        <WalletPaymentDetails order={order} />
+        <ComboOrderDetails order={order} />
         <div className="space-y-3 mb-8">
           <button
             type="button"
@@ -168,7 +202,8 @@ export default function OrderSuccess() {
         {/* ============================================================ */}
         {/* 3. CUSTOMER REVIEW SECTION (Preserved from existing codebase) */}
         {/* ============================================================ */}
-        <div className="pt-6 border-t border-gray-100">
+        <div ref={reviewRef} tabIndex={-1} style={{ scrollMarginTop: 100 }} className="pt-6 border-t border-gray-100 outline-none">
+          {reviewReminder && !submitted && <p role="status" className="mb-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">Before you go, would you like to share your experience? Leave a review or skip below.</p>}
           {!submitted ? (
             <div className="space-y-4">
               <div className="text-center">
@@ -268,6 +303,9 @@ export default function OrderSuccess() {
               </p>
             </div>
           )}
+          <button type="button" onClick={leaveReview} className="w-full mt-4 p-3 rounded-xl border border-gray-300 text-gray-600 font-semibold text-sm">
+            {submitted ? "Continue" : "Skip review & continue"}
+          </button>
         </div>
       </div>
     </div>

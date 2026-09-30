@@ -20,9 +20,11 @@ import {
   verifyPayment,
 } from "../services/orderService";
 import api from "../services/api";
+import { loadRazorpayScript } from "../services/razorpay";
+import useSavedAddresses, { readAddresses, writeAddresses } from "../hooks/useSavedAddresses";
 
 const CHECKOUT_STORAGE_KEY = "checkout_form_state";
-const RAZORPAY_SCRIPT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
+const PENDING_PAYMENT_KEY = "checkout_pending_payment";
 
 function getCodCharge(paymentMethod, state) {
   if (paymentMethod !== "COD") return 0;
@@ -39,20 +41,6 @@ function loadStoredCheckoutState() {
     console.error("Failed to read saved checkout details", err);
     return null;
   }
-}
-
-function loadRazorpayScript() {
-  return new Promise((resolve) => {
-    if (document.querySelector(`script[src="${RAZORPAY_SCRIPT_SRC}"]`)) {
-      resolve(true);
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = RAZORPAY_SCRIPT_SRC;
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
 }
 
 // Coupon Ticket Icon matching Image 1
@@ -87,7 +75,11 @@ export default function Checkout() {
   });
 
   const [fieldErrors, setFieldErrors] = useState({});
-  const [editingAddress, setEditingAddress] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(!storedState?.customer?.address1);
+  const savedAddresses = useSavedAddresses();
+  const [selectedAddressId, setSelectedAddressId] = useState("");
+  const [addressLabel, setAddressLabel] = useState("Home");
+  const [addressSaveMessage, setAddressSaveMessage] = useState("");
   const [showItems, setShowItems] = useState(false);
   const [changingPayment, setChangingPayment] = useState(false);
 
@@ -116,10 +108,16 @@ export default function Checkout() {
 
   // Fetch wallet balance if logged in
   useEffect(() => {
+    if (!user) {
+      setWalletBalance(0);
+      setUseWallet(false);
+      return;
+    }
+    let active = true;
     const fetchWallet = async () => {
       try {
         const { data } = await api.get("/auth/me");
-        if (data.success && data.user) {
+        if (active && data.success && data.user) {
           setWalletBalance(data.user.walletBalance || 0);
         }
       } catch (err) {
@@ -127,7 +125,12 @@ export default function Checkout() {
       }
     };
     fetchWallet();
-  }, []);
+    window.addEventListener("focus", fetchWallet);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", fetchWallet);
+    };
+  }, [user?.id, user?._id]);
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + (item.offerPrice || item.price || 0) * item.quantity,
@@ -137,13 +140,13 @@ export default function Checkout() {
   // Delivery fee completely removed in checkout page
   const deliveryFee = 0;
 
-  const totalBeforeWallet = Math.max(0, subtotal - discount + codCharge);
+  const totalBeforeWallet = Math.max(0, Math.round((subtotal - discount + codCharge) * 100) / 100);
   // Wallet deduction ONLY works for ONLINE payment as per user requirement: "for cod wallet option doesnt works"
   const walletDeduction =
     paymentMethod === "ONLINE" && useWallet
       ? Math.min(walletBalance, totalBeforeWallet)
       : 0;
-  const grandTotal = Math.max(0, totalBeforeWallet - walletDeduction);
+  const grandTotal = Math.max(0, Math.round((totalBeforeWallet - walletDeduction) * 100) / 100);
   const totalItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
@@ -158,9 +161,63 @@ export default function Checkout() {
   }, [customer, paymentMethod]);
 
   const updateCustomer = (field, value) => {
+    setAddressSaveMessage("");
     setCustomer((prev) => ({ ...prev, [field]: value }));
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const selectSavedAddress = (id) => {
+    const address = savedAddresses.find((item) => String(item.id) === id);
+    setSelectedAddressId(id);
+    setAddressSaveMessage("");
+    setLocationError("");
+    setFieldErrors({});
+    setEditingAddress(true);
+    setAddressLabel(address?.name || "Home");
+    setCustomer((prev) => ({
+      ...prev,
+      name: address?.recipientName || prev.name,
+      phone: address?.phone || prev.phone,
+      address1: address?.line1 || "",
+      address2: address?.line2 || "",
+      city: address?.city || "",
+      state: address?.state || "",
+      pincode: address?.pincode || "",
+      country: address?.country || "India",
+    }));
+  };
+
+  const saveDeliveryAddress = () => {
+    setAddressSaveMessage("");
+    if (!validate()) return;
+    if (!addressLabel.trim()) {
+      setAddressSaveMessage("Please enter an address label, such as Home or Office.");
+      return;
+    }
+    try {
+      const addresses = readAddresses();
+      const existing = addresses.find((address) => String(address.id) === selectedAddressId);
+      const address = {
+        id: existing?.id || crypto.randomUUID(),
+        name: addressLabel.trim(),
+        recipientName: customer.name.trim(),
+        phone: customer.phone.trim(),
+        line1: customer.address1.trim(),
+        line2: customer.address2.trim(),
+        city: customer.city.trim(),
+        state: customer.state.trim(),
+        pincode: customer.pincode.trim(),
+        country: customer.country,
+      };
+      writeAddresses(existing
+        ? addresses.map((item) => item.id === existing.id ? address : item)
+        : [address, ...addresses]);
+      setSelectedAddressId(String(address.id));
+      setAddressSaveMessage("Saved to My Addresses for future orders.");
+    } catch {
+      setAddressSaveMessage("Could not save your address. Please try again.");
     }
   };
 
@@ -210,19 +267,35 @@ export default function Checkout() {
 
     setLocationLoading(true);
     setLocationError("");
+    setAddressSaveMessage("");
+    setSelectedAddressId("");
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          const { latitude, longitude } = position.coords;
+          const { latitude, longitude, accuracy } = position.coords;
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&layer=address`
           );
           if (!response.ok) throw new Error("Unable to fetch address");
           const data = await response.json();
+          if (data.error) throw new Error(data.error);
           const addr = data.address || {};
 
-          const road = [addr.road, addr.suburb].filter(Boolean).join(", ");
+          const hasPreciseLocation = Number.isFinite(accuracy) && accuracy <= 100;
+          const detectedAddress = hasPreciseLocation ? [...new Set([
+            addr.house_name,
+            addr.building,
+            addr.house_number,
+            addr.road || addr.pedestrian || addr.residential || addr.path,
+            addr.neighbourhood,
+            addr.quarter,
+            addr.suburb,
+            addr.locality,
+            addr.hamlet,
+            addr.isolated_dwelling,
+            addr.city_district,
+          ].filter(Boolean))].join(", ") : "";
           const city = addr.city || addr.town || addr.village || addr.county || "";
           const stateName = addr.state || "";
           const pincode = addr.postcode || "";
@@ -230,7 +303,7 @@ export default function Checkout() {
 
           setCustomer((prev) => ({
             ...prev,
-            address1: road || prev.address1 || "My Location",
+            address1: detectedAddress,
             city: city || prev.city,
             state: stateName || prev.state,
             pincode: pincode || prev.pincode,
@@ -238,7 +311,14 @@ export default function Checkout() {
           }));
 
           setFieldErrors({});
-          setEditingAddress(false);
+          setEditingAddress(true);
+          if (!hasPreciseLocation) {
+            setLocationError("Your device returned an approximate location. Please enter your street and building manually.");
+          } else if (!detectedAddress) {
+            setLocationError("Could not detect street address. Please enter it manually.");
+          } else if (!(addr.road || addr.pedestrian || addr.residential || addr.path)) {
+            setLocationError("Only your area was found. Please add your street and building to the address.");
+          }
         } catch (err) {
           console.error(err);
           setLocationError("Could not detect address. Please enter manually.");
@@ -248,9 +328,12 @@ export default function Checkout() {
       },
       (err) => {
         console.error(err);
-        setLocationError("Location access denied. Please enter address manually.");
+        setLocationError(err.code === 1
+          ? "Location access denied. Please enter address manually."
+          : "Could not get an accurate location. Please try again or enter your address manually.");
         setLocationLoading(false);
-      }
+      },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
     );
   };
 
@@ -273,7 +356,9 @@ export default function Checkout() {
 
   const buildOrderPayload = () => {
     const items = cartItems.map((item) => ({
-      product: item._id || item.id,
+      product: item.comboOffer ? undefined : item._id || item.id,
+      comboOffer: item.comboOffer,
+      comboSelections: item.comboSelections,
       productName: item.name,
       image: item.image,
       variant: {
@@ -312,6 +397,7 @@ export default function Checkout() {
   const finalizeOrderSuccess = (order) => {
     clearCart();
     sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
+    sessionStorage.removeItem(PENDING_PAYMENT_KEY);
     navigate(`/order-success/${order.orderNumber}`, {
       state: { order },
     });
@@ -321,13 +407,14 @@ export default function Checkout() {
     const scriptLoaded = await loadRazorpayScript();
     if (!scriptLoaded) {
       setOrderError("Unable to load payment gateway.");
+      setPlacing(false);
       return;
     }
 
     if (codCharge > 0) {
-      const { order: razorpayOrder } = await createRazorpayOrder(codCharge);
+      const { order: razorpayOrder, key } = await createRazorpayOrder(codCharge);
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        key,
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
         order_id: razorpayOrder.id,
@@ -380,24 +467,45 @@ export default function Checkout() {
   };
 
   const placeOnlineOrder = async () => {
-    // If order is completely covered by wallet balance (grandTotal === 0)
-    if (grandTotal === 0 && walletDeduction > 0) {
+    if (walletDeduction > 0 || sessionStorage.getItem(PENDING_PAYMENT_KEY)) {
+      const { data } = await api.get("/auth/me");
+      if (!data.user?.walletPaymentsEnabled) {
+        throw new Error("Wallet payments are temporarily unavailable. Please try again once the payment service is updated.");
+      }
+      setWalletBalance(data.user.walletBalance || 0);
+    }
+    const pending = sessionStorage.getItem(PENDING_PAYMENT_KEY);
+    if (pending) {
+      const payload = JSON.parse(pending);
+      if (String(payload.customer) !== String(user?.id || user?._id)) {
+        throw new Error("A payment is pending for another account. Sign in to that account to finish it.");
+      }
+      let result;
       try {
-        await api.post("/auth/wallet/use", {
-          amount: walletDeduction,
-          description: "Full wallet payment for order",
-        });
-        const orderPayload = {
-          ...buildOrderPayload(),
-          paymentStatus: "Paid",
-          paymentMethod: "WALLET",
-          walletAmountUsed: walletDeduction,
-        };
-        const res = await createOrder(orderPayload);
-        finalizeOrderSuccess(res.order);
-      } catch (err) {
-        console.error(err);
-        setOrderError(err.response?.data?.message || err.message || "Failed to process wallet payment");
+        result = await createOrder(payload);
+      } catch (error) {
+        if (!payload.razorpayPaymentId && error.status === 400) sessionStorage.removeItem(PENDING_PAYMENT_KEY);
+        throw error;
+      }
+      finalizeOrderSuccess(result.order);
+      setPlacing(false);
+      return;
+    }
+    if (grandTotal === 0) {
+      const orderPayload = {
+        ...buildOrderPayload(),
+        paymentMethod: "ONLINE",
+        walletAmountUsed: walletDeduction,
+        checkoutPaymentId: crypto.randomUUID(),
+      };
+      sessionStorage.setItem(PENDING_PAYMENT_KEY, JSON.stringify(orderPayload));
+      try {
+        const result = await createOrder(orderPayload);
+        finalizeOrderSuccess(result.order);
+      } catch (error) {
+        if (error.status === 400) sessionStorage.removeItem(PENDING_PAYMENT_KEY);
+        // Retain the same reference on uncertain failures to avoid a second debit.
+        setOrderError(error.message || "Unable to complete wallet payment. Please retry.");
       } finally {
         setPlacing(false);
       }
@@ -407,13 +515,15 @@ export default function Checkout() {
     const scriptLoaded = await loadRazorpayScript();
     if (!scriptLoaded) {
       setOrderError("Unable to load payment gateway. Please try again.");
+      setPlacing(false);
       return;
     }
 
-    const { order: razorpayOrder } = await createRazorpayOrder(grandTotal);
+    const checkoutPayload = { ...buildOrderPayload(), walletAmountUsed: walletDeduction };
+    const { order: razorpayOrder, key } = await createRazorpayOrder(grandTotal, checkoutPayload);
 
     const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      key,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
       order_id: razorpayOrder.id,
@@ -427,43 +537,19 @@ export default function Checkout() {
       theme: { color: "#f43f5e" },
       handler: async (response) => {
         try {
-          const verification = await verifyPayment({
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-          });
-
-          if (!verification?.success) {
-            setOrderError("Payment verification failed. Please try again.");
-            setPlacing(false);
-            return;
-          }
-
-          // Deduct partial wallet amount if used
-          if (walletDeduction > 0) {
-            try {
-              await api.post("/auth/wallet/use", {
-                amount: walletDeduction,
-                description: `Partial wallet payment with order`,
-              });
-            } catch (wErr) {
-              console.error("Wallet deduction failed after payment", wErr);
-            }
-          }
-
           const orderPayload = {
-            ...buildOrderPayload(),
+            ...checkoutPayload,
             razorpayOrderId: response.razorpay_order_id,
             razorpayPaymentId: response.razorpay_payment_id,
             razorpaySignature: response.razorpay_signature,
-            walletAmountUsed: walletDeduction,
           };
+          sessionStorage.setItem(PENDING_PAYMENT_KEY, JSON.stringify(orderPayload));
 
           const res = await createOrder(orderPayload);
           finalizeOrderSuccess(res.order);
         } catch (err) {
           console.error(err);
-          setOrderError(err.message || "Payment verification failed");
+          setOrderError(`${err.message || "Payment verification failed"}. Retry to finish this payment without paying again.`);
         } finally {
           setPlacing(false);
         }
@@ -496,13 +582,15 @@ export default function Checkout() {
       return;
     }
 
-    if (!validate()) return;
+    if (placing || !validate()) return;
 
     try {
       setPlacing(true);
       setOrderError("");
 
-      if (paymentMethod === "COD") {
+      if (sessionStorage.getItem(PENDING_PAYMENT_KEY)) {
+        await placeOnlineOrder();
+      } else if (paymentMethod === "COD") {
         await placeCodOrder();
       } else {
         await placeOnlineOrder();
@@ -516,7 +604,7 @@ export default function Checkout() {
 
   const formattedAddress = customer.address1
     ? `${customer.address1}${customer.city ? `, ${customer.city}` : ""}${customer.state ? `, ${customer.state}` : ""}`
-    : "123 Main Street, New York";
+    : "";
 
   return (
     <div className="bg-gray-50 min-h-screen pb-32 font-sans">
@@ -549,6 +637,28 @@ export default function Checkout() {
                   </button>
                 </div>
 
+                <div className="mb-4 space-y-2 sm:pl-9">
+                  <label htmlFor="checkout-saved-address" className="block text-xs font-bold text-gray-700">My Addresses</label>
+                  <select
+                    id="checkout-saved-address"
+                    value={savedAddresses.some((address) => String(address.id) === selectedAddressId) ? selectedAddressId : ""}
+                    onChange={(event) => selectSavedAddress(event.target.value)}
+                    disabled={locationLoading}
+                    className="w-full rounded-xl border border-gray-200 p-2.5 text-xs"
+                  >
+                    <option value="">Choose a saved address</option>
+                    {savedAddresses.map((address) => (
+                      <option key={address.id} value={String(address.id)}>
+                        {address.name}: {address.line1}, {address.city} - {address.pincode}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex gap-4 text-xs font-bold text-green-700">
+                    <button type="button" disabled={locationLoading} onClick={() => selectSavedAddress("")}>+ Add new address</button>
+                    <button type="button" onClick={() => navigate("/addresses")}>Manage My Addresses</button>
+                  </div>
+                </div>
+
                 {/* Summary View */}
                 {!editingAddress ? (
                   <div className="flex items-start gap-3 pl-9">
@@ -557,11 +667,11 @@ export default function Checkout() {
                     </div>
                     <div>
                       <p className="font-extrabold text-sm text-gray-900 leading-snug">
-                        Home: {formattedAddress}
+                        {formattedAddress ? `${addressLabel}: ${formattedAddress}` : "Add your delivery address"}
                       </p>
-                      <p className="text-xs text-gray-500 font-medium mt-0.5">
+                      {formattedAddress && <p className="text-xs text-gray-500 font-medium mt-0.5">
                         Time: Today, 4:00 PM - 6:00 PM
-                      </p>
+                      </p>}
                       {customer.name && (
                         <p className="text-xs text-gray-400 mt-0.5">
                           Recipient: {customer.name} ({customer.phone})
@@ -646,6 +756,23 @@ export default function Checkout() {
                         className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-green-500"
                       />
                     </div>
+                    {Object.entries(fieldErrors).filter(([field]) => ["city", "state", "pincode"].includes(field)).map(([field, message]) => (
+                      <p key={field} className="text-xs text-red-500">{message}</p>
+                    ))}
+                    <div className="space-y-2 border-t border-gray-100 pt-3">
+                      <p className="text-xs font-semibold text-gray-700">Save this address for future orders?</p>
+                      <input
+                        aria-label="Address label"
+                        placeholder="Label (Home / Office)"
+                        value={addressLabel}
+                        onChange={(event) => { setAddressLabel(event.target.value); setAddressSaveMessage(""); }}
+                        className="w-full rounded-xl border border-gray-200 p-2.5 text-xs"
+                      />
+                      <button type="button" onClick={saveDeliveryAddress} disabled={locationLoading} className="w-full rounded-xl bg-green-600 px-3 py-2.5 text-xs font-bold text-white hover:bg-green-700 disabled:opacity-50">
+                        {selectedAddressId ? "Save changes to My Addresses" : "Save to My Addresses"}
+                      </button>
+                      {addressSaveMessage && <p role="status" className="text-xs text-gray-700">{addressSaveMessage}</p>}
+                    </div>
                   </div>
                 )}
               </div>
@@ -691,6 +818,7 @@ export default function Checkout() {
                           />
                           <div className="truncate">
                             <p className="font-bold text-gray-900 truncate">{item.name}</p>
+                            {item.comboSummary && <p className="text-xs text-gray-500">{item.comboSummary}</p>}
                             <p className="text-gray-400 text-[11px]">
                               {item.weight} × {item.quantity}
                             </p>
@@ -949,6 +1077,8 @@ export default function Checkout() {
                 <span>
                   {placing
                     ? "Processing..."
+                    : sessionStorage.getItem(PENDING_PAYMENT_KEY)
+                    ? "Retry Payment Confirmation"
                     : paymentMethod === "COD"
                     ? "Pay Advance & Place COD Order"
                     : "Place Order"}

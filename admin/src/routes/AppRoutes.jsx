@@ -8,6 +8,7 @@ import Products from "../pages/Products/Products";
 import AddProduct from "../pages/Products/AddProduct";
 import EditProduct from "../pages/Products/EditProduct";
 
+import ComboOffers from "../pages/ComboOffers/ComboOffers";
 import Categories from "../pages/Categories/Categories";
 
 import Orders from "../pages/Orders/Orders";
@@ -53,6 +54,7 @@ export default function AppRoutes() {
         <Route path="/products/edit/:id" element={<EditProduct />} />
 
         {/* Categories */}
+        <Route path="/combo-offers" element={<ComboOffers />} />
         <Route path="/categories" element={<Categories />} />
 
         {/* Orders */}

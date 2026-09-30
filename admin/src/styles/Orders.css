@@ -95,6 +95,107 @@
     background:#b91c1c;
 }
 
+/* =========================
+   Action Buttons (Colorful)
+========================= */
+
+.order-action-btns{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-wrap:nowrap;
+}
+
+.action-btn{
+    padding:7px 12px;
+    border:none;
+    border-radius:8px;
+    font-size:.8rem;
+    font-weight:700;
+    cursor:pointer;
+    transition:all .2s cubic-bezier(0.4, 0, 0.2, 1);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    white-space:nowrap;
+    text-shadow:0 1px 1px rgba(0,0,0,.15);
+}
+
+.action-btn:hover{
+    transform:translateY(-2px);
+    filter:brightness(1.08);
+}
+
+.action-btn:active{
+    transform:translateY(0) scale(0.96);
+}
+
+/* Accept Button: Vibrant Blue */
+.action-btn.btn-accept{
+    background:linear-gradient(135deg, #3b82f6, #2563eb);
+    color:#fff;
+    box-shadow:0 2px 6px rgba(37,99,235,.3);
+}
+.action-btn.btn-accept:hover{
+    box-shadow:0 4px 12px rgba(37,99,235,.45);
+}
+.action-btn.btn-accept.active{
+    background:linear-gradient(135deg, #1d4ed8, #1e40af);
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.25), 0 0 0 2px #93c5fd;
+}
+
+/* Pack Button: Vibrant Amber/Orange */
+.action-btn.btn-pack{
+    background:linear-gradient(135deg, #f59e0b, #d97706);
+    color:#fff;
+    box-shadow:0 2px 6px rgba(217,119,6,.3);
+}
+.action-btn.btn-pack:hover{
+    box-shadow:0 4px 12px rgba(217,119,6,.45);
+}
+.action-btn.btn-pack.active{
+    background:linear-gradient(135deg, #b45309, #92400e);
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.25), 0 0 0 2px #fde68a;
+}
+
+/* Ship Button: Vibrant Cyan/Sky Blue */
+.action-btn.btn-ship{
+    background:linear-gradient(135deg, #06b6d4, #0284c7);
+    color:#fff;
+    box-shadow:0 2px 6px rgba(2,132,199,.3);
+}
+.action-btn.btn-ship:hover{
+    box-shadow:0 4px 12px rgba(2,132,199,.45);
+}
+.action-btn.btn-ship.active{
+    background:linear-gradient(135deg, #0369a1, #075985);
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.25), 0 0 0 2px #a5f3fc;
+}
+
+/* Deliver Button: Vibrant Emerald/Green */
+.action-btn.btn-deliver{
+    background:linear-gradient(135deg, #10b981, #059669);
+    color:#fff;
+    box-shadow:0 2px 6px rgba(5,150,105,.3);
+}
+.action-btn.btn-deliver:hover{
+    box-shadow:0 4px 12px rgba(5,150,105,.45);
+}
+.action-btn.btn-deliver.active{
+    background:linear-gradient(135deg, #047857, #065f46);
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.25), 0 0 0 2px #a7f3d0;
+}
+
+/* Delete Button: Crimson Red */
+.action-btn.btn-delete{
+    background:linear-gradient(135deg, #ef4444, #dc2626);
+    color:#fff;
+    box-shadow:0 2px 6px rgba(220,38,38,.3);
+}
+.action-btn.btn-delete:hover{
+    box-shadow:0 4px 12px rgba(220,38,38,.45);
+}
+
 .pagination{
     display:flex;
     justify-content:center;
@@ -332,6 +433,17 @@
 
     .order-actions button{
         width:100%;
+    }
+
+    .order-action-btns{
+        display:flex;
+        gap:5px;
+        flex-wrap:nowrap;
+    }
+
+    .action-btn{
+        padding:5px 9px;
+        font-size:.75rem;
     }
 
     .order-expand-row td{

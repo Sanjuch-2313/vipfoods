@@ -29,6 +29,7 @@ const initialFormData = {
   subCategory: "",
 
   featured: false,
+  bestDeal: false,
   published: true,
   active: true,
 
@@ -333,6 +334,7 @@ const EditProduct = () => {
     appendTextField(payload, "subCategory", formData.subCategory);
 
     appendTextField(payload, "featured", String(formData.featured));
+    appendTextField(payload, "bestDeal", String(formData.bestDeal));
 
     appendTextField(payload, "published", String(formData.published));
 
@@ -524,6 +526,7 @@ useEffect(() => {
       setFormData({
         ...initialFormData,
         ...product,
+        bestDeal: product.bestDeal === true,
         category: product.category?._id || "",
         subCategory: product.subCategory || "",
         calories: product.nutrition?.calories || "",
@@ -1189,6 +1192,17 @@ useEffect(() => {
                       onChange={handleChange}
                     />
 
+                    <span className="toggle-switch__slider" />
+                  </span>
+                </label>
+
+                <label className="switch-setting-card">
+                  <div>
+                    <strong>Best Deals Today</strong>
+                    <small>Show this product in Best Deals Today on the home page.</small>
+                  </div>
+                  <span className="toggle-switch">
+                    <input type="checkbox" name="bestDeal" checked={formData.bestDeal} onChange={handleChange} />
                     <span className="toggle-switch__slider" />
                   </span>
                 </label>

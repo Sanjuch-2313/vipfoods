@@ -10,6 +10,7 @@ import authRoutes from "./routes/authRoutes.js";
 
 import errorMiddleware from "./middleware/errorMiddleware.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import comboRoutes from "./routes/comboRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
@@ -58,6 +59,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/combo-offers", comboRoutes);
 app.use("/api/orders", orderRoutes);     // ✅ HERE
 app.use("/api/coupons", couponRoutes);
 app.use("/api/customers", customerRoutes);

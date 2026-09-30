@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   FiCreditCard,
   FiTrendingUp,
@@ -10,22 +10,10 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { loadRazorpayScript } from "../services/razorpay";
 
-const RAZORPAY_SCRIPT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
 
-function loadRazorpayScript() {
-  return new Promise((resolve) => {
-    if (document.querySelector(`script[src="${RAZORPAY_SCRIPT_SRC}"]`)) {
-      resolve(true);
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = RAZORPAY_SCRIPT_SRC;
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-}
+const PENDING_TOPUP_KEY = "wallet_pending_topup";
 
 export default function WalletPage() {
   const navigate = useNavigate();
@@ -34,34 +22,55 @@ export default function WalletPage() {
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [walletError, setWalletError] = useState("");
 
   // Add Money state
   const [amount, setAmount] = useState("100");
   const [topupLoading, setTopupLoading] = useState(false);
   const [topupMessage, setTopupMessage] = useState(null);
 
-  const fetchWallet = async () => {
+  const fetchWallet = useCallback(async () => {
     try {
       setLoading(true);
+      setWalletError("");
       const { data } = await api.get("/auth/me");
       if (data.success && data.user) {
         setBalance(data.user.walletBalance || 0);
         setTransactions(data.user.walletTransactions || []);
+      } else {
+        throw new Error("Wallet balance is unavailable.");
       }
     } catch (err) {
       console.error("Failed to load wallet", err);
+      setWalletError("Could not refresh your balance. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (isLoggedIn) {
       fetchWallet();
+      window.addEventListener("focus", fetchWallet);
+      return () => window.removeEventListener("focus", fetchWallet);
     } else {
+      setBalance(0);
+      setTransactions([]);
       setLoading(false);
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, user?.id, user?._id, fetchWallet]);
+
+  const confirmTopup = async (pending) => {
+    if (String(pending.userId) !== String(user?.id || user?._id)) {
+      throw new Error("Sign in to the account that made this wallet payment to finish verification.");
+    }
+    const { data } = await api.post("/auth/wallet/verify", pending.payment);
+    if (!data.success) throw new Error(data.message || "Payment verification failed");
+    sessionStorage.removeItem(PENDING_TOPUP_KEY);
+    setBalance(data.walletBalance);
+    setTopupMessage({ type: "success", text: data.message });
+    await fetchWallet();
+  };
 
   const handleAddMoney = async (e) => {
     e.preventDefault();
@@ -70,8 +79,21 @@ export default function WalletPage() {
       return;
     }
 
+    if (topupLoading) return;
+    const pending = sessionStorage.getItem(PENDING_TOPUP_KEY);
+    if (pending) {
+      setTopupLoading(true);
+      try {
+        await confirmTopup(JSON.parse(pending));
+      } catch (error) {
+        setTopupMessage({ type: "error", text: `${error.response?.data?.message || error.message}. Retry to verify the previous payment without paying again.` });
+      } finally {
+        setTopupLoading(false);
+      }
+      return;
+    }
     const numAmount = Number(amount);
-    if (!numAmount || numAmount < 1) {
+    if (!Number.isFinite(numAmount) || numAmount < 1) {
       alert("Please enter a valid amount (minimum ₹1)");
       return;
     }
@@ -96,8 +118,8 @@ export default function WalletPage() {
         throw new Error(data.message || "Failed to create order");
       }
 
-      const razorpayKey =
-        import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_live_TGbHNtUHem1xDd";
+      const razorpayKey = data.key;
+      if (!razorpayKey) throw new Error("Payment gateway key is unavailable.");
 
       // Step 2: Open Razorpay checkout modal
       const options = {
@@ -117,32 +139,21 @@ export default function WalletPage() {
         },
         handler: async (response) => {
           try {
-            // Step 3: Verify and credit wallet on backend
-            const verifyRes = await api.post("/auth/wallet/verify", {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              amount: numAmount,
-            });
-
-            if (verifyRes.data.success) {
-              setBalance(verifyRes.data.walletBalance);
-              setTopupMessage({
-                type: "success",
-                text: `Successfully added ₹${numAmount} to your wallet!`,
-              });
-              fetchWallet();
-            } else {
-              setTopupMessage({
-                type: "error",
-                text: verifyRes.data.message || "Payment verification failed",
-              });
-            }
+            const pending = {
+              userId: user?.id || user?._id,
+              payment: {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              },
+            };
+            sessionStorage.setItem(PENDING_TOPUP_KEY, JSON.stringify(pending));
+            await confirmTopup(pending);
           } catch (verifyErr) {
             console.error("Verification error", verifyErr);
             setTopupMessage({
               type: "error",
-              text: "Payment verification failed. Please contact support if debited.",
+              text: "Payment verification is pending. Retry to verify this payment without paying again.",
             });
           } finally {
             setTopupLoading(false);
@@ -156,6 +167,10 @@ export default function WalletPage() {
       };
 
       const paymentObject = new window.Razorpay(options);
+      paymentObject.on("payment.failed", (response) => {
+        setTopupMessage({ type: "error", text: response.error?.description || "Payment failed. Please try again." });
+        setTopupLoading(false);
+      });
       paymentObject.open();
     } catch (err) {
       console.error("Wallet topup error", err);
@@ -191,8 +206,13 @@ export default function WalletPage() {
                 Available Balance
               </p>
               <h2 className="text-4xl font-black text-gray-900">
-                ₹{loading ? "…" : balance.toFixed(2)}
+                {loading ? "…" : walletError ? "Unavailable" : `₹${balance.toFixed(2)}`}
               </h2>
+              {walletError && (
+                <p role="alert" className="mt-2 text-xs text-red-600">
+                  {walletError} <button type="button" onClick={fetchWallet} className="font-bold underline">Retry</button>
+                </p>
+              )}
               <p className="text-xs text-gray-500 mt-1.5 font-medium">
                 {balance > 0
                   ? "Usable for online payments at checkout"
@@ -278,7 +298,7 @@ export default function WalletPage() {
               className="w-full py-3.5 bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white rounded-2xl font-bold text-sm shadow-md shadow-green-200 flex items-center justify-center gap-2 transition-all active:scale-[0.99] disabled:opacity-60"
             >
               <FiCreditCard size={18} />
-              {topupLoading ? "Opening Razorpay..." : `Pay ₹${amount || 0} via Razorpay`}
+              {topupLoading ? "Processing payment..." : sessionStorage.getItem(PENDING_TOPUP_KEY) ? "Retry payment verification" : `Pay ₹${amount || 0} via Razorpay`}
             </button>
           </form>
         </div>

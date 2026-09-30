@@ -1,3 +1,4 @@
+import { dashboardAnalytics } from "../utils/orderBill.js";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
@@ -5,8 +6,9 @@ import User from "../models/User.js";
 export const getDashboardStats = async (req, res) => {
   try {
     // ---------- REVENUE + ORDER COUNT ----------
-    const orders = await Order.find({ orderStatus: { $ne: "Cancelled" } });
-    const totalRevenue = orders.reduce((sum, o) => sum + (o.grandTotal || 0), 0);
+    const orders = await Order.find().select("grandTotal paymentStatus paymentMethod walletAmountUsed onlinePaidAmount codChargePaid codCharge orderStatus createdAt").lean();
+    const analytics = dashboardAnalytics(orders);
+    const totalRevenue = analytics.collected;
     const totalOrders = await Order.countDocuments();
 
     // ---------- CUSTOMERS ----------
@@ -52,6 +54,7 @@ export const getDashboardStats = async (req, res) => {
         totalCustomers,
         totalProducts,
       },
+      analytics,
       recentOrders,
       lowStockProducts: lowStockAgg,
     });

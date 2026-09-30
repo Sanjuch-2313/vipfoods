@@ -5,6 +5,7 @@ import {
   FiX,
   FiSearch,
   FiShoppingCart,
+  FiHeart,
   FiBell,
   FiHome,
   FiShoppingBag,
@@ -28,6 +29,7 @@ import {
 } from "react-icons/fi";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { useLocationContext } from "../context/LocationContext";
 import LocationPicker from "./LocationPicker";
 import api from "../services/api";
 
@@ -92,8 +94,9 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { cartItems } = useCart();
+  const { cartItems, wishlistItems } = useCart();
   const { user, isLoggedIn, logout } = useAuth();
+  const { detectCurrentLocation } = useLocationContext();
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -144,15 +147,15 @@ export default function Navbar() {
     }
   };
 
-  const userName = isLoggedIn && user?.name
-    ? user.name
-    : user?.email
-    ? user.email.split("@")[0]
-    : "John Doe";
+  const userName = isLoggedIn ? (user?.name || user?.email?.split("@")[0] || "My account") : "";
+  const userEmail = isLoggedIn ? (user?.email || "") : "";
 
-  const userEmail = isLoggedIn && user?.email
-    ? user.email
-    : "john.doe@example.com";
+  const toggleShopPanel = (panel) => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("panel") === panel) params.delete("panel");
+    else params.set("panel", panel);
+    navigate({ pathname: "/shop", search: params.toString() });
+  };
 
   const isHome = location.pathname === "/";
   const isProducts = location.pathname === "/products";
@@ -184,18 +187,24 @@ export default function Navbar() {
                 </button>
 
                 <LocationPicker
-                  customTrigger={({ onClick, location: userLocation }) => (
+                  customTrigger={({ onClick, location: userLocation, isDetecting }) => (
                     <button
                       type="button"
                       onClick={onClick}
                       className="text-left group flex flex-col justify-center focus:outline-none"
                     >
                       <span className="font-bold text-xs sm:text-sm tracking-wide text-white leading-tight">
-                        Delivery in 8 minutes
+                        Order Now for fast delivery!!
                       </span>
-                      <span className="text-[11px] sm:text-xs text-green-100 flex items-center gap-1 mt-0.5 opacity-90 max-w-[150px] sm:max-w-[240px] truncate">
+                      <span className="text-[11px] sm:text-xs text-green-100 flex items-center gap-1 mt-0.5 opacity-90 max-w-[160px] sm:max-w-[260px] truncate">
                         <FiMapPin className="text-red-400 shrink-0" size={12} />
-                        <span className="truncate">{userLocation || "123 Main St, New York"}</span>
+                        <span className="truncate font-semibold">
+                          {isDetecting
+                            ? "Detecting location..."
+                            : userLocation
+                            ? userLocation
+                            : "Detect the location now"}
+                        </span>
                         <FiChevronDown className="ml-0.5 shrink-0 opacity-80" size={13} />
                       </span>
                     </button>
@@ -205,14 +214,14 @@ export default function Navbar() {
 
               <div className="flex items-center gap-2.5">
                 <Link
-                  to="/cart"
+                  to="/wishlist"
                   className="w-10 h-10 rounded-full bg-white text-gray-800 flex items-center justify-center shadow hover:bg-gray-100 relative transition-transform active:scale-95 focus:outline-none"
-                  aria-label="Shopping Cart"
+                  aria-label="Wishlist"
                 >
-                  <FiShoppingCart size={19} />
-                  {cartCount > 0 && (
+                  <FiHeart size={19} />
+                  {wishlistItems.length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow">
-                      {cartCount > 99 ? "99+" : cartCount}
+                      {wishlistItems.length > 99 ? "99+" : wishlistItems.length}
                     </span>
                   )}
                 </Link>
@@ -288,7 +297,9 @@ export default function Navbar() {
                 <>
                   <button
                     type="button"
-                    onClick={() => navigate("/products?sort=price-asc")}
+                    onClick={() => toggleShopPanel("sort")}
+                    aria-label="Sort products"
+                    aria-expanded={new URLSearchParams(location.search).get("panel") === "sort"}
                     className="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center hover:bg-gray-200 transition-all focus:outline-none"
                     title="Sort Products"
                   >
@@ -296,7 +307,9 @@ export default function Navbar() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => navigate("/products")}
+                    onClick={() => toggleShopPanel("filters")}
+                    aria-label="Filter products"
+                    aria-expanded={new URLSearchParams(location.search).get("panel") === "filters"}
                     className="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center hover:bg-gray-200 transition-all focus:outline-none"
                     title="Filter Products"
                   >
@@ -353,11 +366,11 @@ export default function Navbar() {
                 />
                 <div className="truncate">
                   <h3 className="font-bold text-base leading-tight text-white truncate">
-                    {userName}
+                    {isLoggedIn ? userName : <Link to="/login" onClick={() => setDrawerOpen(false)}>Login now</Link>}
                   </h3>
-                  <p className="text-xs text-green-100 opacity-90 truncate mt-0.5">
+                  {userEmail && <p className="text-xs text-green-100 opacity-90 truncate mt-0.5">
                     {userEmail}
-                  </p>
+                  </p>}
                 </div>
               </div>
 
@@ -653,20 +666,16 @@ export default function Navbar() {
                 type="button"
                 onClick={() => {
                   setDrawerOpen(false);
-                  if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                      () => alert("Location permission enabled successfully!"),
-                      () => alert("Location access was denied in browser.")
-                    );
-                  } else {
-                    alert("Location not supported on this device.");
-                  }
+                  detectCurrentLocation().then(
+                    (addr) => alert(`Location detected successfully: ${addr}`),
+                    () => alert("Location access was denied or could not be determined. Please allow location access in your browser.")
+                  );
                 }}
                 className="w-full flex items-center justify-between px-5 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors text-left"
               >
                 <div className="flex items-center gap-3">
                   <FiMapPin size={18} className="shrink-0 text-gray-600" />
-                  <span>Enable Location</span>
+                  <span>Detect Location Now</span>
                 </div>
                 <FiChevronRight size={16} className="text-gray-400" />
               </button>

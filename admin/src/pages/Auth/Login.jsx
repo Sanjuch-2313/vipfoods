@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { adminLogin } from "../../services/adminAuthService";
 import "./Login.css";
 
 export default function Login() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "", secretKey: "" });
-  const [error, setError] = useState("");
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const sessionExpired = location.state?.sessionExpired === true;
+
+  const [form, setForm]     = useState({ email: "", password: "", secretKey: "" });
+  const [error, setError]   = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) =>
@@ -16,10 +19,9 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       await adminLogin(form);
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {
@@ -32,6 +34,12 @@ export default function Login() {
       <form className="admin-login-card" onSubmit={handleSubmit}>
         <h2>VIP Foods Admin</h2>
         <p>Sign in to manage your store</p>
+
+        {sessionExpired && (
+          <p className="admin-login-session-msg">
+            ⏱️ You were logged out due to 10 minutes of inactivity.
+          </p>
+        )}
 
         <label>Email</label>
         <input

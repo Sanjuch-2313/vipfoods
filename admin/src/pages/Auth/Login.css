@@ -79,3 +79,16 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Session-expired notice */
+.admin-login-session-msg {
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  color: #92400e;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
