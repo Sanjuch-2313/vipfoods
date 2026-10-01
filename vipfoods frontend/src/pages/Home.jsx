@@ -1,31 +1,22 @@
-import vipSpicesVideoMobile from "../assets/optimized/vipspices-mobile.mp4";
-import vipPicklesVideoMobile from "../assets/optimized/vippickles-mobile.mp4";
-import vipSnacksVideoMobile from "../assets/optimized/vipsnacks-mobile.mp4";
-import vipDairyVideoMobile from "../assets/optimized/vipdairy-mobile.mp4";
-import vipFreshVideoMobile from "../assets/optimized/vipfresh-mobile.mp4";
-import vipSpicesVideoPoster from "../assets/optimized/vipspices.webp";
-import vipPicklesVideoPoster from "../assets/optimized/vippickles.webp";
-import vipSnacksVideoPoster from "../assets/optimized/vipsnacks.webp";
-import vipDairyVideoPoster from "../assets/optimized/vipdairy.webp";
-import vipFreshVideoPoster from "../assets/optimized/vipfresh.webp";
+import vipLogoImage from "../assets/viplogo.jpg";
+import vipFreshImage from "../assets/vipfresh.jpg";
+import vipDairyImage from "../assets/vipdairy.jpg";
+import vipSnacksImage from "../assets/vipsnacks.jpg";
+import vipPicklesImage from "../assets/vippickles.jpg";
+import vipSpicesImage from "../assets/vipspices.jpg";
+import vipOrganicsImage from "../assets/viporganics.jpg";
 import { imageDelivery } from "../utils/imageDelivery";
 import FirstVisitTour from "../components/FirstVisitTour";
 import "../components/FirstVisitTour.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiHeart, FiPlus, FiArrowRight, FiAward, FiTruck, FiMinus } from "react-icons/fi";
 import { getCategories } from "../services/categoryService";
 import { getShopProducts } from "../services/productService";
 import api from "../services/api";
 import { useCart } from "../context/CartContext";
-import { Swiper, SwiperSlide, useSwiper, useSwiperSlide } from "swiper/react";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { A11y, Autoplay, Navigation, Pagination } from "swiper/modules";
-import vipFreshVideo from "../assets/optimized/vipfresh.mp4";
-import vipDairyVideo from "../assets/optimized/vipdairy.mp4";
-import vipSnacksVideo from "../assets/optimized/vipsnacks.mp4";
-import vipPicklesVideo from "../assets/optimized/vippickles.mp4";
-import vipSpicesVideo from "../assets/optimized/vipspices.mp4";
-//import vipOrganicVideo from "../assets/viporganic.mp4";
 
 
 import "swiper/css";
@@ -42,67 +33,14 @@ const PLACEHOLDER_IMAGE =
   );
 
 const defaultHeroSlides = [
-  { id: "brand-video", title: "", video: vipFreshVideo, mobileVideo: vipFreshVideoMobile, poster: vipFreshVideoPoster },
-  { id: "kitchen-video", title: "From our kitchen", video: vipFreshVideo, mobileVideo: vipFreshVideoMobile, poster: vipFreshVideoPoster },
-  { id: "food-video", title: "Discover VIP Foods", video: vipDairyVideo, mobileVideo: vipDairyVideoMobile, poster: vipDairyVideoPoster },
-  { id: "food-video-2", title: "Discover VIP Foods", video: vipSnacksVideo, mobileVideo: vipSnacksVideoMobile, poster: vipSnacksVideoPoster },
-  { id: "food-video-3", title: "Discover VIP Foods", video: vipPicklesVideo, mobileVideo: vipPicklesVideoMobile, poster: vipPicklesVideoPoster },
-  { id: "food-video-4", title: "Discover VIP Foods", video: vipSpicesVideo, mobileVideo: vipSpicesVideoMobile, poster: vipSpicesVideoPoster },
-  //{ id: "food-video-5", title: "Discover VIP Foods", video: vipOrganicVideo },
+  { id: "logo-banner", title: "VIP Foods", image: vipLogoImage },
+  { id: "fresh-banner", title: "VIP Fresh", image: vipFreshImage },
+  { id: "dairy-banner", title: "VIP Dairy", image: vipDairyImage },
+  { id: "snacks-banner", title: "VIP Snacks", image: vipSnacksImage },
+  { id: "pickles-banner", title: "VIP Pickles", image: vipPicklesImage },
+  { id: "spices-banner", title: "VIP Spices", image: vipSpicesImage },
+  { id: "organics-banner", title: "VIP Organics", image: vipOrganicsImage },
 ];
-
-function HeroVideo({ slide }) {
-  const videoRef = useRef(null);
-  const swiper = useSwiper();
-  const { isActive } = useSwiperSlide();
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia("(max-width: 640px)").matches);
-  const [visible, setVisible] = useState(true);
-  const videoSource = isMobile ? slide.mobileVideo || slide.video : slide.video;
-  useEffect(() => {
-    const media = window.matchMedia("(max-width: 640px)");
-    const update = () => setIsMobile(media.matches);
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting));
-    if (videoRef.current) observer.observe(videoRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !slide.video) return;
-    if (isActive && visible && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      video.play().catch(() => {
-        // Leave the banner still if the browser blocks muted playback.
-      });
-    } else {
-      video.pause();
-    }
-  }, [isActive, visible, videoSource]);
-
-  return (
-    <video
-      ref={videoRef}
-      className="pointer-events-none block h-full w-full object-cover"
-      src={isActive ? videoSource || undefined : undefined}
-      poster={isActive ? slide.poster : undefined}
-      controls={false}
-      disablePictureInPicture
-      disableRemotePlayback
-      preload={isActive ? "metadata" : "none"}
-      muted
-      playsInline
-      aria-label={slide.title || "VIP Foods video"}
-      onPlay={() => swiper.autoplay?.stop()}
-      onEnded={() => {
-        swiper.slideNext();
-        if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) swiper.autoplay?.start();
-      }}
-    />
-  );
-}
 
 /* ── Per-deal card with variant state ── */
 function DealCard({ deal, onToast }) {
@@ -339,7 +277,7 @@ export default function Home() {
           <Swiper
             modules={[A11y, Autoplay, Navigation, Pagination]}
             slidesPerView={1}
-            initialSlide={Math.max(0, heroSlides.findIndex((slide) => slide.video))}
+            initialSlide={0}
             speed={650}
             loop
             navigation
@@ -348,17 +286,17 @@ export default function Home() {
             style={{ "--swiper-navigation-color": "#fff", "--swiper-navigation-size": "22px", "--swiper-pagination-color": "#fff", "--swiper-pagination-bullet-inactive-color": "#fff" }}
             className="overflow-hidden rounded-[32px] sm:rounded-[42px] shadow-lg shadow-black/10 bg-[#021b2f]"
           >
-            {heroSlides.map((slide) => (
+            {heroSlides.map((slide, index) => (
               <SwiperSlide key={slide.id}>
                 <div className="relative h-[200px] sm:h-[260px] md:h-[300px] lg:h-[340px] bg-[#021b2f]">
-                  <HeroVideo slide={slide} />
-                  {!slide.video && (
-                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 text-white">
-                      <span aria-hidden="true" className="flex h-14 w-14 items-center justify-center rounded-full border border-white/40 bg-white/10 text-2xl">▶</span>
-                      <p className="text-lg sm:text-2xl font-bold">{slide.title}</p>
-                      <p className="text-xs sm:text-sm text-white/70">Video coming soon</p>
-                    </div>
-                  )}
+                  <img
+                    src={slide.image}
+                    alt={slide.title}
+                    className="pointer-events-none block h-full w-full object-cover"
+                    loading={index === 0 ? "eager" : "lazy"}
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                    decoding="async"
+                  />
                 </div>
               </SwiperSlide>
             ))}
