@@ -1,8 +1,10 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, LazyMotion, AnimatePresence } from "framer-motion";
 import { FiMapPin, FiLoader, FiX, FiCheck, FiAlertCircle } from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
 import { useLocationContext } from "../context/LocationContext";
 
+
+const loadMotionFeatures = () => import("../utils/motionFeatures").then(module => module.default);
 
 async function fetchAddressFromCoords(lat, lon) {
   const res = await fetch(
@@ -53,10 +55,10 @@ export default function LocationPicker({ onLocationChange, customTrigger }) {
       window.innerWidth - panelWidth - 12
     );
 
-    setPanelPosition({
-      top: rect.bottom + 12,
-      left,
-    });
+    const top = rect.bottom + 12;
+    setPanelPosition((previous) =>
+      previous.top === top && previous.left === left ? previous : { top, left }
+    );
   };
 
   useEffect(() => {
@@ -79,12 +81,21 @@ export default function LocationPicker({ onLocationChange, customTrigger }) {
     }
 
     updatePanelPosition();
-    window.addEventListener("resize", updatePanelPosition);
-    window.addEventListener("scroll", updatePanelPosition, true);
+    let frame = null;
+    const schedulePositionUpdate = () => {
+      if (frame !== null) return;
+      frame = requestAnimationFrame(() => {
+        frame = null;
+        updatePanelPosition();
+      });
+    };
+    window.addEventListener("resize", schedulePositionUpdate);
+    window.addEventListener("scroll", schedulePositionUpdate, { capture: true, passive: true });
 
     return () => {
-      window.removeEventListener("resize", updatePanelPosition);
-      window.removeEventListener("scroll", updatePanelPosition, true);
+      if (frame !== null) cancelAnimationFrame(frame);
+      window.removeEventListener("resize", schedulePositionUpdate);
+      window.removeEventListener("scroll", schedulePositionUpdate, true);
     };
   }, [isPickerOpen, required]);
 
@@ -255,6 +266,7 @@ export default function LocationPicker({ onLocationChange, customTrigger }) {
   );
 
   return (
+    <LazyMotion features={loadMotionFeatures}>
     <div className="relative" ref={wrapperRef}>
       {customTrigger ? (
         customTrigger({
@@ -299,5 +311,6 @@ export default function LocationPicker({ onLocationChange, customTrigger }) {
         )}
       </AnimatePresence>
     </div>
+    </LazyMotion>
   );
 }

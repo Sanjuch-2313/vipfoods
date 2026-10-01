@@ -263,41 +263,24 @@ export default function Home() {
     "Extra savings on organic essentials",
   ]);
   const [loading, setLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [toastMsg, setToastMsg] = useState("");
 
   useEffect(() => {
     let isMounted = true;
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const [catData, prodData] = await Promise.all([
-          getCategories().catch(() => []),
-          getShopProducts().catch(() => []),
-        ]);
+    // Categories should not wait for every page of the product catalog.
+    getCategories().then((data) => {
+      if (!isMounted) return;
+      setCategories((Array.isArray(data) ? data : [])
+        .filter((category) => category.active !== false)
+        .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
+    }).catch(() => {}).finally(() => { if (isMounted) setCategoriesLoading(false); });
 
-        if (!isMounted) return;
-
-        const catList = Array.isArray(catData) ? catData : [];
-        setCategories(
-          catList
-            .filter((c) => c.active !== false)
-            .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
-        );
-
-        const prodList = Array.isArray(prodData) ? prodData : [];
-        setProducts(
-          prodList.filter((p) => p.active !== false && p.published !== false)
-        );
-
-      } catch (err) {
-        console.error("Home data error:", err);
-        setHeroSlides([]);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    loadData();
+    getShopProducts().then((data) => {
+      if (!isMounted) return;
+      setProducts((Array.isArray(data) ? data : [])
+        .filter((product) => product.active !== false && product.published !== false));
+    }).catch(() => {}).finally(() => { if (isMounted) setLoading(false); });
 
     const fetchCoupons = async () => {
       try {
@@ -449,7 +432,7 @@ export default function Home() {
           </div>
 
           <div className="flex gap-4 overflow-x-auto px-3 py-3 -mx-3 scrollbar-hide">
-            {loading ? (
+            {categoriesLoading ? (
               <div className="flex gap-4">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div key={i} className="flex flex-col items-center min-w-[76px] animate-pulse">
