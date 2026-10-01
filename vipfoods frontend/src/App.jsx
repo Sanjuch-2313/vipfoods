@@ -7,7 +7,7 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -15,35 +15,37 @@ import GuestWarningModal from "./components/GuestWarningModal";
 import NotificationPopup from "./components/NotificationPopup";
 
 import Home from "./pages/Home";
-import ComboPacks from "./pages/ComboPacks";
-import Products from "./pages/Products";
-import ProductDetails from "./pages/ProductDetails";
-import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
-import Wishlist from "./pages/Wishlist";
-import Profile from "./pages/Profile";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import OrderSuccess from "./pages/orderSuccess";
-import MyOrders from "./pages/MyOrders";
-import AdminOrders from "./pages/Orders";
-import CouponsPage from "./pages/CouponsPage";
-import SettingsPage from "./pages/SettingsPage";
-import WalletPage from "./pages/WalletPage";
-import AddressesPage from "./pages/AddressesPage";
-import PaymentMethodsPage from "./pages/PaymentMethodsPage";
-import SupportPage from "./pages/SupportPage";
-import NotificationsPage from "./pages/NotificationsPage";
-import InfoPage from "./pages/InfoPage";
-import LostPasswordPage from "./pages/LostPasswordPage";
+// These existing styles also style the home carousel, so keep them eager.
+import "./pages/home.css";
+const ComboPacks = lazy(() => import("./pages/ComboPacks"));
+const Products = lazy(() => import("./pages/Products"));
+const ProductDetails = lazy(() => import("./pages/ProductDetails"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const Wishlist = lazy(() => import("./pages/Wishlist"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const OrderSuccess = lazy(() => import("./pages/orderSuccess"));
+const MyOrders = lazy(() => import("./pages/MyOrders"));
+const AdminOrders = lazy(() => import("./pages/Orders"));
+const CouponsPage = lazy(() => import("./pages/CouponsPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const WalletPage = lazy(() => import("./pages/WalletPage"));
+const AddressesPage = lazy(() => import("./pages/AddressesPage"));
+const PaymentMethodsPage = lazy(() => import("./pages/PaymentMethodsPage"));
+const SupportPage = lazy(() => import("./pages/SupportPage"));
+const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
+const InfoPage = lazy(() => import("./pages/InfoPage"));
+const LostPasswordPage = lazy(() => import("./pages/LostPasswordPage"));
 
-import NotFound from "./pages/NotFound";
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import { LocationProvider } from "./context/LocationContext";
 import ScrollToTop from "./components/ScrollToTop";
-import Shop from "./pages/Shop";
+const Shop = lazy(() => import("./pages/Shop"));
 
 
 function AppRoutes() {
@@ -74,6 +76,7 @@ function AppRoutes() {
       {!hideShell && <Navbar />}
 
       {/* ROUTES */}
+      <Suspense fallback={<div role="status" className="min-h-[50vh] flex items-center justify-center text-green-700">Loading…</div>}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/combo-packs" element={<ComboPacks />} />
@@ -108,6 +111,7 @@ function AppRoutes() {
         <Route path="/shop" element={<Shop />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
 
       {/* FOOTER */}
       {!hideShell && <Footer />}

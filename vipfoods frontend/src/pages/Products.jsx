@@ -1,3 +1,4 @@
+import { imageDelivery } from "../utils/imageDelivery";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FiArrowLeft, FiX, FiSliders, FiMinus, FiPlus } from "react-icons/fi";
@@ -107,9 +108,10 @@ function ProductsCard({ rawProduct, onNavigate }) {
       {/* Image */}
       <div className="relative w-full aspect-square rounded-2xl bg-gray-50 overflow-hidden mb-2.5">
         <img
-          src={image}
+          src={imageDelivery(image)}
           alt={name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          loading="lazy" decoding="async"
           onError={(e) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src = PLACEHOLDER_IMG;

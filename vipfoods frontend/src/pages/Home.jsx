@@ -1,3 +1,14 @@
+import vipSpicesVideoMobile from "../assets/optimized/vipspices-mobile.mp4";
+import vipPicklesVideoMobile from "../assets/optimized/vippickles-mobile.mp4";
+import vipSnacksVideoMobile from "../assets/optimized/vipsnacks-mobile.mp4";
+import vipDairyVideoMobile from "../assets/optimized/vipdairy-mobile.mp4";
+import vipFreshVideoMobile from "../assets/optimized/vipfresh-mobile.mp4";
+import vipSpicesVideoPoster from "../assets/optimized/vipspices.webp";
+import vipPicklesVideoPoster from "../assets/optimized/vippickles.webp";
+import vipSnacksVideoPoster from "../assets/optimized/vipsnacks.webp";
+import vipDairyVideoPoster from "../assets/optimized/vipdairy.webp";
+import vipFreshVideoPoster from "../assets/optimized/vipfresh.webp";
+import { imageDelivery } from "../utils/imageDelivery";
 import FirstVisitTour from "../components/FirstVisitTour";
 import "../components/FirstVisitTour.css";
 import { useEffect, useRef, useState } from "react";
@@ -9,11 +20,11 @@ import api from "../services/api";
 import { useCart } from "../context/CartContext";
 import { Swiper, SwiperSlide, useSwiper, useSwiperSlide } from "swiper/react";
 import { A11y, Autoplay, Navigation, Pagination } from "swiper/modules";
-import vipFreshVideo from "../assets/vipfresh.mp4";
-import vipDairyVideo from "../assets/vipdairy.mp4";
-import vipSnacksVideo from "../assets/vipsnacks.mp4";
-import vipPicklesVideo from "../assets/vippickles.mp4";
-import vipSpicesVideo from "../assets/vipspices.mp4";
+import vipFreshVideo from "../assets/optimized/vipfresh.mp4";
+import vipDairyVideo from "../assets/optimized/vipdairy.mp4";
+import vipSnacksVideo from "../assets/optimized/vipsnacks.mp4";
+import vipPicklesVideo from "../assets/optimized/vippickles.mp4";
+import vipSpicesVideo from "../assets/optimized/vipspices.mp4";
 //import vipOrganicVideo from "../assets/viporganic.mp4";
 
 
@@ -31,12 +42,12 @@ const PLACEHOLDER_IMAGE =
   );
 
 const defaultHeroSlides = [
-  { id: "brand-video", title: "", video: vipFreshVideo },
-  { id: "kitchen-video", title: "From our kitchen", video: vipFreshVideo },
-  { id: "food-video", title: "Discover VIP Foods", video: vipDairyVideo },
-  { id: "food-video-2", title: "Discover VIP Foods", video: vipSnacksVideo },
-  { id: "food-video-3", title: "Discover VIP Foods", video: vipPicklesVideo },
-  { id: "food-video-4", title: "Discover VIP Foods", video: vipSpicesVideo },
+  { id: "brand-video", title: "", video: vipFreshVideo, mobileVideo: vipFreshVideoMobile, poster: vipFreshVideoPoster },
+  { id: "kitchen-video", title: "From our kitchen", video: vipFreshVideo, mobileVideo: vipFreshVideoMobile, poster: vipFreshVideoPoster },
+  { id: "food-video", title: "Discover VIP Foods", video: vipDairyVideo, mobileVideo: vipDairyVideoMobile, poster: vipDairyVideoPoster },
+  { id: "food-video-2", title: "Discover VIP Foods", video: vipSnacksVideo, mobileVideo: vipSnacksVideoMobile, poster: vipSnacksVideoPoster },
+  { id: "food-video-3", title: "Discover VIP Foods", video: vipPicklesVideo, mobileVideo: vipPicklesVideoMobile, poster: vipPicklesVideoPoster },
+  { id: "food-video-4", title: "Discover VIP Foods", video: vipSpicesVideo, mobileVideo: vipSpicesVideoMobile, poster: vipSpicesVideoPoster },
   //{ id: "food-video-5", title: "Discover VIP Foods", video: vipOrganicVideo },
 ];
 
@@ -44,28 +55,43 @@ function HeroVideo({ slide }) {
   const videoRef = useRef(null);
   const swiper = useSwiper();
   const { isActive } = useSwiperSlide();
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia("(max-width: 640px)").matches);
+  const [visible, setVisible] = useState(true);
+  const videoSource = isMobile ? slide.mobileVideo || slide.video : slide.video;
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 640px)");
+    const update = () => setIsMobile(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting));
+    if (videoRef.current) observer.observe(videoRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !slide.video) return;
-    if (isActive && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (isActive && visible && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       video.play().catch(() => {
         // Leave the banner still if the browser blocks muted playback.
       });
     } else {
       video.pause();
     }
-  }, [isActive, slide.video]);
+  }, [isActive, visible, videoSource]);
 
   return (
     <video
       ref={videoRef}
       className="pointer-events-none block h-full w-full object-cover"
-      src={slide.video || undefined}
+      src={isActive ? videoSource || undefined : undefined}
+      poster={isActive ? slide.poster : undefined}
       controls={false}
       disablePictureInPicture
       disableRemotePlayback
-      preload={slide.video ? "metadata" : "none"}
+      preload={isActive ? "metadata" : "none"}
       muted
       playsInline
       aria-label={slide.title || "VIP Foods video"}
@@ -148,9 +174,10 @@ function DealCard({ deal, onToast }) {
           <FiHeart size={17} fill={wishlisted ? "currentColor" : "none"} />
         </button>
         <img
-          src={thumbnail}
+          src={imageDelivery(thumbnail)}
           alt={deal.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          loading="lazy" decoding="async"
           onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PLACEHOLDER_IMAGE; }}
         />
       </div>
@@ -442,9 +469,10 @@ export default function Home() {
                 >
                   <div className="home-category-glow w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] rounded-full bg-white overflow-hidden mb-2 border-2 group-hover:border-green-500 transition-colors">
                     <img
-                      src={cat.image || PLACEHOLDER_IMAGE}
+                      src={imageDelivery(cat.image, 180) || PLACEHOLDER_IMAGE}
                       alt={cat.name}
                       className="home-category-image w-full h-full object-cover"
+                      loading="lazy" decoding="async"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = PLACEHOLDER_IMAGE;
@@ -782,6 +810,7 @@ export default function Home() {
               src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=80"
               alt="Organic Vegetables"
               className="absolute inset-0 w-full h-full object-cover"
+              loading="lazy" decoding="async"
             />
             <div className="absolute inset-0 bg-black/55 backdrop-blur-[1px]"></div>
 

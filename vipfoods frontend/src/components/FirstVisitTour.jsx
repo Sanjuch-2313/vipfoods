@@ -30,13 +30,13 @@ export default function FirstVisitTour() {
   }, [open]);
   useEffect(() => {
     if (!open) return;
-    headingRef.current?.focus({ preventScroll: true });
     const target = step.target && document.querySelector(`[data-tour="${step.target}"]`);
     if (target) {
-      target.classList.add("vip-tour-highlight");
       const top = target.getBoundingClientRect().top + window.scrollY - 100;
+      target.classList.add("vip-tour-highlight");
       window.scrollTo({ top: Math.max(0, top), behavior: "instant" });
     }
+    headingRef.current?.focus({ preventScroll: true });
     return () => target?.classList.remove("vip-tour-highlight");
   }, [open, step]);
   if (!open) return null;

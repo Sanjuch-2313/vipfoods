@@ -1,3 +1,4 @@
+import { imageDelivery } from "../utils/imageDelivery";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { FiHeart, FiPlus, FiMinus } from "react-icons/fi";
@@ -109,9 +110,10 @@ function ShopProductCard({ product, isWishlisted, onToggleWishlist, onToast }) {
         </button>
 
         <img
-          src={thumbnail}
+          src={imageDelivery(thumbnail)}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          loading="lazy" decoding="async"
           onError={(e) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src = PLACEHOLDER_IMG;
@@ -388,9 +390,10 @@ export default function Shop() {
                   >
                     <div className={`w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] rounded-full bg-white overflow-hidden shadow-xs mb-2 border-2 transition-colors ${selectedCategory === (cat.slug || cat.name) ? "border-pink-200" : "border-white"}`}>
                       <img
-                        src={cat.image || PLACEHOLDER_IMG}
+                        src={imageDelivery(cat.image, 180) || PLACEHOLDER_IMG}
                         alt={cat.name}
                         className="w-full h-full object-cover"
+          loading="lazy" decoding="async"
                         onError={(e) => {
                           e.currentTarget.onerror = null;
                           e.currentTarget.src = PLACEHOLDER_IMG;
