@@ -299,7 +299,7 @@ export default function Home() {
               </SwiperSlide>
             ))}
             <p slot="container-end" className="home-banner-note">
-              <span className="home-banner-note-text"><strong>Note:</strong> VIP Fresh & Dairy &amp; products available for Guntur &amp; Vijayawada only.</span>
+              <span className="home-banner-note-text"><strong>Note:</strong> VIP Fresh & Dairy products available for Guntur &amp; Vijayawada only.</span>
             </p>
           </Swiper>
         </section>
