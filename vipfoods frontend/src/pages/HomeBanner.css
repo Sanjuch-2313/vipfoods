@@ -1,0 +1,52 @@
+/* Keep the existing desktop banner; fit the complete artwork on smaller screens. */
+@media (max-width: 1023px) {
+  .home-banner-carousel.swiper {
+    border-radius: 16px;
+  }
+
+  .home-banner-carousel .home-banner-frame {
+    height: auto;
+    aspect-ratio: 1600 / 449;
+  }
+
+  .home-banner-carousel .home-banner-frame img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+}
+
+.home-banner-note {
+  margin: 0;
+  padding: 10px 14px;
+  color: #fff;
+  background: #021b2f;
+  text-align: center;
+  font-size: clamp(11px, 2.6vw, 14px);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.home-banner-note-text {
+  display: inline-block;
+  max-width: 100%;
+  color: #dcfce7;
+  text-shadow: 0 0 6px #22c55e99, 0 0 14px #22c55e66;
+  animation: banner-note-zoom 3s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.home-banner-note-text strong {
+  color: #fde68a;
+  text-shadow: 0 0 8px #facc1570;
+}
+
+@keyframes banner-note-zoom {
+  0%, 100% { transform: scale(0.97); }
+  50% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-banner-note-text { animation: none; }
+}

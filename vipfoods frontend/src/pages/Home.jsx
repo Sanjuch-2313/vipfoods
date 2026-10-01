@@ -16,12 +16,11 @@ import { getShopProducts } from "../services/productService";
 import api from "../services/api";
 import { useCart } from "../context/CartContext";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { A11y, Autoplay, Navigation, Pagination } from "swiper/modules";
+import { A11y, Autoplay } from "swiper/modules";
 
 
 import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
+import "./HomeBanner.css";
 
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml;utf8," +
@@ -275,23 +274,22 @@ export default function Home() {
       <div className="max-w-7xl mx-auto">
         <section className="px-1 sm:px-2 pt-4 sm:pt-5" aria-label="VIP Foods featured banners">
           <Swiper
-            modules={[A11y, Autoplay, Navigation, Pagination]}
+            modules={[A11y, Autoplay]}
             slidesPerView={1}
             initialSlide={0}
             speed={650}
             loop
-            navigation
-            pagination={{ clickable: true }}
             autoplay={window.matchMedia("(prefers-reduced-motion: reduce)").matches ? false : { delay: 3000, disableOnInteraction: false }}
-            style={{ "--swiper-navigation-color": "#fff", "--swiper-navigation-size": "22px", "--swiper-pagination-color": "#fff", "--swiper-pagination-bullet-inactive-color": "#fff" }}
-            className="overflow-hidden rounded-[32px] sm:rounded-[42px] shadow-lg shadow-black/10 bg-[#021b2f]"
+            className="home-banner-carousel overflow-hidden rounded-[32px] sm:rounded-[42px] shadow-lg shadow-black/10 bg-[#021b2f]"
           >
             {heroSlides.map((slide, index) => (
               <SwiperSlide key={slide.id}>
-                <div className="relative h-[200px] sm:h-[260px] md:h-[300px] lg:h-[340px] bg-[#021b2f]">
+                <div className="home-banner-frame relative h-[200px] sm:h-[260px] md:h-[300px] lg:h-[340px] bg-[#021b2f]">
                   <img
                     src={slide.image}
                     alt={slide.title}
+                    width={1600}
+                    height={449}
                     className="pointer-events-none block h-full w-full object-cover"
                     loading={index === 0 ? "eager" : "lazy"}
                     fetchPriority={index === 0 ? "high" : "auto"}
@@ -300,6 +298,9 @@ export default function Home() {
                 </div>
               </SwiperSlide>
             ))}
+            <p slot="container-end" className="home-banner-note">
+              <span className="home-banner-note-text"><strong>Note:</strong> VIP Fresh & Dairy &amp; products available for Guntur &amp; Vijayawada only.</span>
+            </p>
           </Swiper>
         </section>
 
