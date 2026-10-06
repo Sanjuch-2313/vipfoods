@@ -36,26 +36,19 @@ export default function OrderSuccess() {
   const [loading, setLoading] = useState(false);
 
   const reviewRef = useRef(null);
-  const [reviewSeen, setReviewSeen] = useState(false);
+  const reviewSkipped = useRef(false);
   const [reviewReminder, setReviewReminder] = useState(false);
-  const blocker = useBlocker(!reviewSeen && !submitted);
+  const blocker = useBlocker(() => !reviewSkipped.current && !submitted);
   const showReview = () => {
     setReviewReminder(true);
     reviewRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
     reviewRef.current?.focus({ preventScroll: true });
   };
   useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) setReviewSeen(true);
-    }, { threshold: 0.25 });
-    if (reviewRef.current) observer.observe(reviewRef.current);
-    return () => observer.disconnect();
-  }, []);
-  useEffect(() => {
     if (blocker.state === "blocked") showReview();
   }, [blocker.state]);
   const leaveReview = () => {
-    setReviewSeen(true);
+    reviewSkipped.current = true;
     if (blocker.state === "blocked") blocker.proceed();
     else navigate("/");
   };
@@ -64,8 +57,7 @@ export default function OrderSuccess() {
 
   const submitReview = async () => {
     if (!order) {
-      alert("Order details not found to link this review. Thank you for your feedback!");
-      setSubmitted(true);
+      alert("Order details are unavailable. Please click Skip review to continue.");
       return;
     }
 

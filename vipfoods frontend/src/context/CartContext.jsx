@@ -4,11 +4,20 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("vipfoods_cart") || "[]");
+      return Array.isArray(saved) ? saved.filter(item => item?.id && Number.isInteger(item.quantity) && item.quantity > 0) : [];
+    } catch { return []; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("vipfoods_cart", JSON.stringify(cartItems)); }
+    catch { /* Continue in memory when browser storage is unavailable. */ }
+  }, [cartItems]);
   const [wishlistItems, setWishlistItems] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("vipfoods_wishlist") || "[]");
-      return Array.isArray(saved) ? saved.filter((item) => item?.id) : [];
+      return Array.isArray(saved) ? saved.filter((item) => item?.id || item?._id).map(item => ({ ...item, id: item.id || item._id })) : [];
     } catch {
       return [];
     }

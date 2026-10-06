@@ -1,3 +1,4 @@
+import { lookupAddress, fullAddress } from "../utils/locationLookup";
 import { m as motion, LazyMotion, AnimatePresence } from "framer-motion";
 import { FiMapPin, FiLoader, FiX, FiCheck, FiAlertCircle } from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
@@ -5,17 +6,6 @@ import { useLocationContext } from "../context/LocationContext";
 
 
 const loadMotionFeatures = () => import("../utils/motionFeatures").then(module => module.default);
-
-async function fetchAddressFromCoords(lat, lon) {
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1&layer=address`,
-    { signal: AbortSignal.timeout(12000) }
-  );
-  if (!res.ok) throw new Error("Could not resolve address");
-  const data = await res.json();
-  if (data.error || !data.address) throw new Error("No address found here");
-  return data.address;
-}
 
 export default function LocationPicker({ onLocationChange, customTrigger }) {
   const {
@@ -115,28 +105,17 @@ export default function LocationPicker({ onLocationChange, customTrigger }) {
     navigator.geolocation.getCurrentPosition(
       async ({ coords: { latitude, longitude, accuracy } }) => {
         try {
-          const addr = await fetchAddressFromCoords(latitude, longitude);
+          const addr = await lookupAddress(latitude, longitude);
           if (requestId !== requestRef.current) return;
           const precise = Number.isFinite(accuracy) && accuracy <= 100;
-          const street = addr.road || addr.pedestrian || addr.residential || addr.path;
-          const parts = [
-            ...(precise ? [addr.house_name, addr.building, street] : []),
-            addr.neighbourhood, addr.quarter, addr.suburb, addr.locality,
-            addr.hamlet, addr.city_district, addr.city || addr.town || addr.village,
-            addr.state, addr.postcode, addr.country,
-          ];
-          const address = [...new Set(parts.filter(Boolean))].join(", ");
+          const address = fullAddress({ ...addr, house_number: undefined });
           if (!address) throw new Error("No address found");
           setManualValue(address);
           setDoorNumber(precise ? addr.house_number || "" : "");
           setDetectedCoords({ lat: latitude, lon: longitude, accuracy });
-          // Automatically save detected location to context & storage
-          setLocation(address, { lat: latitude, lon: longitude, accuracy });
-          onLocationChange?.(address, { lat: latitude, lon: longitude, accuracy });
-
           setLocationNote(!precise
-            ? `Your device returned an approximate location${Number.isFinite(accuracy) ? ` (about ${Math.round(accuracy)} m accuracy)` : ""}. Door/flat number can be updated below.`
-            : `GPS accuracy: about ${Math.round(accuracy)} m. Location set successfully! You can add your door/flat number below if needed.`);
+            ? `Your device returned an approximate location${Number.isFinite(accuracy) ? ` (about ${Math.round(accuracy)} m accuracy)` : ""}. Verify the suggested address and enter your door/flat number before confirming.`
+            : `GPS accuracy: about ${Math.round(accuracy)} m. Check the suggested street and door/flat number, then confirm your address.`);
           setStatus("idle");
         } catch {
           if (requestId !== requestRef.current) return;

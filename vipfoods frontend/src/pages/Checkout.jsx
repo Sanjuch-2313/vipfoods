@@ -1,3 +1,4 @@
+import { lookupAddress, streetAddress } from "../utils/locationLookup";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -57,7 +58,7 @@ function CouponIcon({ className = "w-5 h-5" }) {
 export default function Checkout() {
   const navigate = useNavigate();
   const { cartItems, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const storedState = loadStoredCheckoutState();
 
@@ -274,28 +275,9 @@ export default function Checkout() {
       async (position) => {
         try {
           const { latitude, longitude, accuracy } = position.coords;
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&layer=address`
-          );
-          if (!response.ok) throw new Error("Unable to fetch address");
-          const data = await response.json();
-          if (data.error) throw new Error(data.error);
-          const addr = data.address || {};
-
+          const addr = await lookupAddress(latitude, longitude);
           const hasPreciseLocation = Number.isFinite(accuracy) && accuracy <= 100;
-          const detectedAddress = hasPreciseLocation ? [...new Set([
-            addr.house_name,
-            addr.building,
-            addr.house_number,
-            addr.road || addr.pedestrian || addr.residential || addr.path,
-            addr.neighbourhood,
-            addr.quarter,
-            addr.suburb,
-            addr.locality,
-            addr.hamlet,
-            addr.isolated_dwelling,
-            addr.city_district,
-          ].filter(Boolean))].join(", ") : "";
+          const detectedAddress = streetAddress(addr);
           const city = addr.city || addr.town || addr.village || addr.county || "";
           const stateName = addr.state || "";
           const pincode = addr.postcode || "";
@@ -303,7 +285,7 @@ export default function Checkout() {
 
           setCustomer((prev) => ({
             ...prev,
-            address1: detectedAddress,
+            address1: detectedAddress || prev.address1,
             city: city || prev.city,
             state: stateName || prev.state,
             pincode: pincode || prev.pincode,
@@ -313,7 +295,7 @@ export default function Checkout() {
           setFieldErrors({});
           setEditingAddress(true);
           if (!hasPreciseLocation) {
-            setLocationError("Your device returned an approximate location. Please enter your street and building manually.");
+            setLocationError("Your device returned an approximate location. Verify the suggested address and correct the street and door number before ordering.");
           } else if (!detectedAddress) {
             setLocationError("Could not detect street address. Please enter it manually.");
           } else if (!(addr.road || addr.pedestrian || addr.residential || addr.path)) {
@@ -321,7 +303,7 @@ export default function Checkout() {
           }
         } catch (err) {
           console.error(err);
-          setLocationError("Could not detect address. Please enter manually.");
+          setLocationError(err.message || "Could not detect address. Please enter manually.");
         } finally {
           setLocationLoading(false);
         }
@@ -467,13 +449,6 @@ export default function Checkout() {
   };
 
   const placeOnlineOrder = async () => {
-    if (walletDeduction > 0 || sessionStorage.getItem(PENDING_PAYMENT_KEY)) {
-      const { data } = await api.get("/auth/me");
-      if (!data.user?.walletPaymentsEnabled) {
-        throw new Error("Wallet payments are temporarily unavailable. Please try again once the payment service is updated.");
-      }
-      setWalletBalance(data.user.walletBalance || 0);
-    }
     const pending = sessionStorage.getItem(PENDING_PAYMENT_KEY);
     if (pending) {
       const payload = JSON.parse(pending);
@@ -490,6 +465,19 @@ export default function Checkout() {
       finalizeOrderSuccess(result.order);
       setPlacing(false);
       return;
+    }
+    // Resume an already-paid order above before checking current wallet availability.
+    // New payments must validate the wallet before opening the gateway.
+    if (walletDeduction > 0) {
+      const { data } = await api.get("/auth/me");
+      if (data.user?.walletPaymentsEnabled === false) {
+        throw new Error("Wallet payments are currently unavailable. Turn off wallet use to pay online.");
+      }
+      const currentBalance = Math.max(0, Number(data.user?.walletBalance) || 0);
+      setWalletBalance(currentBalance);
+      if (Math.round(currentBalance * 100) < Math.round(walletDeduction * 100)) {
+        throw new Error("Your wallet balance changed. Review the updated amount and place the order again.");
+      }
     }
     if (grandTotal === 0) {
       const orderPayload = {
@@ -573,7 +561,7 @@ export default function Checkout() {
 
   const handlePlaceOrder = async () => {
     if (!user) {
-      navigate("/login");
+      navigate("/login", { state: { returnTo: "/checkout" } });
       return;
     }
 
@@ -588,6 +576,8 @@ export default function Checkout() {
       setPlacing(true);
       setOrderError("");
 
+      await api.get("/auth/me");
+
       if (sessionStorage.getItem(PENDING_PAYMENT_KEY)) {
         await placeOnlineOrder();
       } else if (paymentMethod === "COD") {
@@ -597,7 +587,12 @@ export default function Checkout() {
       }
     } catch (err) {
       console.error(err);
-      setOrderError(err.message || "Failed to place order");
+      if ((err.response?.status || err.status) === 401) {
+        logout();
+        navigate("/login", { state: { returnTo: "/checkout", sessionExpired: true } });
+      } else {
+        setOrderError(err.message || "Failed to place order");
+      }
       setPlacing(false);
     }
   };

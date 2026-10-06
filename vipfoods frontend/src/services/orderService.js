@@ -30,7 +30,7 @@ export const createRazorpayOrder = async (amount, checkout) => {
     return data;
   } catch (error) {
     console.error("CREATE RAZORPAY ORDER ERROR:", error);
-    throw new Error(getErrorMessage(error, "Failed to create Razorpay order"));
+    throw Object.assign(new Error(getErrorMessage(error, "Failed to create Razorpay order")), { status: error.response?.status });
   }
 };
 
@@ -47,7 +47,7 @@ export const verifyPayment = async (paymentData) => {
     return data;
   } catch (error) {
     console.error("VERIFY PAYMENT ERROR:", error);
-    throw new Error(getErrorMessage(error, "Payment verification failed"));
+    throw Object.assign(new Error(getErrorMessage(error, "Payment verification failed")), { status: error.response?.status });
   }
 };
 

@@ -56,6 +56,7 @@ async function orderFixture({ balance = 100, insertFails = false } = {}) {
     '../models/User.js': { default: User },
     '../models/Order.js': { default: Order },
     '../models/Coupon.js': { default: {} },
+    '../models/Notification.js': { default: {} },
     '../utils/priceOnlineOrder.js': { priceOnlineOrder: async () => ({ subtotal: 100, discount: 0, items: [{ total: 100 }] }) },
     '../utils/razorpayPayment.js': { toPaise, paymentError, verifyRazorpayPayment: async (...args) => { state.verifications.push(args); } },
     mongoose: { default: mongoose }, uuid: { v4: () => crypto.randomUUID() },
@@ -263,4 +264,35 @@ test('combo selections persist in the order schema without a fake product ID', a
   await order.validate();
   assert.equal(order.items[0].comboSelections[0].productName, 'Mango');
   assert.equal(order.items[0].product, undefined);
+});
+
+
+test('online-only payment verifies the full amount without touching wallet', async () => {
+  const { state, place } = await orderFixture();
+  const body = { walletAmountUsed: 0, grandTotal: 100, razorpayOrderId: 'online-order', razorpayPaymentId: 'online-payment' };
+  const result = await place(body);
+  assert.equal(result.code, 201);
+  assert.equal(result.body.order.paymentStatus, 'PAID');
+  assert.equal(result.body.order.walletAmountUsed, 0);
+  assert.equal(result.body.order.onlinePaidAmount, 100);
+  assert.equal(state.verifications[0][3], 10000);
+  assert.equal(state.balance, 100);
+  assert.equal(state.debits.length, 0);
+  await place(body);
+  assert.equal(state.orders.length, 1);
+});
+
+test('combined payment retry preserves one debit and correct remaining wallet balance', async () => {
+  const { state, place } = await orderFixture({ balance: 75 });
+  const body = { walletAmountUsed: 60, grandTotal: 40, razorpayOrderId: 'mixed-order', razorpayPaymentId: 'mixed-payment' };
+  const result = await place(body);
+  assert.equal(result.code, 201);
+  assert.equal(result.body.order.paymentStatus, 'PAID');
+  assert.equal(result.body.order.walletAmountUsed, 60);
+  assert.equal(result.body.order.onlinePaidAmount, 40);
+  assert.equal(result.body.order.remainingAmount, 0);
+  await place(body);
+  assert.equal(state.balance, 15);
+  assert.equal(state.debits.length, 1);
+  assert.equal(state.orders.length, 1);
 });

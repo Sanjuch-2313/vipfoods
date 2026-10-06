@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus, Search } from "lucide-react";
 
 import {
   getProducts,
@@ -15,22 +15,40 @@ export default function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [status, setStatus] = useState("");
+  const [stock, setStock] = useState("");
+
   const loadProducts = async () => {
-  try {
     setLoading(true);
-
-    const response = await getProducts();
-
-    console.log("Products API:", response);
-
-    setProducts(response.products || []);
-  } catch (error) {
-    console.error("Failed to load products:", error);
-    setProducts([]);
-  } finally {
-    setLoading(false);
-  }
-};
+    setError("");
+    try {
+      const allProducts = [];
+      for (let page = 1; ; page++) {
+        const response = await getProducts({ page, sort: "-createdAt,-_id" });
+        const batch = response.products || [];
+        allProducts.push(...batch);
+        if (batch.length < (response.resultPerPage || 12)) break;
+      }
+      setProducts([...new Map(allProducts.map(product => [product._id, product])).values()]);
+    } catch (error) {
+      setError(error.response?.data?.message || "Could not load all products. Please retry.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const available = product => (product.variants || []).some(variant => variant.inStock !== false && Number(variant.stock) > 0);
+  const categories = [...new Map(products.filter(product => product.category?._id).map(product => [product.category._id, product.category])).values()]
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const query = search.trim().toLowerCase();
+  const filteredProducts = products.filter(product => {
+    const text = [product.name, product.category?.name, product.subCategory, ...(product.variants || []).map(v => v.sku)].filter(Boolean).join(" ").toLowerCase();
+    return (!query || text.includes(query)) && (!category || product.category?._id === category) &&
+      (!status || (status === "active" ? product.active !== false : status === "inactive" ? product.active === false : status === "published" ? product.published === true : product.published !== true)) &&
+      (!stock || (stock === "in" ? available(product) : !available(product)));
+  });
   useEffect(() => {
     loadProducts();
   }, []);
@@ -51,9 +69,6 @@ export default function Products() {
     }
   };
 
-  if (loading) {
-    return <h2>Loading...</h2>;
-  }
 
   return (
     <div className="products-page">
@@ -69,7 +84,16 @@ export default function Products() {
         </button>
       </div>
 
-      <div className="table-wrapper">
+      <div className="products-toolbar" aria-label="Product filters">
+        <label className="search-box-product"><Search size={18} aria-hidden="true" /><input type="search" aria-label="Search products" placeholder="Search name, category or SKU…" value={search} onChange={event => setSearch(event.target.value)} /></label>
+        <select aria-label="Filter by category" value={category} onChange={event => setCategory(event.target.value)}><option value="">All categories</option>{categories.map(item => <option key={item._id} value={item._id}>{item.name}</option>)}</select>
+        <select aria-label="Filter by product status" value={status} onChange={event => setStatus(event.target.value)}><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="published">Published</option><option value="draft">Unpublished</option></select>
+        <select aria-label="Filter by stock" value={stock} onChange={event => setStock(event.target.value)}><option value="">All stock</option><option value="in">In stock</option><option value="out">Out of stock</option></select>
+        <button type="button" onClick={() => { setSearch(""); setCategory(""); setStatus(""); setStock(""); }}>Clear filters</button>
+      </div>
+      {error && <p role="alert" className="products-load-error">{error} <button onClick={loadProducts} disabled={loading}>Retry</button></p>}
+      <p role="status">{loading ? "Loading all products…" : `${filteredProducts.length} of ${products.length} products`}</p>
+      <div className="table-wrapper products-scroll" tabIndex={0} role="region" aria-label="Added products" aria-busy={loading}>
         <table>
           <thead>
             <tr>
@@ -84,14 +108,14 @@ export default function Products() {
           </thead>
 
           <tbody>
-            {products.length === 0 ? (
+            {loading ? <tr><td colSpan="7">Loading products…</td></tr> : filteredProducts.length === 0 ? (
               <tr>
                 <td colSpan="7" style={{ textAlign: "center" }}>
-                  No Products Found
+                  No products match your search or filters
                 </td>
               </tr>
             ) : (
-              products.map((product) => (
+              filteredProducts.map((product) => (
                 <tr key={product._id}>
                   <td>
                     <img
@@ -100,6 +124,7 @@ export default function Products() {
                         "https://placehold.co/60x60"
                       }
                       alt={product.name}
+                      loading="lazy"
                     />
                   </td>
 
@@ -116,21 +141,18 @@ export default function Products() {
                   </td>
 
                   <td>
-                    {product.variants?.[0]?.stock ??
-                      0}
+                    {(product.variants || []).reduce((sum, variant) => sum + (Number(variant.stock) || 0), 0)}
                   </td>
 
                   <td>
                     <span
                       className={
-                        (product.variants?.[0]?.stock ?? 0) >
-                        0
+                        available(product)
                           ? "status active"
                           : "status out"
                       }
                     >
-                      {(product.variants?.[0]?.stock ?? 0) >
-                      0
+                      {available(product)
                         ? "In Stock"
                         : "Out Of Stock"}
                     </span>
@@ -138,6 +160,7 @@ export default function Products() {
 
                   <td>
                     <button
+                      aria-label={`Edit ${product.name}`}
                       className="icon-btn"
                       onClick={() =>
                         navigate(
@@ -149,6 +172,7 @@ export default function Products() {
                     </button>
 
                     <button
+                      aria-label={`Delete ${product.name}`}
                       className="icon-btn delete"
                       onClick={() =>
                         handleDelete(product._id)

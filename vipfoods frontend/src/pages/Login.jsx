@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
@@ -20,6 +20,7 @@ function ShoppingBasketIcon({ className = "w-12 h-12" }) {
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   const [form, setForm] = useState({
@@ -59,7 +60,7 @@ export default function Login() {
 
       login(data.user, data.token);
 
-      navigate("/", {
+      navigate(location.state?.returnTo === "/checkout" ? "/checkout" : "/", {
         replace: true,
         state: {
           showBrandIntro: true,
@@ -110,7 +111,8 @@ export default function Login() {
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {location.state?.sessionExpired && <p role="alert" className="mb-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Your session expired or is no longer valid. Log in again to continue checkout. Your cart has been kept.</p>}
+          <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email Field */}
           <div className="border border-gray-200 rounded-2xl p-3 focus-within:border-green-600 focus-within:ring-2 focus-within:ring-green-100 transition-all">
             <label

@@ -156,3 +156,13 @@ cursor:pointer;
 background:#ffe5e5;
 color:red;
 }
+.products-page .products-toolbar { flex-wrap: wrap; gap: 12px; justify-content: flex-start; }
+.products-page .products-toolbar select, .products-page .products-toolbar > button { padding: 11px 12px; border: 1px solid #d1d8e0; border-radius: 10px; background: white; color: #172b4d; }
+.products-page .products-scroll { max-height: 65vh; overflow: auto; scrollbar-gutter: stable; scrollbar-width: auto; scrollbar-color: #69829d #edf1f6; }
+.products-page .products-scroll::-webkit-scrollbar { width: 12px; height: 12px; }
+.products-page .products-scroll::-webkit-scrollbar-thumb { background: #69829d; border: 3px solid #edf1f6; border-radius: 8px; }
+.products-page .products-scroll::-webkit-scrollbar-track { background: #edf1f6; }
+.products-page .products-scroll th { position: sticky; top: 0; z-index: 1; background: #1d3557; color: white; }
+.products-page .products-load-error { color: #b42318; }
+.products-page .products-scroll:focus-visible { outline: 2px solid #16884b; outline-offset: 3px; }
+@media(max-width: 768px) { .products-page .products-toolbar select, .products-page .products-toolbar > button { width: 100%; } }

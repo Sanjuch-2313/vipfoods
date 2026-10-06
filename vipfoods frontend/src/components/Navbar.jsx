@@ -668,7 +668,7 @@ export default function Navbar() {
                   setDrawerOpen(false);
                   detectCurrentLocation().then(
                     (addr) => alert(`Location detected successfully: ${addr}`),
-                    () => alert("Location access was denied or could not be determined. Please allow location access in your browser.")
+                    (error) => alert(error.code === 1 ? "Location permission was denied. Allow access in your browser or enter your address manually." : error.message || "Could not detect location. Please retry or enter your address manually.")
                   );
                 }}
                 className="w-full flex items-center justify-between px-5 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors text-left"

@@ -1,3 +1,4 @@
+import { lookupAddress, fullAddress } from "../utils/locationLookup";
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from "react";
 
 const LocationContext = createContext(null);
@@ -17,7 +18,12 @@ export function LocationProvider({ children }) {
       return "";
     }
   });
-  const [coords, setCoords] = useState(null);
+  const [coords, setCoords] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(`${LOCAL_STORAGE_KEY}-coords`) || "null");
+      return saved && Number.isFinite(saved.lat) && Number.isFinite(saved.lon) ? saved : null;
+    } catch { return null; }
+  });
   const [isPickerOpen, setPickerOpen] = useState(false);
   const [required, setRequired] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
@@ -27,6 +33,8 @@ export function LocationProvider({ children }) {
     setCoords(coordsValue || null);
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, address);
+      if (coordsValue) localStorage.setItem(`${LOCAL_STORAGE_KEY}-coords`, JSON.stringify(coordsValue));
+      else localStorage.removeItem(`${LOCAL_STORAGE_KEY}-coords`);
     } catch {
       // ignore storage failures
     }
@@ -58,26 +66,8 @@ export function LocationProvider({ children }) {
       navigator.geolocation.getCurrentPosition(
         async ({ coords: { latitude, longitude, accuracy } }) => {
           try {
-            const res = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&layer=address`,
-              { signal: AbortSignal.timeout(12000) }
-            );
-            if (!res.ok) throw new Error("Could not resolve address");
-            const data = await res.json();
-            if (data.error || !data.address) throw new Error("No address found");
-
-            const addr = data.address;
-            const street = addr.road || addr.pedestrian || addr.residential || addr.path;
-            const parts = [
-              street,
-              addr.neighbourhood,
-              addr.suburb,
-              addr.locality,
-              addr.city || addr.town || addr.village,
-              addr.state,
-              addr.postcode,
-            ].filter(Boolean);
-            const address = [...new Set(parts)].join(", ");
+            const addr = await lookupAddress(latitude, longitude);
+            const address = fullAddress(addr);
             if (!address) throw new Error("Empty address");
 
             setLocation(address, { lat: latitude, lon: longitude, accuracy });
@@ -92,7 +82,7 @@ export function LocationProvider({ children }) {
           setIsDetecting(false);
           reject(err);
         },
-        { enableHighAccuracy: true, timeout: 20000 }
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
       );
     });
   }, [setLocation]);
