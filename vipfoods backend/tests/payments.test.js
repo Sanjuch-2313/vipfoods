@@ -232,6 +232,7 @@ test('custom combo validates size, exact item count, availability and server pri
     '../models/ComboOffer.js': { default: { findById: async () => offer } },
     '../models/Product.js': { default: { find: async () => products } },
     './comboSizes.js': { normalizeComboSize },
+    './comboRules.js': await import('../utils/comboRules.js'),
     './razorpayPayment.js': { paymentError, toPaise },
   });
   const item = { comboOffer: 'combo-1', quantity: 2, total: 1, variant: { price: 1 }, comboSelections: [
@@ -245,6 +246,11 @@ test('custom combo validates size, exact item count, availability and server pri
   await assert.rejects(priceComboItem({ ...item, comboSelections: item.comboSelections.slice(0, 1) }));
   await assert.rejects(priceComboItem({ ...item, comboSelections: [item.comboSelections[0], item.comboSelections[0]] }));
   await assert.rejects(priceComboItem({ ...item, quantity: -1 }));
+  products[0].category = 'pickles'; products[0].subCategory = 'Veg';
+  products[1].category = 'pickles'; products[1].subCategory = 'Non Veg';
+  offer.selectionRules = [{ category: 'pickles', subCategory: 'Veg', quantity: 1 }, { category: 'pickles', subCategory: 'Non Veg', quantity: 1 }];
+  await priceComboItem(item);
+  await assert.rejects(priceComboItem({ ...item, comboSelections: [{ product: 'p1', variantId: 'v1', quantity: 2 }] }));
   products[0].variants[0].weight = '500 ml';
   await assert.rejects(priceComboItem(item));
   products[0].variants[0].weight = '250g';

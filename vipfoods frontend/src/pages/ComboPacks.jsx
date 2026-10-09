@@ -20,6 +20,10 @@ function ComboCard({ offer }) {
   const [selected, setSelected] = useState({});
   const [message, setMessage] = useState("");
   const options = offer.options || [];
+  const rules = offer.selectionRules || [];
+  const matchesRule = (product, rule) => String(product.category?._id || product.category) === String(rule.category) && (!rule.subCategory || product.subCategory === rule.subCategory);
+  const ruleTotals = rules.map(rule => options.reduce((sum, option) => sum + (matchesRule(option.product, rule) ? (selected[`${option.product._id}:${option.variantId}`] || 0) : 0), 0));
+  const requirementsMet = rules.every((rule, index) => ruleTotals[index] === rule.quantity);
   const total = Object.values(selected).reduce((sum, quantity) => sum + quantity, 0);
 
   const update = (key, value) => {
@@ -28,7 +32,7 @@ function ComboCard({ offer }) {
   };
 
   const add = () => {
-    if (total !== offer.itemCount) return;
+    if (total !== offer.itemCount || !requirementsMet) return;
     const selections = options.flatMap((option) => {
       const key = `${option.product._id}:${option.variantId}`;
       const quantity = selected[key] || 0;
@@ -127,6 +131,9 @@ function ComboCard({ offer }) {
             </div>
             <p className="text-2xl font-black text-green-700">₹{Number(offer.price).toFixed(2)}</p>
           </div>
+          {rules.length > 0 && <div className="mb-4 rounded-xl bg-green-50 p-3 text-sm" aria-live="polite">
+            {rules.map((rule, index) => <p key={index}>{rule.categoryName}{rule.subCategory ? ` / ${rule.subCategory}` : ""}: {ruleTotals[index]} / {rule.quantity} selected</p>)}
+          </div>}
           {!options.length ? (
             <p className="text-sm text-gray-500">
               No products are currently available in this size.
@@ -162,7 +169,7 @@ function ComboCard({ offer }) {
                       <span className="text-sm font-bold">{quantity}</span>
                       <button
                         aria-label={`Add one ${product.name}`}
-                        disabled={total >= offer.itemCount}
+                        disabled={total >= offer.itemCount || rules.some((rule, index) => matchesRule(product, rule) && ruleTotals[index] >= rule.quantity)}
                         onClick={() => update(key, quantity + 1)}
                         className="p-2 rounded-full bg-green-600 text-white disabled:opacity-30"
                       >
@@ -179,7 +186,7 @@ function ComboCard({ offer }) {
               {total} / {offer.itemCount} items selected
             </p>
             <button
-              disabled={total !== offer.itemCount}
+              disabled={total !== offer.itemCount || !requirementsMet}
               onClick={add}
               className="rounded-full bg-green-600 px-6 py-3 text-sm font-bold text-white disabled:opacity-40"
             >

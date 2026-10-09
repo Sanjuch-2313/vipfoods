@@ -18,7 +18,7 @@ const PLACEHOLDER_IMG =
 const PAGE_SIZE = 8;
 
 import { filterAndSortProducts } from "../utils/shopFilters";
-import SubcategoryBadge from "../components/SubcategoryBadge";
+import SubcategoryBadge, { getSubcategoryColor } from "../components/SubcategoryBadge";
 
 /* ── Per-card component – manages its own selected variant ── */
 function ShopProductCard({ product, categories, isWishlisted, onToggleWishlist, onToast }) {
@@ -99,7 +99,8 @@ function ShopProductCard({ product, categories, isWishlisted, onToggleWishlist, 
         <div className="relative w-full aspect-square bg-gray-50 overflow-hidden">
           {badge && (
             <span
-              className={`absolute top-2.5 left-2.5 z-10 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-tight ${badge.bg}`}
+              style={{ backgroundColor: getSubcategoryColor(product, categories) }}
+              className="absolute top-2.5 left-2.5 z-10 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-tight"
             >
               {badge.text}
             </span>
@@ -112,11 +113,12 @@ function ShopProductCard({ product, categories, isWishlisted, onToggleWishlist, 
               e.preventDefault();
               onToggleWishlist(product);
             }}
-            className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow-xs text-gray-400 hover:text-red-500 hover:bg-white active:scale-90 transition-all focus:outline-none"
+            className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow-xs hover:bg-white active:scale-90 transition-all focus:outline-none"
             aria-label="Wishlist"
           >
             <FiHeart
-              className={wish ? "text-red-500 fill-red-500" : "text-gray-500"}
+              style={{ color: getSubcategoryColor(product, categories) }}
+              fill={wish ? "currentColor" : "none"}
               size={16}
             />
           </button>
@@ -156,10 +158,11 @@ function ShopProductCard({ product, categories, isWishlisted, onToggleWishlist, 
                   }}
                   className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all whitespace-nowrap ${
                     selectedIdx === i
-                      ? "bg-rose-50 border-rose-400 text-rose-600"
+                      ? ""
                       : "bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300"
                   }`}
-                >
+
+                    style={selectedIdx === i ? { color: getSubcategoryColor(product, categories), borderColor: getSubcategoryColor(product, categories), backgroundColor: getSubcategoryColor(product, categories) + "12" } : undefined}                >
                   {v.label}
                 </button>
               ))}
@@ -191,7 +194,8 @@ function ShopProductCard({ product, categories, isWishlisted, onToggleWishlist, 
               <button
                 type="button"
                 onClick={handleDecrease}
-                className="w-7 h-7 rounded-full bg-[#f43f5e] text-white flex items-center justify-center active:scale-90 transition-transform focus:outline-none"
+                className="w-7 h-7 rounded-full  text-white flex items-center justify-center active:scale-90 transition-transform focus:outline-none"
+              style={{ backgroundColor: getSubcategoryColor(product, categories) }}
               >
                 <FiMinus size={13} strokeWidth={3} />
               </button>
@@ -201,7 +205,8 @@ function ShopProductCard({ product, categories, isWishlisted, onToggleWishlist, 
               <button
                 type="button"
                 onClick={handleIncrease}
-                className="w-7 h-7 rounded-full bg-[#f43f5e] text-white flex items-center justify-center active:scale-90 transition-transform focus:outline-none"
+                className="w-7 h-7 rounded-full  text-white flex items-center justify-center active:scale-90 transition-transform focus:outline-none"
+              style={{ backgroundColor: getSubcategoryColor(product, categories) }}
               >
                 <FiPlus size={13} strokeWidth={3} />
               </button>
@@ -210,7 +215,8 @@ function ShopProductCard({ product, categories, isWishlisted, onToggleWishlist, 
             <button
               type="button"
               onClick={handleAdd}
-              className="w-8 h-8 rounded-full bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center shadow-sm active:scale-90 transition-transform focus:outline-none"
+              className="w-8 h-8 rounded-full  hover:brightness-90 text-white flex items-center justify-center shadow-sm active:scale-90 transition-transform focus:outline-none"
+              style={{ backgroundColor: getSubcategoryColor(product, categories) }}
               title="Add to cart"
             >
               <FiPlus size={18} strokeWidth={2.5} />

@@ -1,11 +1,11 @@
 import { imageDelivery } from "../utils/imageDelivery";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { FiArrowLeft, FiX, FiSliders, FiMinus, FiPlus } from "react-icons/fi";
+import { FiArrowLeft, FiX, FiSliders, FiMinus, FiPlus, FiHeart } from "react-icons/fi";
 import { getShopProducts } from "../services/productService";
 import { getCategories } from "../services/categoryService";
 import { useCart } from "../context/CartContext";
-import SubcategoryBadge from "../components/SubcategoryBadge";
+import SubcategoryBadge, { getSubcategoryColor } from "../components/SubcategoryBadge";
 
 const PLACEHOLDER_IMG =
   "data:image/svg+xml;utf8," +
@@ -54,7 +54,7 @@ const matchesCategory = (productCategory, selectedCategory) => {
 
 /* ── Per-card component with its own variant state ── */
 function ProductsCard({ rawProduct, categories = [], onNavigate }) {
-  const { cartItems, addToCart, updateCartQuantity, removeFromCart } = useCart();
+  const { cartItems, addToCart, updateCartQuantity, removeFromCart, wishlistItems, toggleWishlist } = useCart();
 
   // Build variants from raw backend data
   const variants = (rawProduct.variants || []).map((v) => ({
@@ -73,6 +73,10 @@ function ProductsCard({ rawProduct, categories = [], onNavigate }) {
   };
 
   const id = rawProduct._id || rawProduct.id;
+  const wishlisted = wishlistItems.some(item => (item._id || item.id) === id);
+  const accentColor = getSubcategoryColor(rawProduct, categories);
+  const hasDiscount = Number.isFinite(selected.mrp) && Number.isFinite(selected.price) && selected.mrp > 0 && selected.price >= 0 && selected.price < selected.mrp;
+  const discountPercent = hasDiscount ? Math.round((selected.mrp - selected.price) / selected.mrp * 100) : 0;
   const name = rawProduct.name;
   const image = rawProduct.images?.[0] || rawProduct.image || PLACEHOLDER_IMG;
   const tag = rawProduct.category?.name || "Groceries";
@@ -114,6 +118,21 @@ function ProductsCard({ rawProduct, categories = [], onNavigate }) {
         <div className="p-3 sm:p-3.5">
           {/* Image */}
           <div className="relative w-full aspect-square rounded-2xl bg-gray-50 overflow-hidden mb-2.5">
+            {hasDiscount && (
+              <span style={{ backgroundColor: accentColor }} className="absolute top-2 left-2 z-10 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs">
+                {discountPercent}% OFF
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={event => { event.preventDefault(); event.stopPropagation(); toggleWishlist(rawProduct); }}
+              aria-label={wishlisted ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
+              aria-pressed={wishlisted}
+              style={{ color: accentColor }}
+              className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 shadow-sm active:scale-90 transition-transform"
+            >
+              <FiHeart size={17} fill={wishlisted ? "currentColor" : "none"} />
+            </button>
             <img
               src={imageDelivery(image)}
               alt={name}
@@ -149,10 +168,11 @@ function ProductsCard({ rawProduct, categories = [], onNavigate }) {
                     onClick={(e) => { e.stopPropagation(); e.preventDefault(); setSelectedIdx(i); }}
                     className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all whitespace-nowrap ${
                       selectedIdx === i
-                        ? "bg-rose-50 border-rose-400 text-rose-600"
+                        ? ""
                         : "bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300"
                     }`}
-                  >
+
+                    style={selectedIdx === i ? { color: getSubcategoryColor(rawProduct, categories), borderColor: getSubcategoryColor(rawProduct, categories), backgroundColor: getSubcategoryColor(rawProduct, categories) + "12" } : undefined}                  >
                     {v.label}
                   </button>
                 ))}
@@ -170,7 +190,8 @@ function ProductsCard({ rawProduct, categories = [], onNavigate }) {
           <button
             type="button"
             onClick={handleAdd}
-            className="w-full bg-[#f43f5e] hover:bg-[#e11d48] text-white py-2.5 rounded-2xl font-extrabold text-xs sm:text-sm text-center shadow-xs active:scale-[0.98] transition-transform focus:outline-none"
+            className="w-full  hover:brightness-90 text-white py-2.5 rounded-2xl font-extrabold text-xs sm:text-sm text-center shadow-xs active:scale-[0.98] transition-transform focus:outline-none"
+              style={{ backgroundColor: getSubcategoryColor(rawProduct, categories) }}
           >
             Add to Cart
           </button>
@@ -179,7 +200,8 @@ function ProductsCard({ rawProduct, categories = [], onNavigate }) {
             <button
               type="button"
               onClick={handleDecrease}
-              className="w-9 h-9 rounded-xl bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center font-extrabold active:scale-90 transition-transform shadow-xs"
+              className="w-9 h-9 rounded-xl  hover:brightness-90 text-white flex items-center justify-center font-extrabold active:scale-90 transition-transform shadow-xs"
+              style={{ backgroundColor: getSubcategoryColor(rawProduct, categories) }}
             >
               <FiMinus size={15} strokeWidth={2.5} />
             </button>
@@ -187,7 +209,8 @@ function ProductsCard({ rawProduct, categories = [], onNavigate }) {
             <button
               type="button"
               onClick={handleIncrease}
-              className="w-9 h-9 rounded-xl bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center font-extrabold active:scale-90 transition-transform shadow-xs"
+              className="w-9 h-9 rounded-xl  hover:brightness-90 text-white flex items-center justify-center font-extrabold active:scale-90 transition-transform shadow-xs"
+              style={{ backgroundColor: getSubcategoryColor(rawProduct, categories) }}
             >
               <FiPlus size={15} strokeWidth={2.5} />
             </button>

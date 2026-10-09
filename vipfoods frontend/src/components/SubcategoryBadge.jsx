@@ -8,10 +8,10 @@ const COLOR_MAP = [
   { pattern: /non[- ]?veg|meat|chicken|mutton|pork|beef|lamb/i, color: "#dc2626" },   // Red
   { pattern: /fish|seafood|prawn|shrimp|crab|lobster/i,         color: "#e85d04" },   // Orange-red
   { pattern: /egg/i,                                             color: "#f97316" },   // Orange
-  { pattern: /dairy|milk|cheese|paneer|curd|butter|ghee|cream/i, color: "#2563eb" },  // Blue
-  { pattern: /organic/i,                                         color: "#0d9488" },   // Teal
+  { pattern: /dairy|diary|milk|cheese|paneer|curd|butter|ghee|cream/i, color: "#2b6096" },  // Dairy logo blue
+  { pattern: /organic/i,                                         color: "#92400e" },   // Brown
   { pattern: /spice|masala|herb/i,                               color: "#d97706" },   // Amber
-  { pattern: /snack|chips|biscuit|cookie|cracker/i,              color: "#7c3aed" },   // Purple
+  { pattern: /snack|chips|biscuit|cookie|cracker/i,              color: "#ca8a04" },   // Golden yellow
   { pattern: /pickle|achar/i,                                    color: "#65a30d" },   // Lime
   { pattern: /sweet|dessert|mithai|chocolate/i,                  color: "#db2777" },   // Pink
   { pattern: /beverage|drink|juice|tea|coffee/i,                 color: "#0891b2" },   // Cyan
@@ -40,6 +40,14 @@ export function getSubcategoryColor(product, categories = []) {
   if (!product) return DEFAULT_COLOR;
 
   const subName = (product.subCategory || "").trim();
+
+  // These ranges share their category color across all subcategories.
+  const categoryId = typeof product.category === "object" ? product.category?._id : product.category;
+  const parent = categories.find(c => c._id === categoryId || c.slug === categoryId);
+  const categoryName = [product.category?.name, product.category?.slug, parent?.name, parent?.slug, typeof product.category === "string" ? product.category : ""].filter(Boolean).join(" ");
+  if (/dairy|diary/i.test(categoryName)) return "#2b6096";
+  if (/snack/i.test(categoryName)) return "#ca8a04";
+  if (/organic/i.test(categoryName)) return "#92400e";
 
   // 1. Check populated product.category.subCategories (populated by backend)
   if (product.category && typeof product.category === "object" && Array.isArray(product.category.subCategories)) {

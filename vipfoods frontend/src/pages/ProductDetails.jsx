@@ -7,7 +7,7 @@ import {
 } from "react-icons/fi";
 import { getProductById } from "../services/productService";
 import { useCart } from "../context/CartContext";
-import SubcategoryBadge from "../components/SubcategoryBadge";
+import SubcategoryBadge, { getSubcategoryColor } from "../components/SubcategoryBadge";
 import { imageDelivery } from "../utils/imageDelivery";
 import "./productDetails.css";
 
@@ -137,12 +137,14 @@ export default function ProductDetails() {
     navigate("/checkout");
   };
 
+  const accentColor = getSubcategoryColor(raw);
+
   const images = product.images.length ? product.images : [PLACEHOLDER];
 
   const stars = Array.from({ length: 5 }, (_, i) => i < Math.round(product.averageRating));
 
   return (
-    <main className="pd-page">
+    <main className="pd-page" style={{ "--pd-accent": accentColor, "--pd-accent-soft": accentColor + "12" }}>
       <div className="pd-inner">
         {/* ── Back button ── */}
         <button type="button" className="pd-back" onClick={() => navigate(-1)}>

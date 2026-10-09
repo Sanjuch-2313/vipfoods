@@ -9,7 +9,7 @@ import { imageDelivery } from "../utils/imageDelivery";
 import FirstVisitTour from "../components/FirstVisitTour";
 import "../components/FirstVisitTour.css";
 import { useEffect, useState } from "react";
-import SubcategoryBadge from "../components/SubcategoryBadge";
+import SubcategoryBadge, { getSubcategoryColor } from "../components/SubcategoryBadge";
 import { Link, useNavigate } from "react-router-dom";
 import { FiHeart, FiPlus, FiArrowRight, FiAward, FiTruck, FiMinus } from "react-icons/fi";
 import { getCategories } from "../services/categoryService";
@@ -101,7 +101,7 @@ function DealCard({ deal, categories = [], onToast }) {
       <Link to={`/products/${id}`} className="block p-2.5 sm:p-3" tabIndex={-1} aria-label={`View ${deal.name}`}>
         {/* Image */}
         <div className="relative w-full aspect-square rounded-2xl bg-gray-50 overflow-hidden mb-2">
-          <span className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs">
+          <span style={{ backgroundColor: getSubcategoryColor(deal, categories) }} className="absolute top-2 left-2 z-10 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs">
             {badge}
           </span>
           <button
@@ -109,7 +109,8 @@ function DealCard({ deal, categories = [], onToast }) {
             onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleWishlist(deal); }}
             aria-label={wishlisted ? `Remove ${deal.name} from wishlist` : `Add ${deal.name} to wishlist`}
             aria-pressed={wishlisted}
-            className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-rose-500 shadow-sm"
+            className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 shadow-sm"
+            style={{ color: getSubcategoryColor(deal, categories) }}
           >
             <FiHeart size={17} fill={wishlisted ? "currentColor" : "none"} />
           </button>
@@ -139,10 +140,11 @@ function DealCard({ deal, categories = [], onToast }) {
                   onClick={(e) => { e.stopPropagation(); e.preventDefault(); setSelectedIdx(i); }}
                   className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all whitespace-nowrap ${
                     selectedIdx === i
-                      ? "bg-rose-50 border-rose-400 text-rose-600"
+                      ? ""
                       : "bg-gray-50 border-gray-200 text-gray-500"
                   }`}
-                >
+
+                    style={selectedIdx === i ? { color: getSubcategoryColor(deal, categories), borderColor: getSubcategoryColor(deal, categories), backgroundColor: getSubcategoryColor(deal, categories) + "12" } : undefined}                >
                   {v.label}
                 </button>
               ))}
@@ -164,14 +166,16 @@ function DealCard({ deal, categories = [], onToast }) {
           <div className="flex items-center gap-1">
             <button
               type="button" onClick={handleDecrease}
-              className="w-7 h-7 rounded-full bg-[#f43f5e] text-white flex items-center justify-center active:scale-90 transition-transform"
+              className="w-7 h-7 rounded-full  text-white flex items-center justify-center active:scale-90 transition-transform"
+              style={{ backgroundColor: getSubcategoryColor(deal, categories) }}
             >
               <FiMinus size={12} strokeWidth={3} />
             </button>
             <span className="text-sm font-bold text-gray-900 min-w-[18px] text-center">{qty}</span>
             <button
               type="button" onClick={handleIncrease}
-              className="w-7 h-7 rounded-full bg-[#f43f5e] text-white flex items-center justify-center active:scale-90 transition-transform"
+              className="w-7 h-7 rounded-full  text-white flex items-center justify-center active:scale-90 transition-transform"
+              style={{ backgroundColor: getSubcategoryColor(deal, categories) }}
             >
               <FiPlus size={12} strokeWidth={3} />
             </button>
@@ -180,7 +184,8 @@ function DealCard({ deal, categories = [], onToast }) {
           <button
             type="button"
             onClick={handleAdd}
-            className="w-8 h-8 rounded-full bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center shadow-xs active:scale-90 transition-transform"
+            className="w-8 h-8 rounded-full  hover:brightness-90 text-white flex items-center justify-center shadow-xs active:scale-90 transition-transform"
+              style={{ backgroundColor: getSubcategoryColor(deal, categories) }}
             title="Add to cart"
           >
             <FiPlus size={18} strokeWidth={2.5} />
@@ -200,6 +205,7 @@ export default function Home() {
   const [promoItems, setPromoItems] = useState([
     "Free Delivery on orders above ₹499",
     "Fresh farm picks every day",
+    "Home Made Products",
     "VIP offers updated weekly",
     "Extra savings on organic essentials",
   ]);
@@ -239,7 +245,8 @@ export default function Home() {
           "Free Delivery on orders above ₹499",
           ...couponOffers,
           "Fresh farm picks every day",
-          ...prev.filter((item) => !couponOffers.includes(item) && item !== "Free Delivery on orders above ₹499"),
+          "Home Made Products",
+          ...prev.filter((item) => !couponOffers.includes(item) && !["Free Delivery on orders above ₹499", "Fresh farm picks every day", "Home Made Products"].includes(item)),
         ]);
       } catch (err) {
         console.error("Coupon ticker fetch failed:", err);
