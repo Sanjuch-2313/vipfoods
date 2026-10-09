@@ -51,6 +51,12 @@ const subCategorySchema = new mongoose.Schema(
       lowercase: true,
     },
 
+    color: {
+      type: String,
+      default: "#00875a",
+      trim: true,
+    },
+
     active: {
       type: Boolean,
       default: true,

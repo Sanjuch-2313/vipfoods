@@ -1,10 +1,11 @@
 import { imageDelivery } from "../utils/imageDelivery";
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { FiArrowLeft, FiX, FiSliders, FiMinus, FiPlus } from "react-icons/fi";
 import { getShopProducts } from "../services/productService";
 import { getCategories } from "../services/categoryService";
 import { useCart } from "../context/CartContext";
+import SubcategoryBadge from "../components/SubcategoryBadge";
 
 const PLACEHOLDER_IMG =
   "data:image/svg+xml;utf8," +
@@ -52,7 +53,7 @@ const matchesCategory = (productCategory, selectedCategory) => {
 };
 
 /* ── Per-card component with its own variant state ── */
-function ProductsCard({ rawProduct, onNavigate }) {
+function ProductsCard({ rawProduct, categories = [], onNavigate }) {
   const { cartItems, addToCart, updateCartQuantity, removeFromCart } = useCart();
 
   // Build variants from raw backend data
@@ -103,60 +104,68 @@ function ProductsCard({ rawProduct, onNavigate }) {
 
   return (
     <div
-      className="bg-white rounded-[24px] border border-gray-100 p-3 sm:p-3.5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+      className="bg-white rounded-[24px] border border-gray-100 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
     >
-      {/* Image */}
-      <div className="relative w-full aspect-square rounded-2xl bg-gray-50 overflow-hidden mb-2.5">
-        <img
-          src={imageDelivery(image)}
-          alt={name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy" decoding="async"
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = PLACEHOLDER_IMG;
-          }}
-        />
-      </div>
+      {/* Subcategory / Veg-NonVeg Banner */}
+      <SubcategoryBadge product={rawProduct} categories={categories} />
 
-      {/* Price, Name */}
-      <div>
-        <span className="font-extrabold text-base sm:text-lg text-gray-900 block leading-tight">
-          ₹{selected.price}
-        </span>
-        {selected.mrp > selected.price && (
-          <span className="text-xs text-gray-400 line-through">₹{selected.mrp}</span>
-        )}
-        <h3 className="font-extrabold text-sm text-gray-900 truncate mt-1">{name}</h3>
-
-        {/* Sliding variant chips */}
-        {variants.length > 0 ? (
-          <div
-            className="flex gap-1.5 mt-1.5 overflow-x-auto pb-0.5"
-            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
-          >
-            {variants.map((v, i) => (
-              <button
-                key={`${v.label}-${i}`}
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setSelectedIdx(i); }}
-                className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all whitespace-nowrap ${
-                  selectedIdx === i
-                    ? "bg-rose-50 border-rose-400 text-rose-600"
-                    : "bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300"
-                }`}
-              >
-                {v.label}
-              </button>
-            ))}
+      {/* Clickable area → product detail */}
+      <Link to={`/products/${id}`} className="block" tabIndex={-1} aria-label={`View ${name}`}>
+        <div className="p-3 sm:p-3.5">
+          {/* Image */}
+          <div className="relative w-full aspect-square rounded-2xl bg-gray-50 overflow-hidden mb-2.5">
+            <img
+              src={imageDelivery(image)}
+              alt={name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy" decoding="async"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = PLACEHOLDER_IMG;
+              }}
+            />
           </div>
-        ) : (
-          <p className="text-[11px] text-gray-400 font-medium mb-1">{selected.label}</p>
-        )}
-      </div>
+
+          {/* Price, Name */}
+          <div>
+            <span className="font-extrabold text-base sm:text-lg text-gray-900 block leading-tight">
+              ₹{selected.price}
+            </span>
+            {selected.mrp > selected.price && (
+              <span className="text-xs text-gray-400 line-through">₹{selected.mrp}</span>
+            )}
+            <h3 className="font-extrabold text-sm text-gray-900 truncate mt-1">{name}</h3>
+
+            {/* Sliding variant chips */}
+            {variants.length > 0 ? (
+              <div
+                className="flex gap-1.5 mt-1.5 overflow-x-auto pb-0.5"
+                style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+              >
+                {variants.map((v, i) => (
+                  <button
+                    key={`${v.label}-${i}`}
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); setSelectedIdx(i); }}
+                    className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all whitespace-nowrap ${
+                      selectedIdx === i
+                        ? "bg-rose-50 border-rose-400 text-rose-600"
+                        : "bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300"
+                    }`}
+                  >
+                    {v.label}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[11px] text-gray-400 font-medium mb-1">{selected.label}</p>
+            )}
+          </div>
+        </div>
+      </Link>
 
       {/* Add to Cart / Stepper */}
-      <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+      <div className="px-3 sm:px-3.5 pb-3 sm:pb-3.5">
         {qty === 0 ? (
           <button
             type="button"
@@ -463,6 +472,7 @@ export default function Products() {
               <ProductsCard
                 key={product._id || product.id}
                 rawProduct={product}
+                categories={categories}
                 onNavigate={navigate}
               />
             ))}

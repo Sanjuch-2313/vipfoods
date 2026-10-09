@@ -111,6 +111,12 @@ const productSchema = new mongoose.Schema(
       default: "",
     },
 
+    subCategoryColor: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     brand: {
       type: String,
       default: "VIP Foods",

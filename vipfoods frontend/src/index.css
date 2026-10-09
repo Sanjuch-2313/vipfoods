@@ -34,9 +34,6 @@
 
   img {
     @apply block max-w-full h-auto;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    border-radius: 0.75rem;
-    background-color: rgba(248, 250, 252, 0.8);
   }
 
   /* Refined Modern Scrollbar */

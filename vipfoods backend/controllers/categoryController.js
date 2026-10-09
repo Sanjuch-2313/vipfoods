@@ -45,14 +45,22 @@ export const createCategory = async (req, res) => {
       subCategories = JSON.parse(subCategories);
     }
 
-    const formattedSubCategories = (subCategories || []).map((sub) => ({
-      name: sub.name.trim(),
-      slug: slugify(sub.name, {
-        lower: true,
-        strict: true,
-      }),
-      active: sub.active ?? true,
-    }));
+    const formattedSubCategories = (subCategories || [])
+      .map((sub) => {
+        const subName = typeof sub === "string" ? sub.trim() : (sub?.name || "").trim();
+        const defaultColor = /non[- ]?veg|meat|egg|chicken|fish/i.test(subName) ? "#dc2626" : "#00875a";
+        const subColor = typeof sub === "object" && sub?.color ? String(sub.color).trim() : defaultColor;
+        return {
+          name: subName,
+          slug: slugify(subName, {
+            lower: true,
+            strict: true,
+          }),
+          color: subColor || defaultColor,
+          active: sub?.active ?? true,
+        };
+      })
+      .filter((s) => Boolean(s.name));
 
     const category = await Category.create({
       name: name.trim(),
@@ -185,14 +193,22 @@ export const updateCategory = async (req, res) => {
     category.slug = slug;
     category.description = description || "";
 
-    category.subCategories = (subCategories || []).map((sub) => ({
-      name: sub.name.trim(),
-      slug: slugify(sub.name, {
-        lower: true,
-        strict: true,
-      }),
-      active: sub.active ?? true,
-    }));
+    category.subCategories = (subCategories || [])
+      .map((sub) => {
+        const subName = typeof sub === "string" ? sub.trim() : (sub?.name || "").trim();
+        const defaultColor = /non[- ]?veg|meat|egg|chicken|fish/i.test(subName) ? "#dc2626" : "#00875a";
+        const subColor = typeof sub === "object" && sub?.color ? String(sub.color).trim() : defaultColor;
+        return {
+          name: subName,
+          slug: slugify(subName, {
+            lower: true,
+            strict: true,
+          }),
+          color: subColor || defaultColor,
+          active: sub?.active ?? true,
+        };
+      })
+      .filter((s) => Boolean(s.name));
 
     category.featured = featured ?? category.featured;
     category.active = active ?? category.active;

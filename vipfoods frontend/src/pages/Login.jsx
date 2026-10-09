@@ -1,3 +1,6 @@
+import vipLogo from "../assets/viplogo.jpg";
+import { useSocialLogin } from "../hooks/useSocialLogin";
+import SocialDevModal from "../components/SocialDevModal";
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
@@ -6,20 +9,16 @@ import { FaFacebook } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { loginUser } from "../services/authService";
 
-function ShoppingBasketIcon({ className = "w-12 h-12" }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
-      <path d="M19 6h-2.18l-2.9-4.36a1 1 0 0 0-1.66 1.12L14.13 6H9.87L11.74 2.76a1 1 0 0 0-1.66-1.12L7.18 6H5a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1h.23l1.32 10.57A3 3 0 0 0 8.52 23h6.96a3 3 0 0 0 2.97-2.43L19.77 10H20a1 1 0 0 0 1-1V8a2 2 0 0 0-2-2zm-3.52 14.7a1 1 0 0 1-.99.8H8.52a1 1 0 0 1-.99-.8L6.28 10h11.44zM9 13v5h2v-5H9zm4 0v5h2v-5h-2z" />
-    </svg>
-  );
-}
-
 export default function Login() {
   const navigate = useNavigate();
+  const {
+    handleSocialClick,
+    socialBusy,
+    socialError,
+    devModal,
+    closeDevModal,
+    confirmDevLogin,
+  } = useSocialLogin();
   const location = useLocation();
   const { login } = useAuth();
 
@@ -81,10 +80,10 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#43238a] via-[#3a1d7c] to-[#2c1463] flex flex-col justify-between font-sans">
       {/* Top Hero Section */}
-      <div className="pt-12 pb-8 px-6 text-center flex flex-col items-center">
-        <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-[#f43f5e] mb-4 shadow-inner border border-white/10">
-          <ShoppingBasketIcon className="w-10 h-10" />
-        </div>
+      <div className="pt-10 pb-6 px-6 text-center flex flex-col items-center">
+        <Link to="/" className="inline-block mb-3.5 transition-transform active:scale-95" aria-label="VIP Foods Home">
+          <img src={vipLogo} alt="VIP Foods" className="h-16 sm:h-20 w-auto max-w-[280px] object-contain rounded-xl" />
+        </Link>
         <h1 className="text-white text-2xl sm:text-3xl font-extrabold tracking-tight">
           Shop Fresh, Shop Fast
         </h1>
@@ -95,6 +94,8 @@ export default function Login() {
 
       {/* Bottom Sheet White Card */}
       <div className="bg-white rounded-t-[36px] shadow-2xl px-6 pt-6 pb-10 flex-1 max-w-lg mx-auto w-full">
+        {socialError && <p role="alert" className="mb-4 text-sm text-red-600">{socialError}</p>}
+        {socialBusy && <p role="status" className="mb-4 text-sm text-gray-600">Opening secure sign-in…</p>}
         {/* Login / Sign Up Tabs */}
         <div className="bg-gray-100 p-1 rounded-2xl flex max-w-sm mx-auto mb-6">
           <button
@@ -211,23 +212,34 @@ export default function Login() {
         <div className="space-y-3">
           <button
             type="button"
-            onClick={() => alert("Google sign-in is coming soon.")}
-            className="w-full border-2 border-gray-900 rounded-2xl py-3 px-4 flex items-center justify-center gap-2.5 font-bold text-sm text-gray-900 hover:bg-gray-50 active:scale-[0.99] transition-all"
+            disabled={socialBusy}
+            onClick={() => handleSocialClick("google")}
+            className="w-full border-2 border-gray-900 rounded-2xl py-3 px-4 flex items-center justify-center gap-2.5 font-bold text-sm text-gray-900 hover:bg-gray-50 active:scale-[0.99] transition-all disabled:opacity-50"
           >
             <FcGoogle size={20} />
-            <span>Continue with Google</span>
+            <span>{socialBusy ? "Opening Google sign-in…" : "Continue with Google"}</span>
           </button>
 
           <button
             type="button"
-            onClick={() => alert("Facebook sign-in is coming soon.")}
-            className="w-full border-2 border-gray-900 rounded-2xl py-3 px-4 flex items-center justify-center gap-2.5 font-bold text-sm text-gray-900 hover:bg-gray-50 active:scale-[0.99] transition-all"
+            disabled={socialBusy}
+            onClick={() => handleSocialClick("facebook")}
+            className="w-full border-2 border-gray-900 rounded-2xl py-3 px-4 flex items-center justify-center gap-2.5 font-bold text-sm text-gray-900 hover:bg-gray-50 active:scale-[0.99] transition-all disabled:opacity-50"
           >
             <FaFacebook className="text-[#1877f2]" size={20} />
-            <span>Continue with Facebook</span>
+            <span>{socialBusy ? "Opening Facebook sign-in…" : "Continue with Facebook"}</span>
           </button>
         </div>
       </div>
+
+      <SocialDevModal
+        isOpen={devModal.open}
+        onClose={closeDevModal}
+        provider={devModal.provider}
+        onConfirm={confirmDevLogin}
+        busy={socialBusy}
+        error={socialError}
+      />
     </div>
   );
 }

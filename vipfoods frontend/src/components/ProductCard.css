@@ -7,6 +7,16 @@
   box-shadow: 0 10px 26px rgba(17, 24, 39, 0.04);
 }
 
+.vip-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.vip-card-link:hover {
+  text-decoration: none;
+}
+
 .vip-image-box {
   position: relative;
   display: block;

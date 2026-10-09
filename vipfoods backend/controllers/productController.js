@@ -17,6 +17,7 @@ export const createProduct = async (req, res) => {
       description,
       category,
       subCategory,
+      subCategoryColor,
       foodType,
   snackType,
   freshType,
@@ -63,13 +64,27 @@ export const createProduct = async (req, res) => {
       }
     });
 
+    let resolvedSubColor = subCategoryColor ? String(subCategoryColor).trim() : "";
+    if (!resolvedSubColor && subCategory && category) {
+      try {
+        const catDoc = await Category.findById(category).lean();
+        const found = catDoc?.subCategories?.find(
+          (s) => s.name?.toLowerCase() === subCategory.trim().toLowerCase()
+        );
+        if (found?.color) resolvedSubColor = found.color;
+      } catch (e) {
+        // silently fallback
+      }
+    }
+
     const product = await Product.create({
       name,
       slug: slugify(name, { lower: true, strict: true }),
       shortDescription,
       description,
       category,
-      subCategory,
+      subCategory: subCategory ? subCategory.trim() : "",
+      subCategoryColor: resolvedSubColor,
       brand,
       images,
       variants: parsedVariants,
@@ -136,11 +151,12 @@ export const getProducts = async (req, res) => {
     )
       .search()
       .filter()   // now only featured, active, badge
-      .sort()
-      .paginate(resultPerPage);
+      .sort();
+
+    const totalProducts = await Product.countDocuments(apiFeatures.query.getFilter());
+    apiFeatures.paginate(resultPerPage);
 
     const products = await apiFeatures.query;
-    const totalProducts = products.length;
 
     return res.status(200).json({
       success: true,
@@ -233,8 +249,19 @@ export const updateProduct = async (req, res) => {
       data.badges = JSON.parse(data.badges);
     }
 
-    if (data.nutrition) {
-      data.nutrition = JSON.parse(data.nutrition);
+    if (data.subCategory && !data.subCategoryColor) {
+      try {
+        const catId = data.category || (await Product.findById(req.params.id).select("category"))?.category;
+        if (catId) {
+          const catDoc = await Category.findById(catId).lean();
+          const match = catDoc?.subCategories?.find(
+            (s) => s.name?.toLowerCase() === String(data.subCategory).trim().toLowerCase()
+          );
+          if (match?.color) data.subCategoryColor = match.color;
+        }
+      } catch (e) {
+        // ignore
+      }
     }
 
     const product = await Product.findByIdAndUpdate(req.params.id, data, {

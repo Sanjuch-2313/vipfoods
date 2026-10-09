@@ -1,6 +1,6 @@
 import { imageDelivery } from "../utils/imageDelivery";
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { FiHeart, FiPlus, FiMinus } from "react-icons/fi";
 import { getCategories } from "../services/categoryService";
 import { getShopProducts } from "../services/productService";
@@ -18,9 +18,10 @@ const PLACEHOLDER_IMG =
 const PAGE_SIZE = 8;
 
 import { filterAndSortProducts } from "../utils/shopFilters";
+import SubcategoryBadge from "../components/SubcategoryBadge";
 
 /* ── Per-card component – manages its own selected variant ── */
-function ShopProductCard({ product, isWishlisted, onToggleWishlist, onToast }) {
+function ShopProductCard({ product, categories, isWishlisted, onToggleWishlist, onToast }) {
   const { addToCart, cartItems, updateCartQuantity } = useCart();
 
   // Build a clean variants list from whatever the backend sends
@@ -84,46 +85,56 @@ function ShopProductCard({ product, isWishlisted, onToggleWishlist, onToast }) {
 
   return (
     <div className="bg-white rounded-[22px] border border-gray-100 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group">
-      {/* Product Image */}
-      <div className="relative w-full aspect-square bg-gray-50 overflow-hidden">
-        {badge && (
-          <span
-            className={`absolute top-2.5 left-2.5 z-10 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-tight ${badge.bg}`}
+      {/* Subcategory / Veg-NonVeg Banner */}
+      <SubcategoryBadge product={product} categories={categories} />
+
+      {/* Clickable area → product detail */}
+      <Link
+        to={`/products/${product._id || product.id}`}
+        className="block"
+        tabIndex={-1}
+        aria-label={`View ${product.name}`}
+      >
+        {/* Product Image */}
+        <div className="relative w-full aspect-square bg-gray-50 overflow-hidden">
+          {badge && (
+            <span
+              className={`absolute top-2.5 left-2.5 z-10 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-tight ${badge.bg}`}
+            >
+              {badge.text}
+            </span>
+          )}
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onToggleWishlist(product);
+            }}
+            className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow-xs text-gray-400 hover:text-red-500 hover:bg-white active:scale-90 transition-all focus:outline-none"
+            aria-label="Wishlist"
           >
-            {badge.text}
-          </span>
-        )}
+            <FiHeart
+              className={wish ? "text-red-500 fill-red-500" : "text-gray-500"}
+              size={16}
+            />
+          </button>
 
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleWishlist(product);
-          }}
-          className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow-xs text-gray-400 hover:text-red-500 hover:bg-white active:scale-90 transition-all focus:outline-none"
-          aria-label="Wishlist"
-        >
-          <FiHeart
-            className={wish ? "text-red-500 fill-red-500" : "text-gray-500"}
-            size={16}
+          <img
+            src={imageDelivery(thumbnail)}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy" decoding="async"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = PLACEHOLDER_IMG;
+            }}
           />
-        </button>
+        </div>
 
-        <img
-          src={imageDelivery(thumbnail)}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy" decoding="async"
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = PLACEHOLDER_IMG;
-          }}
-        />
-      </div>
-
-      {/* Product Info */}
-      <div className="p-3.5 flex flex-col justify-between flex-1">
-        <div>
+        {/* Product name & variants */}
+        <div className="px-3.5 pt-2.5">
           <h3 className="font-extrabold text-sm text-gray-900 truncate leading-snug">
             {product.name}
           </h3>
@@ -140,6 +151,7 @@ function ShopProductCard({ product, isWishlisted, onToggleWishlist, onToast }) {
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     setSelectedIdx(i);
                   }}
                   className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all whitespace-nowrap ${
@@ -158,9 +170,11 @@ function ShopProductCard({ product, isWishlisted, onToggleWishlist, onToast }) {
             </p>
           )}
         </div>
+      </Link>
 
-        {/* Price + Add/Qty row */}
-        <div className="flex items-center justify-between mt-3 pt-1">
+      {/* Price + Add/Qty row */}
+      <div className="px-3.5 pb-3.5 pt-2">
+        <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-1.5">
             <span className="font-extrabold text-sm sm:text-base text-gray-900">
               ₹{selectedVariant.price}
@@ -453,6 +467,7 @@ export default function Shop() {
                 <ShopProductCard
                   key={product._id || product.id}
                   product={product}
+                  categories={categories}
                   isWishlisted={isWishlisted}
                   onToggleWishlist={toggleWishlist}
                   onToast={handleToast}

@@ -16,7 +16,7 @@ export default function Categories() {
   const [form, setForm] = useState({
     name: "",
     description: "",
-    subCategories: [""],
+    subCategories: [{ name: "" }],
   });
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -30,7 +30,7 @@ export default function Categories() {
 
   const loadCategories = async () => {
     try {
-      const data = await getCategories(); // returns array directly
+      const data = await getCategories();
       setCategories(data);
     } catch (err) {
       console.error(err);
@@ -43,11 +43,7 @@ export default function Categories() {
   }, []);
 
   const resetForm = () => {
-    setForm({
-      name: "",
-      description: "",
-      subCategories: [""],
-    });
+    setForm({ name: "", description: "", subCategories: [{ name: "" }] });
     setImage(null);
     setPreview(null);
     setEditingId(null);
@@ -69,8 +65,8 @@ export default function Categories() {
       formData.append("description", form.description);
 
       const subCategories = form.subCategories
-        .filter((item) => item.trim() !== "")
-        .map((item) => ({ name: item }));
+        .filter((item) => (item.name || "").trim() !== "")
+        .map((item) => ({ name: item.name.trim() }));
 
       formData.append("subCategories", JSON.stringify(subCategories));
 
@@ -105,8 +101,10 @@ export default function Categories() {
       description: category.description,
       subCategories:
         category.subCategories?.length > 0
-          ? category.subCategories.map((s) => s.name)
-          : [""],
+          ? category.subCategories.map((s) => ({
+              name: typeof s === "string" ? s : s.name,
+            }))
+          : [{ name: "" }],
     });
     setPreview(category.image);
     setImage(null);
@@ -132,15 +130,12 @@ export default function Categories() {
   };
 
   const addSubCategory = () => {
-    setForm({
-      ...form,
-      subCategories: [...form.subCategories, ""],
-    });
+    setForm({ ...form, subCategories: [...form.subCategories, { name: "" }] });
   };
 
-  const updateSubCategory = (index, value) => {
+  const updateSubCategoryName = (index, value) => {
     const updated = [...form.subCategories];
-    updated[index] = value;
+    updated[index] = { name: value };
     setForm({ ...form, subCategories: updated });
   };
 
@@ -149,7 +144,7 @@ export default function Categories() {
     updated.splice(index, 1);
     setForm({
       ...form,
-      subCategories: updated.length ? updated : [""],
+      subCategories: updated.length ? updated : [{ name: "" }],
     });
   };
 
@@ -171,29 +166,32 @@ export default function Categories() {
           />
 
           <div className="subcategory-section">
-            <label>Sub Categories</label>
+            <div className="subcategory-header">
+              <label>Sub Categories</label>
+              <span className="subcategory-hint">Colors are auto-applied on the storefront</span>
+            </div>
+
             {form.subCategories.map((sub, index) => (
               <div key={index} className="subcategory-row">
                 <input
                   type="text"
-                  placeholder={`Sub Category ${index + 1}`}
-                  value={sub}
-                  onChange={(e) => updateSubCategory(index, e.target.value)}
+                  placeholder="Sub Category (e.g. Veg, Non Veg, Egg)"
+                  value={sub.name}
+                  onChange={(e) => updateSubCategoryName(index, e.target.value)}
+                  className="subcat-text-input"
                 />
                 <button
                   type="button"
                   className="delete-sub-btn"
                   onClick={() => removeSubCategory(index)}
+                  title="Remove subcategory"
                 >
                   <Trash2 size={16} />
                 </button>
               </div>
             ))}
-            <button
-              type="button"
-              className="add-sub-btn"
-              onClick={addSubCategory}
-            >
+
+            <button type="button" className="add-sub-btn" onClick={addSubCategory}>
               <Plus size={16} />
               Add Sub Category
             </button>
@@ -210,9 +208,7 @@ export default function Categories() {
             }}
           />
 
-          {preview && (
-            <img src={preview} className="preview-image" alt="preview" />
-          )}
+          {preview && <img src={preview} className="preview-image" alt="preview" />}
 
           <div className="form-buttons">
             <button className="save-btn" disabled={saving}>
@@ -224,11 +220,7 @@ export default function Categories() {
               )}
             </button>
             {editingId && (
-              <button
-                type="button"
-                className="cancel-btn"
-                onClick={resetForm}
-              >
+              <button type="button" className="cancel-btn" onClick={resetForm}>
                 Cancel
               </button>
             )}
@@ -257,15 +249,21 @@ export default function Categories() {
                 <td>{item.name}</td>
                 <td>{item.description}</td>
                 <td>
-                  {item.subCategories?.length
-                    ? item.subCategories.map((s) => s.name).join(", ")
-                    : "-"}
+                  {item.subCategories?.length ? (
+                    <div className="table-subcat-badges">
+                      {item.subCategories.map((s, sIdx) => {
+                        const sName = typeof s === "string" ? s : s.name;
+                        return (
+                          <span key={sIdx} className="subcat-chip">
+                            {sName}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : "-"}
                 </td>
                 <td>
-                  <button
-                    className="edit-btn"
-                    onClick={() => handleEdit(item)}
-                  >
+                  <button className="edit-btn" onClick={() => handleEdit(item)}>
                     <Edit size={18} color="green" />
                   </button>
                 </td>

@@ -17,9 +17,12 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    googleId: { type: String, unique: true, sparse: true },
+    facebookId: { type: String, unique: true, sparse: true },
+
     mobile: {
       type: String,
-      required: true,
+      required: function () { return !this.googleId && !this.facebookId; },
     },
 
     password: {

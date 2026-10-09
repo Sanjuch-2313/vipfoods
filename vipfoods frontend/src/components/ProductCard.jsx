@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { FiHeart } from "react-icons/fi";
-
+import SubcategoryBadge from "./SubcategoryBadge";
 import { getDefaultWeight, getProductPrice, getWeightOptions } from "../services/productService";
 import "./ProductCard.css";
 
@@ -50,8 +51,11 @@ export default function ProductCard({
     });
   };
 
+  const productId = product.id || product._id;
+
   return (
     <article className="vip-card">
+      <SubcategoryBadge product={product} />
       <button
         type="button"
         className={`vip-wishlist ${wishlisted ? "active" : ""}`}
@@ -60,18 +64,20 @@ export default function ProductCard({
         <FiHeart />
       </button>
 
-      <div className="vip-image-box">
-        <img src={product.image} alt={product.name} className="vip-image" />
-      </div>
+      <Link to={`/products/${productId}`} className="vip-card-link">
+        <div className="vip-image-box">
+          <img src={product.image} alt={product.name} className="vip-image" />
+        </div>
 
-      <div className="vip-info">
         <div className="vip-price-row">
           <span className="vip-price">₹{selectedPrice ?? product.price}</span>
           {hasDiscount && <span className="vip-mrp">₹{mrp}</span>}
         </div>
 
         <h3 className="vip-title">{product.name}</h3>
+      </Link>
 
+      <div className="vip-info">
         {/* Sliding variant weight chips */}
         {weightOptions.length > 0 && (
           <div className="vip-variant-scroll">

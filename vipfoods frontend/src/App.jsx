@@ -25,6 +25,7 @@ const Checkout = lazy(() => import("./pages/Checkout"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Login = lazy(() => import("./pages/Login"));
+const SocialCallback = lazy(() => import("./pages/SocialCallback"));
 const Register = lazy(() => import("./pages/Register"));
 const OrderSuccess = lazy(() => import("./pages/orderSuccess"));
 const MyOrders = lazy(() => import("./pages/MyOrders"));
@@ -55,6 +56,7 @@ function AppRoutes() {
     "/login",
     "/register",
     "/otp-verify",
+    "/social-callback",
   ].includes(location.pathname);
 
   useEffect(() => {
@@ -107,6 +109,7 @@ function AppRoutes() {
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/social-callback" element={<SocialCallback />} />
         <Route path="/lost-password" element={<LostPasswordPage />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="*" element={<NotFound />} />

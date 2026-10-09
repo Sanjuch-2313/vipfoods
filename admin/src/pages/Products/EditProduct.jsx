@@ -332,6 +332,12 @@ const EditProduct = () => {
     appendTextField(payload, "category", formData.category);
 
     appendTextField(payload, "subCategory", formData.subCategory);
+    const matchedSub = selectedCategory?.subCategories?.find(
+      (s) => s.name === formData.subCategory
+    );
+    if (matchedSub?.color) {
+      appendTextField(payload, "subCategoryColor", matchedSub.color);
+    }
 
     appendTextField(payload, "featured", String(formData.featured));
     appendTextField(payload, "bestDeal", String(formData.bestDeal));

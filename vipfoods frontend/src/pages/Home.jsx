@@ -9,6 +9,7 @@ import { imageDelivery } from "../utils/imageDelivery";
 import FirstVisitTour from "../components/FirstVisitTour";
 import "../components/FirstVisitTour.css";
 import { useEffect, useState } from "react";
+import SubcategoryBadge from "../components/SubcategoryBadge";
 import { Link, useNavigate } from "react-router-dom";
 import { FiHeart, FiPlus, FiArrowRight, FiAward, FiTruck, FiMinus } from "react-icons/fi";
 import { getCategories } from "../services/categoryService";
@@ -42,7 +43,7 @@ const defaultHeroSlides = [
 ];
 
 /* ── Per-deal card with variant state ── */
-function DealCard({ deal, onToast }) {
+function DealCard({ deal, categories = [], onToast }) {
   const { addToCart, cartItems, updateCartQuantity, wishlistItems, toggleWishlist } = useCart();
 
   const normalizeWeightLabel = (value, fallback = "1 kg") => {
@@ -95,62 +96,65 @@ function DealCard({ deal, onToast }) {
   const handleDecrease = (e) => { e.stopPropagation(); updateCartQuantity(id, selected.label, Math.max(0, qty - 1)); };
 
   return (
-    <div className="w-40 sm:w-48 md:w-52 shrink-0 snap-start bg-white rounded-[22px] border border-gray-100 p-2.5 sm:p-3 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
-      {/* Image */}
-      <div className="relative w-full aspect-square rounded-2xl bg-gray-50 overflow-hidden mb-2">
-        <span className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs">
-          {badge}
-        </span>
-        <button
-          type="button"
-          onClick={() => toggleWishlist(deal)}
-          aria-label={wishlisted ? `Remove ${deal.name} from wishlist` : `Add ${deal.name} to wishlist`}
-          aria-pressed={wishlisted}
-          className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-rose-500 shadow-sm"
-        >
-          <FiHeart size={17} fill={wishlisted ? "currentColor" : "none"} />
-        </button>
-        <img
-          src={imageDelivery(thumbnail)}
-          alt={deal.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy" decoding="async"
-          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PLACEHOLDER_IMAGE; }}
-        />
-      </div>
-
-      {/* Name */}
-      <div>
-        <h4 className="font-extrabold text-sm sm:text-base text-gray-900 truncate">{deal.name}</h4>
-
-        {/* Sliding variant chips */}
-        {variants.length > 0 ? (
-          <div
-            className="flex gap-1.5 mt-1 overflow-x-auto pb-0.5"
-            style={{ scrollbarWidth: "none" }}
+    <div className="w-40 sm:w-48 md:w-52 shrink-0 snap-start bg-white rounded-[22px] border border-gray-100 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+      <SubcategoryBadge product={deal} categories={categories} />
+      <Link to={`/products/${id}`} className="block p-2.5 sm:p-3" tabIndex={-1} aria-label={`View ${deal.name}`}>
+        {/* Image */}
+        <div className="relative w-full aspect-square rounded-2xl bg-gray-50 overflow-hidden mb-2">
+          <span className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs">
+            {badge}
+          </span>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleWishlist(deal); }}
+            aria-label={wishlisted ? `Remove ${deal.name} from wishlist` : `Add ${deal.name} to wishlist`}
+            aria-pressed={wishlisted}
+            className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-rose-500 shadow-sm"
           >
-            {variants.map((v, i) => (
-              <button
-                key={`${v.label}-${i}`}
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setSelectedIdx(i); }}
-                className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all whitespace-nowrap ${
-                  selectedIdx === i
-                    ? "bg-rose-50 border-rose-400 text-rose-600"
-                    : "bg-gray-50 border-gray-200 text-gray-500"
-                }`}
-              >
-                {v.label}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <p className="text-[11px] sm:text-xs text-gray-400 font-medium">{selected.label}</p>
-        )}
-      </div>
+            <FiHeart size={17} fill={wishlisted ? "currentColor" : "none"} />
+          </button>
+          <img
+            src={imageDelivery(thumbnail)}
+            alt={deal.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy" decoding="async"
+            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PLACEHOLDER_IMAGE; }}
+          />
+        </div>
+
+        {/* Name */}
+        <div>
+          <h4 className="font-extrabold text-sm sm:text-base text-gray-900 truncate">{deal.name}</h4>
+
+          {/* Sliding variant chips */}
+          {variants.length > 0 ? (
+            <div
+              className="flex gap-1.5 mt-1 overflow-x-auto pb-0.5"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {variants.map((v, i) => (
+                <button
+                  key={`${v.label}-${i}`}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); setSelectedIdx(i); }}
+                  className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all whitespace-nowrap ${
+                    selectedIdx === i
+                      ? "bg-rose-50 border-rose-400 text-rose-600"
+                      : "bg-gray-50 border-gray-200 text-gray-500"
+                  }`}
+                >
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[11px] sm:text-xs text-gray-400 font-medium">{selected.label}</p>
+          )}
+        </div>
+      </Link>
 
       {/* Price + Add/Stepper */}
-      <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-gray-50">
+      <div className="flex items-center justify-between px-2.5 sm:px-3 pb-2.5 sm:pb-3 pt-1.5 border-t border-gray-50">
         <div>
           <span className="font-extrabold text-sm sm:text-base text-gray-900">₹{selected.price}</span>
           {hasDiscount && <del className="block text-xs text-gray-400">₹{selected.mrp}</del>}
@@ -450,6 +454,7 @@ export default function Home() {
                   key={deal._id || deal.id || idx}
                   deal={deal}
                   idx={idx}
+                  categories={categories}
                   onToast={handleToast}
                 />
               ))}
